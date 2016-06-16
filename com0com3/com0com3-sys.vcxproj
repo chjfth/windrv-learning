@@ -185,9 +185,6 @@
     <ResourceCompile Include="sys\com0com.rc" />
     <ResourceCompile Include="sys\objchk_wxp_x86\i386\c0clog.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="sys\objchk_wxp_x86\i386\MSG00001.bin" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
