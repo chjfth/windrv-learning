@@ -5,7 +5,7 @@ xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 12">
 <meta name=Originator content="Microsoft Word 12">
@@ -1152,6 +1152,8 @@ ol
 	{margin-bottom:0in;}
 ul
 	{margin-bottom:0in;}
+.style1 {color: #0000FF}
+.style2 {color: #660000}
 -->
 </style>
 <!--[if gte mso 10]>
@@ -1236,7 +1238,7 @@ Package</span></a></p>
 "Times New Roman"'>Summary</span><span style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>The
-Toaster sample provides a starting point for Windows� driver development. It contains
+Toaster sample provides a starting point for Windows® driver development. It contains
 annotated code to illustrate the functionality of bus driver, function driver,
 assorted class, device, and bus filter drivers, class-installer, and
 device-specific co-installer for a hypothetical Toaster bus and its devices. </span></p>
@@ -1246,24 +1248,24 @@ mso-fareast-font-family:"Times New Roman"'>Introduction to WDM Driver Model</spa
 style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Every
-device driver stack for a Plug and Play (PnP) device under the Microsoft�
-Windows� 2000 and later operating system typically comprises a bus driver, a
+device driver stack for a Plug and Play (PnP) device under the Microsoft®
+Windows® 2000 and later operating system typically comprises a bus driver, a
 function driver, and from zero to one or more filter drivers. These drivers must
 support Plug and Play, Power Management, and Windows Management Instrumentation
 (WMI) to provide a better user experience and greater satisfaction. </span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>These
+<p><span style='color:#949494;font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>These
 buzzwords make sense if you have developed a driver for Windows 95 or Windows
-98. But, a developer who has only worked on Windows NT� drivers might wonder:
+98. But, a developer who has only worked on Windows NT® drivers might wonder:
 What are these things? Why do I need to worry about them? How do I implement
 them? </span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Imagine
+<p><span style='color:#949494;font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Imagine
 a system with a new type of PnP I/O bus called a toaster bus. A controller chip
 on the motherboard initializes and manages the bus. The bus has a couple of
 ports jutting out of the box into which you can plug your toasters. </span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>To
+<p><span style='color:#949494;font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>To
 provide support for this bus on Windows NT 4.0, you must modify the HAL
 (hardware abstraction layer) to recognize and initialize the I/O bus during
 system boot and you must provide a set of HAL functions for scanning the bus
@@ -1274,7 +1276,7 @@ the device, read the I/O resource requirements, and configure and initialize
 the device. These drivers are loaded regardless of whether or not a particular
 toaster is plugged in. </span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>If
+<p><span style='color:#949494;font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>If
 another driver requires the I/O resources claimed by your driver, there is no
 resource distribution mechanism on Windows NT 4.0 to instruct the driver to
 relinquish them and use other resources if possible. If you want to expose
@@ -1284,17 +1286,21 @@ interface like WMI and no power management. </span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>To
 support this bus and its devices under Windows 2000 and later OS, however, you
-don�t have to modify the HAL or export a new set of functions. All you need to
-do is write a bus driver that has knowledge of bus architecture, identifies
-(enumerates) devices on the bus, reads their resource requirements, and
-configures them. This driver model also makes the operating system independent
-of its I/O bus. This means you don�t need help from Microsoft if you design a
-new I/O bus to modify the HAL. Then, you write function drivers to control
-individual devices connected to the bus. Later on, one can write one or more
-filter drivers to add or modify the features supported by bus, a specific
-device or class of devices. There can be any number of lower-level or
-upper-level filter drivers for a bus, a device, or a class of devices. </span></p>
-
+don’t have to modify the HAL or export a new set of functions. </span></p>
+<ul>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>All you need to
+		do is write a <u>bus driver</u> that has knowledge of bus architecture, identifies
+		(enumerates) devices on the bus, reads their resource requirements, and
+		configures them. This driver model also makes the operating system independent
+		of its I/O bus. This means you don’t need help from Microsoft if you design a
+		new I/O bus to modify the HAL. </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Then, you write <u>function drivers</u> to control
+		individual devices connected to the bus. </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Later on, one can write one or more
+			<u>filter drivers</u> to add or modify the features supported by bus, a specific
+		device or class of devices. There can be any number of lower-level or
+		upper-level filter drivers for a bus, a device, or a class of devices. </span></li>
+</ul>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>The
 Windows Driver Kit documentation explains these new concepts and features by
 providing background information and describing how to implement them in your
@@ -1307,12 +1313,17 @@ will help you start coding right away. </span></p>
 make the sample code closer to a real-world driver, I have defined a new class
 of devices called the TOASTER class and wrote a bus driver, function driver,
 and all possible class, device, and bus filter drivers for this hypothetical
-TOASTER bus and its devices. I have also provided a sample of coinstaller DLL
-to show how you can parse a custom section from an INF file and perform some
-special operations before and after the installation of a device, and how you
-can create FriendlyName for a device. The function and bus driver also show how
-you can provide power manager and WMI support. </span></p>
-
+TOASTER bus and its devices. </span></p>
+<ul>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>I have also provided a sample of coinstaller DLL
+		to show how you can parse a custom section from an INF file </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>and perform some
+		special operations before and after the installation of a device, </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>and how you
+		can create FriendlyName for a device. </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>The function and bus driver also show how
+		you can provide <u>power manager</u> and <u>WMI support</u>. </span></li>
+</ul>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You
 can learn the implementation details of these sample drivers by looking at the
 code and reading the Windows 2000/XP/Server 2003 DDK documentation. The rest of
@@ -1363,16 +1374,17 @@ style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'> </
 "Verdana","sans-serif"'>All the sub-directories under this one contain the
 source code of the function driver (Toaster.sys) for standard toaster devices.
 To be illustrative and useful learning sample for beginners to driver
-development, the sample has been built from almost nothing (skeletal) to fully
-functional, adding useful features at each step. When built, all the different
+development, <span class="style1">the sample has been built from almost nothing (skeletal) to fully
+functional, adding useful features at each step</span>. When built, all the different
 versions produce toaster.sys file. You can use the standard toaster.inf or
-toastco.inf to install and test. You can either manually install the driver
-(root-enumerations) or bus enumerate the driver using the toaster bus driver.
+toastco.inf to install and test. You can either <u>manually install the driver
+(root-enumerations)</u> or <u>bus enumerate the driver using the toaster bus driver</u>.
 They all share one common header file present in the <i>shared</i> directory.
-Let us assume that the function driver owns the power policy of the toaster
-device and supports D0, D1 and D3 power states, and also the toaster device is
-capable of waking the system from D1 state. </span></p>
-
+</span></p>
+<p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
+"Verdana","sans-serif"'>Let us assume that the function driver owns the power policy of the toaster
+	device and supports D0, D1 and D3 power states, and also the toaster device is
+	capable of waking the system from D1 state. </span></p>
 <ol style='margin-top:0in' start=1 type=1>
  <li class=MsoNormal style='mso-list:l0 level1 lfo1;tab-stops:list .5in'><i><span
      style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif";
@@ -1389,14 +1401,19 @@ capable of waking the system from D1 state. </span></p>
      mso-fareast-font-family:"Times New Roman"'>Incomplete2</span></i><span
      style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif";
      mso-fareast-font-family:"Times New Roman"'>: This version is slightly
-     advanced than the incomplete1 version. This version shows how to track I/O
-     IRPs and handle stop and remove PNP request safely with respect to driver
-     unload. Instead of using remlocks, this sample implements its own locking
-     scheme to be more general purpose and compatible with 9x systems. You can
-     open the registered interface from usermode and send read, write and IOCTL
-     requests. This is a still an incomplete sample because it doesn't handle
+     advanced than the incomplete1 version. This version shows how to <u>track I/O
+     IRPs</u> and <u>handle stop and remove PNP request safely with respect to driver
+     unload</u>. <br>
+     <br>
+     Instead of using remlocks(remove locks), this sample implements its own locking
+     scheme to be more general purpose and compatible with 9x systems. <br>
+     <br>
+     You can
+     open the registered interface from usermode and <u>send read, write and IOCTL
+     requests</u>. This is a still an incomplete sample because it doesn't handle
      power IRPs and do the necessary S to D power IRP conversion required by
-     the bus driver. </span><span style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></li>
+     the bus driver. </span><span style='mso-fareast-font-family:"Times New Roman"'>
+     <o:p></o:p></span></li>
  <li class=MsoNormal style='mso-list:l0 level1 lfo1;tab-stops:list .5in'><i><span
      style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif";
      mso-fareast-font-family:"Times New Roman"'>Featured1</span></i><span
@@ -1415,17 +1432,18 @@ capable of waking the system from D1 state. </span></p>
 
 </blockquote>
 
-<p class=MsoNormal style='margin-left:.5in'><span class=GramE><i><span
-style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>inc</span></i></span><span
+<p class=MsoNormal><span class=GramE><i><span style='font-size:10.0pt;
+line-height:115%;font-family:"Verdana","sans-serif"'>inc</span></i></span><span
 style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'> </span></p>
 
 <p class=MsoNormal style='margin-left:.5in'><span style='font-size:10.0pt;
 line-height:115%;font-family:"Verdana","sans-serif"'>This directory contains
 headers files that are shared among drivers and applications. </span></p>
 
-<p class=MsoNormal style='margin-left:.5in'><i><span style='font-size:10.0pt;
-line-height:115%;font-family:"Verdana","sans-serif"'>Disk</span></i><span
+<p class=MsoNormal><span class=GramE><i><span style='font-size:10.0pt;
+line-height:115%;font-family:"Verdana","sans-serif"'>disk</span></i></span><span
 style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'> </span></p>
+
 
 <p class=MsoNormal style='margin-left:.5in'><span style='font-size:10.0pt;
 line-height:115%;font-family:"Verdana","sans-serif"'>This directory is the build
@@ -1546,8 +1564,8 @@ style='font-size:7.0pt;line-height:115%;font-family:"Times New Roman","serif"'>&
 </span><i><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>toastco.inf</span></i><span
 style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>:
 This .inf file is functionally similar to toaster.inf but also installs the
-coinstaller. The co-installer is used to dynamically create a unique
-friendlyname of the device based on the serial number. </span></p>
+coinstaller. <u>The co-installer is used to dynamically create a unique
+friendlyname of the device based on the serial number</u>. </span></p>
 
 <p class=MsoNormal style='margin-left:.5in;text-indent:-.25in'><span
 class=GramE><span style='font-size:10.0pt;line-height:115%;font-family:"Courier New"'>o</span></span><span
@@ -1589,14 +1607,14 @@ the sample</span></b></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>To
 build the sample drivers, you must first set up the DDK environment on your
-host machine. The �Installation and Release Notes� in the Windows Driver Kit
+host machine. The “Installation and Release Notes” in the Windows Driver Kit
 has a complete description on how to do this. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>1.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Run
-the build �ceZ command in the Toaster directory to build all the binaries.</span></p>
+the build –ceZ command in the Toaster directory to build all the binaries.</span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>2.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1610,7 +1628,7 @@ target system. Do not copy all the INF files.</span></p>
 "Verdana","sans-serif"'>3.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Copy
-the device metadata package to a floppy disk or a temporary directory on the
+the device <u>metadata package</u> to a floppy disk or a temporary directory on the
 target system. Use the device metadata package in the ja-jp folder if the
 target system is in the Japanese locale. Otherwise, use the device metadata
 package in the en-us folder. </span></p>
@@ -1626,7 +1644,7 @@ install the bus driver. To install the bus driver on Windows 2000: </span></p>
 "Verdana","sans-serif"'>1.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Double-click
-the �Add/Remove Hardware� wizard in Control Panel. </span></p>
+the ‘Add/Remove Hardware’ wizard in Control Panel. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>2.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1638,25 +1656,25 @@ the Add/Remove Hardware Wizard, click <span class=GramE>Next</span>. </span></p>
 "Verdana","sans-serif"'>3.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Choose
-the �Add/Troubleshoot a device�, then click <span class=GramE>Next</span>. </span></p>
+the ‘Add/Troubleshoot a device’, then click <span class=GramE>Next</span>. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>4.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�Add a new device� from the list, then click Next. </span></p>
+‘Add a new device’ from the list, then click Next. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>5.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�No, I Want to Select the Hardware from a list� and then click Next. </span></p>
+‘No, I Want to Select the Hardware from a list’ and then click Next. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>6.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�System Devices� and then click Next. NOTE: This might take a few minutes. </span></p>
+‘System Devices’ and then click Next. NOTE: This might take a few minutes. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>7.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1692,7 +1710,7 @@ Server 2003: </span></p>
 "Verdana","sans-serif"'>1.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Double-click
-the �Add Hardware� wizard in Control Panel. </span></p>
+the ‘Add Hardware’ wizard in Control Panel. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>2.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1700,7 +1718,7 @@ font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 </span><span class=GramE><span style='font-size:10.0pt;line-height:115%;
 font-family:"Verdana","sans-serif"'>At</span></span><span style='font-size:
 10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'> the 'Welcome to
-the Add Hardware Wizard', click �Next�. </span></p>
+the Add Hardware Wizard', click ‘Next’. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>3.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1713,20 +1731,20 @@ click Next. </span></p>
 "Verdana","sans-serif"'>4.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�Add a new hardware device� from the list, then click Next. </span></p>
+‘Add a new hardware device’ from the list, then click Next. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>5.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�Install the hardware that I manually select from a <span class=GramE>list(</span>Advanced),'
+‘Install the hardware that I manually select from a <span class=GramE>list(</span>Advanced),'
 and then click next. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>6.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-�System Devices�, then click <span class=GramE>Next</span>. </span></p>
+‘System Devices’, then click <span class=GramE>Next</span>. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>7.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1766,7 +1784,7 @@ command. Please read the help file included in the sample on how to build and
 use the application to install this driver. To install the bus driver using
 devcon.exe: </span></p>
 
-<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'><pre>c:\&gt;devcon.exe<span
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'><pre class="style2">c:\&gt;devcon.exe<span
 class=GramE>&nbsp; install</span>&nbsp; bus.inf&nbsp; &quot;root\busenum&quot;</pre>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
@@ -1774,24 +1792,22 @@ class=GramE>&nbsp; install</span>&nbsp; bus.inf&nbsp; &quot;root\busenum&quot;</
 directory and sets up the following registry keys to represent the bus driver
 to the PnP manager:</span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class<span
-class=GramE>\{</span>4D36E97D-E325-11CE-BFC1-08002BE10318}\nnnn <br>
-// nnnn is the instance number of this System Class driver on the system.</span></p>
-
+<p><span class="style1">HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4D36E97D-E325-11CE-BFC1-08002BE10318}\<i>nnnn</i></span> <br>
+// <i>nnnn</i> is the instance number of this System Class driver on the system. <span style="font-size:10.0pt;line-height:115%;font-family:
+&quot;Verdana&quot;,&quot;sans-serif&quot;">(每个 nnnn 是一个 driver key)</span></p>
+<p>Chj: [Win81] 发现上头 devcon install 每执行一次，多出一个 nnnn 项； Devmgmt 中按 connection 方式查看，也会有多个 Toaster Bus Enumerator 项； \Enum\Root\SYSTEM 里头也会多处一个 nnnn , 每个 nnnn 对应一个 driver key 。 </p>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>It
 copies the INF file as OEM.n.INF, where n is a zero-based number, to the system
 INF directory. It also creates the standard Services keys to load the driver:</span></p>
 
-<p><span class=GramE><span style='font-size:10.0pt;line-height:115%;font-family:
-"Verdana","sans-serif"'>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\busenum.</span></span></p>
+<p><span class="style1" style='font-size:10.0pt;line-height:115%;font-family:
+"Verdana","sans-serif"'>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\busenum</span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Once
 installed the system creates device registry keys (Hardware keys) under:</span></p>
 
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\Root\SYSTEM\nnnn
-<br>
-// nnnn is the instance number of this System Class driver on the system.</span></p>
-
+<p><span class="style1">HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\Root\SYSTEM\<i>nnnn</i></span><br>
+// <i>nnnn</i> is the instance number of this System Class driver on the system.</p>
 </blockquote>
 
 <h3><a name=test></a><span style='mso-fareast-font-family:"Times New Roman"'>To
@@ -1837,14 +1853,14 @@ line-height:111%;font-family:"Times New Roman","serif";mso-fareast-font-family:
 style='font-size:10.0pt;line-height:111%;font-family:"Verdana","sans-serif";
 mso-fareast-font-family:"Times New Roman";font-weight:normal'>Note that this
 action requires administrator privilege. Elevate the privilege when you are
-prompted by entering the administrator�s user name and password.</span><span
+prompted by entering the administrator’s user name and password.</span><span
 style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
 <h3><span style='font-size:10.0pt;line-height:111%;font-family:"Verdana","sans-serif";
 mso-fareast-font-family:"Times New Roman";font-weight:normal'>After you plug in
-a toaster device, open the �Devices and Printers�. You will see the sample
+a toaster device, open the “Devices and Printers”. You will see the sample
 toaster icon and sample information for the toaster sample. Note: the bus
-devenode is not shown in the �Devices and Printers�. More information on how to
+devenode is not shown in the “Devices and Printers”. More information on how to
 install device metadata packages is introduced in the device metadata package
 section in WDK document.</span><span style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
@@ -1897,7 +1913,7 @@ DeviceIoControl to the device depending on the user command line option. </span>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>If
 you invoke without any option it basically opens the last enumerated interface
 and prompts you to initiate a Read operation in a loop. You press any key to
-continue the read loop or press �q� to break out of the loop. If you use the �h
+continue the read loop or press ‘q’ to break out of the loop. If you use the –h
 option it opens the last enumerated interface and sends a DeviceIoControl to
 hide the device from the Device Manager before performing read. </span></p>
 
@@ -1922,7 +1938,7 @@ device; and class filters by specifying them to the Software registry key
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Because
 this is an MULTI_SZ string, you can specify more than one filter for the device
 or class. If you specify more than one, the load order is in the order they are
-listed � the filter at the end of list is the topmost driver in the stack, and
+listed – the filter at the end of list is the topmost driver in the stack, and
 so on. However filter drivers should not be written to rely on this order,
 because the load order can change and other filter drivers may or may not be
 there in the group. You can install device specific filters by using a [.HW]
@@ -1984,13 +2000,13 @@ mso-fareast-font-family:"Times New Roman"'>Device Parameters Subkey</span><span
 style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Currently
-the sample doesn�t show how to read Device Parameters value from the registry.
+the sample doesn’t show how to read Device Parameters value from the registry.
 This feature will be added in the future updates of this driver. </span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Under
 Windows 2000/XP/Server 2003, the configuration information is not stored under
 the Services key of the driver. It is stored in three different places,
-depending on whether <span class=GramE>it�s</span> device instance specific,
+depending on whether <span class=GramE>it’s</span> device instance specific,
 driver specific or interface specific. </span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You
@@ -2367,7 +2383,7 @@ class=GramE>them.</span> </span></p>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>A
 WMI interface is provided to both the function and bus driver. The WMI library
 is used to handle WMI IRPs. The MOF files, which define WMI data and event
-blocks, are compiled along with the driver and included in the driver�s binary
+blocks, are compiled along with the driver and included in the driver’s binary
 image. </span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>To
@@ -2388,7 +2404,7 @@ font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 "Verdana","sans-serif"'>2.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Connect
-to �root\WMI� class. </span></p>
+to “root\WMI” class. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>3.</span><span style='font-size:7.0pt;line-height:115%;
@@ -2669,7 +2685,7 @@ of page</span></a><span style='font-size:10.0pt;line-height:115%;font-family:
  </tr>
 </table>
 
-<p><span style='font-size:7.5pt;line-height:115%;font-family:"MS Sans Serif","serif"'>�
+<p><span style='font-size:7.5pt;line-height:115%;font-family:"MS Sans Serif","serif"'>©
 Microsoft Corporation 2002</span><span style='font-size:10.0pt;line-height:
 115%;font-family:"Verdana","sans-serif"'> </span></p>
 
