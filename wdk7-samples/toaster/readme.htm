@@ -691,7 +691,7 @@ technologies (WDM, KMDF, <span class=GramE>UMDF</span>) and placed side-by-side
 to show the difference in the programming model. The table below describes
 what’s contained in each of the top-level directories.</p>
 
-<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
+<table width="80%" class=MsoNormalTable border=0 cellspacing=0 cellpadding=0
  style='border-collapse:collapse;mso-yfti-tbllook:1184;mso-padding-alt:0in 0in 0in 0in'>
  <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -699,19 +699,26 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>WDM</p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border:solid black 1.0pt;
+  <td valign=top style='border:solid black 1.0pt;
   border-left:none;padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>This folder contains sample drivers that implement the Windows Driver
-  Model. Drivers written in WDM are typically complex and less robust because
-  they interface with OS directly and end up managing all the synchronization
-  and concurrency issues around I/O and PnP/Power request. &nbsp;Instead of
-  writing drivers in WDM, you should write drivers in either KMDF or UMDF. The
-  KMDF &amp; UMDF folder contain samples that are functionally equivalent to
-  the WDM drivers and are lot simpler to write and manage. Please read the <a
+  Model. </p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>Drivers written in WDM are typically complex and less robust because
+  	they interface with OS directly and end up managing all the synchronization
+  	and concurrency issues around I/O and PnP/Power request. &nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>Instead of
+  	writing drivers in WDM, you should write drivers in either KMDF or UMDF. The
+  	KMDF &amp; UMDF folder contain samples that are functionally equivalent to
+  	the WDM drivers and are lot simpler to write and manage. Please read the <a
   href="wdm/toaster.htm">toaster.htm</a> file to learn more about the drivers
-  under this folder.</p>
-  </td>
+  	under this folder.</p></td>
  </tr>
  <tr style='mso-yfti-irow:1'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -719,15 +726,17 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>KMDF</p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>This folder contains sample drivers written using Kernel mode driver
-  framework.&nbsp; The drivers in this folder are functionally equivalent to
-  WDM drivers.&nbsp; Please read the <a href="kmdf/toaster.htm">toaster.htm</a>
-  file to learn more about the drivers under this folder.</p>
-  </td>
+  framework.&nbsp; </p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>The drivers in this folder are functionally equivalent to
+  	WDM drivers.&nbsp; Please read the <a href="kmdf/toaster.htm">toaster.htm</a> file to learn more about the drivers under this folder.</p></td>
  </tr>
  <tr style='mso-yfti-irow:2'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -735,20 +744,22 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>UMDF</p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>This folder contains sample drivers written using User mode driver
-  framework.&nbsp; The drivers in this folder (<span class=SpellE>WUDFToaster</span>
-  &amp; <span class=SpellE>toastmon</span>) are functionally equivalent to WDM
-  drivers (featured and <span class=SpellE>toastmon</span>). There is no bus
-  driver sample in UMDF because UMDF doesn’t support writing bus drivers.
-  &nbsp;Please read the Windows Driver Foundation book to learn the difference
-  between KMDF and UMDF and how to decide which framework to use. Please read
-  the <a href="umdf/func/WUDFToaster.htm">toaster.htm</a> file to learn more
-  about the drivers under this folder.</p>
-  </td>
+  framework.&nbsp; </p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>The drivers in this folder (<span class=SpellE>WUDFToaster</span> &amp; <span class=SpellE>toastmon</span>) are functionally equivalent to WDM
+  	drivers (featured and <span class=SpellE>toastmon</span>). <u>There is no bus
+  	driver sample in UMDF because UMDF doesn’t support writing bus drivers.
+  	&nbsp;</u>Please read the Windows Driver Foundation book to learn the difference
+  	between KMDF and UMDF and how to decide which framework to use. Please read
+  	the <a href="umdf/func/WUDFToaster.htm">toaster.htm</a> file to learn more
+  	about the drivers under this folder.</p></td>
  </tr>
  <tr style='mso-yfti-irow:3'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -756,16 +767,23 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'><span class=SpellE>ClassInstaller</span></p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>This folder contains a sample code to show how to write a class
-  installer DLL. This DLL provides a custom icon for “Toaster” class and
-  provides a customer property sheet in the device manager to change the
-  friendly name of the device. This DLL is referred in the INF file used to
-  install driver for toaster device.</p>
-  </td>
+  installer DLL.</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'> This DLL provides a custom icon for “Toaster” class and
+  	<u>provides a customer property sheet in the device manager</u> to change the
+  	friendly name of the device. This DLL is referred in the INF file used to
+  	install driver for toaster device.</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'><img src="Toaster with friendly name.png" alt="D:\w\personal\chj\viewsrc\wdk7-samples\toaster\Toaster with friendly name" width="667" height="229" longdesc="Toaster with friendly name.png"></p></td>
  </tr>
  <tr style='mso-yfti-irow:4'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -773,16 +791,19 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'><span class=SpellE>CoInstaller</span></p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>This folder contains a sample code to show how to write a <span
-  class=SpellE>coinstaller</span> DLL. This DLL shows how to create a friendly
-  name based on the instance number of the device and also how parse custom
-  section in the INF. This DLL is referred in the INF file used to install
-  driver for toaster device.</p>
-  </td>
+  class=SpellE>coinstaller</span> DLL. </p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>&nbsp;</p>
+  <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+  normal'>This DLL shows how to create a friendly
+  	name based on the instance number of the device and also how parse custom
+  	section in the INF. This DLL is referred in the INF file used to install
+  	driver for toaster device.</p></td>
  </tr>
  <tr style='mso-yfti-irow:5'>
   <td width=252 valign=top style='width:1.75in;border:solid black 1.0pt;
@@ -790,7 +811,7 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'><span class=SpellE>Devicemetadatapackage</span></p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
@@ -874,7 +895,7 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'>Exe</p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
@@ -923,7 +944,7 @@ what’s contained in each of the top-level directories.</p>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
   normal'><span class=SpellE>ToastPkg</span> – Toaster Installation Package</p>
   </td>
-  <td width=668 valign=top style='width:333.9pt;border-top:none;border-left:
+  <td valign=top style='border-top:none;border-left:
   none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
   padding:0in 5.4pt 0in 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
