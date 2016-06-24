@@ -1154,6 +1154,10 @@ ul
 	{margin-bottom:0in;}
 .style1 {color: #0000FF}
 .style2 {color: #660000}
+.style3 {
+	font-size: 12pt;
+	font-style: italic;
+}
 -->
 </style>
 <!--[if gte mso 10]>
@@ -1678,7 +1682,7 @@ font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 "Verdana","sans-serif"'>6.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-‘System Devices’ and then click Next. NOTE: This might take a few minutes. </span></p>
+<u>‘System Devices’</u> and then click Next. NOTE: This might take a few minutes. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>7.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1748,7 +1752,7 @@ and then click next. </span></p>
 "Verdana","sans-serif"'>6.</span><span style='font-size:7.0pt;line-height:115%;
 font-family:"Times New Roman","serif"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Select
-‘System Devices’, then click <span class=GramE>Next</span>. </span></p>
+<u>‘System Devices’</u>, then click <span class=GramE>Next</span>. </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
 "Verdana","sans-serif"'>7.</span><span style='font-size:7.0pt;line-height:115%;
@@ -1934,26 +1938,33 @@ mso-fareast-font-family:"Times New Roman"'>Filters</span><span
 style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You
-can install device filter drivers by specifying LowerFilters or UpperFilters to
-the Hardware registry key (HKLM\ \SYSTEM\CurrentControlSet\Enum) for the
-device; and class filters by specifying them to the Software registry key
-(HKLM\SYSTEM\CurrentControlSet\Control\Class\) for the device class. </span></p>
-
+can install device filter drivers by specifying LowerFilters or UpperFilters </span></p>
+<ul>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>to
+		the Hardware registry key (HKLM\SYSTEM\CurrentControlSet\Enum) for the
+		device; </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>and class filters by specifying them to the Software registry key
+		(HKLM\SYSTEM\CurrentControlSet\Control\Class\) for the device class. </span></li>
+</ul>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Because
 this is an MULTI_SZ string, you can specify more than one filter for the device
 or class. If you specify more than one, the load order is in the order they are
 listed – the filter at the end of list is the topmost driver in the stack, and
 so on. However filter drivers should not be written to rely on this order,
 because the load order can change and other filter drivers may or may not be
-there in the group. You can install device specific filters by using a [.HW]
-section that specifies AddReg section, and class specific filters by specifying
-AddReg section from the base install section in your INF file. The <i>busf.inf</i>
-and <i>toasterf.inf</i> show how to do that. </span></p>
-
+there in the group. </span></p>
+<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You can install </span></p>
+<ul>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>device specific filters by using a [.HW]
+		section that specifies AddReg section, </span></li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>and class specific filters by specifying
+		AddReg section from the base install section in your INF file. </span></li>
+</ul>
+<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>The <span class="style3">busf.inf</span> and <span class="style3">toasterf.inf</span> show how to do that. (文件名后缀 f 暗示 filter)</span></p>
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>The
-<i>filter.inf</i> file is a special .inf file that enables you to install a
-filter driver for the toaster device after it has been installed and
-enumerated. To install an upper device filter for a toaster device on Windows
+<i><u>filter.inf</u></i> file is a special .inf file that enables you to install a
+filter driver for the toaster device <u>after it has been installed and
+enumerated</u>. To install an upper device filter for a toaster device on Windows
 2000: </span></p>
 
 <p class=MsoNormal><span style='font-size:10.0pt;line-height:115%;font-family:
@@ -2014,21 +2025,26 @@ depending on whether <span class=GramE>it’s</span> device instance specific,
 driver specific or interface specific. </span></p>
 
 <p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You
-can store device-specific configuration information under the Hardware key of
-that particular device instance
-(HKLM\SYSTEM\CCS\Enum\&lt;DeviceId&gt;\&lt;VendorId&gt;\&lt;InstanceId&gt;\Device
-Parameters) and driver-specific information under the Software key
-(HKLM\SYSTEM\CCS\Control\Class\&lt;GUID&gt;\&lt;driver-instance-id&gt;\ Device
-Parameters) of the driver by using <b>IoOpenDeviceRegistryKey</b> function. </span></p>
-
-<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>You
-can store interface-specific information under the device-interface key
+can store </span></p>
+<ul>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>device-specific configuration information under the Hardware key of
+		that particular device instance
+		(HKLM\SYSTEM\CCS\Enum\&lt;DeviceId&gt;\&lt;VendorId&gt;\&lt;InstanceId&gt;\Device
+		Parameters)</span><br>
+		<br>
+	</li>
+	<li> driver-specific information under the Software key<span class="style1">(也叫 Driver-key)</span>		(HKLM\SYSTEM\CCS\Control\Class\&lt;GUID&gt;\&lt;driver-instance-id&gt;\Device
+		Parameters) of the driver by using <b>IoOpenDeviceRegistryKey</b> function. <br>
+		<br>
+	</li>
+	<li><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>interface-specific information under the device-interface key
 (HKLM\SYSTEM\CurrentControlSet\Control\DeviceClasses<span class=GramE>\{</span>GUID}\&lt;SymbolicLinkName&gt;\Device
 Parameters) by calling <b>IopenDeviceInterfaceRegistryKey</b> with the symbolic
-link name of the device interface. Both of these functions return the handle to
-the <b>Device Parameters</b> subkey. For legacy support, you can continue to
-store information under the Services key. </span></p>
-
+link name of the device interface. </span></li>
+</ul>
+<p><span style='font-size:10.0pt;line-height:115%;font-family:"Verdana","sans-serif"'>Both of these functions return the handle to
+	the <b>Device Parameters</b> subkey. For legacy support, you can continue to
+	store information under the Services key. </span></p>
 <h3><a name=power></a><span style='font-family:"Verdana","sans-serif";
 mso-fareast-font-family:"Times New Roman"'>Power Management</span><span
 style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
