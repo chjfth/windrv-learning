@@ -186,15 +186,12 @@ typedef struct _TOASTER_BUS_WMI_STD_DATA {
 //
 // A common header for the device extensions of the PDOs and FDO
 //
-
 typedef struct _COMMON_DEVICE_DATA
 {
     // A back pointer to the device object for which this is the extension
-
     PDEVICE_OBJECT  Self;
 
     // This flag helps distinguish between PDO and FDO
-	//
     BOOLEAN         IsFDO;
 
     // We track the state of the device with every PnP Irp
@@ -279,49 +276,39 @@ typedef struct _PDO_DEVICE_DATA
 //
 // The device extension of the bus itself.  From whence the PDO's are born.
 //
-
 typedef struct _FDO_DEVICE_DATA
 {
     #pragma warning(suppress:4201)
     COMMON_DEVICE_DATA;
 
     PDEVICE_OBJECT  UnderlyingPDO;
-
+	//
     // The underlying bus PDO and the actual device object to which our
     // FDO is attached
 
     PDEVICE_OBJECT  NextLowerDriver;
 
     // List of PDOs created so far
-
     LIST_ENTRY      ListOfPDOs;
 
     // The PDOs currently enumerated.
-
     ULONG           NumPDOs;
 
     // A synchronization for access to the device extension.
-
     FAST_MUTEX      Mutex;
 
-    //
     // The number of IRPs sent from the bus to the underlying device object
     //
-
     ULONG           OutstandingIO; // Biased to 1
 
-    //
     // On remove device plug & play request we must wait until all outstanding
     // requests have been completed before we can actually delete the device
     // object. This event is when the Outstanding IO count goes to zero
     //
-
     KEVENT          RemoveEvent;
 
-    //
     // This event is set when the Outstanding IO count goes to 1.
     //
-
     KEVENT          StopEvent;
 
     // The name returned from IoRegisterDeviceInterface,
@@ -329,10 +316,8 @@ typedef struct _FDO_DEVICE_DATA
 
     UNICODE_STRING      InterfaceName;
 
-    //
     // WMI Information
     //
-
     WMILIB_CONTEXT         WmiLibInfo;
 
     TOASTER_BUS_WMI_STD_DATA   StdToasterBusData;
