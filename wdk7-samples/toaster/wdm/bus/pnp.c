@@ -55,18 +55,14 @@ Bus_AddDevice(
     )
 /*++
 Routine Description.
-
     Our Toaster bus has been found.  Attach our FDO to it.
     Allocate any required resources.  Set things up.
     And be prepared for the ``start device''
 
 Arguments:
-
     DriverObject - pointer to driver object.
-
     PhysicalDeviceObject  - Device object representing the bus to which we
                             will attach a new FDO.
-
 --*/
 {
     NTSTATUS            status;

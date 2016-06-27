@@ -53,23 +53,16 @@ DriverEntry (
     )
 /*++
 Routine Description:
-
     Initialize the driver dispatch table.
 
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
-
 Return Value:
-
   NT Status Code
-
 --*/
 {
-
     Bus_KdPrint_Def (BUS_DBG_SS_TRACE, ("Driver Entry \n"));
 
     //
@@ -92,7 +85,6 @@ Return Value:
 
     RtlCopyUnicodeString(&Globals.RegistryPath, RegistryPath);
 
-    //
     // Set entry points into the driver
     //
     DriverObject->MajorFunction [IRP_MJ_CREATE] =
@@ -131,9 +123,7 @@ Arguments:
    Irp - pointer to an I/O Request Packet.
 
 Return Value:
-
    NT status code
-
 --*/
 {
     PIO_STACK_LOCATION  irpStack;
@@ -329,30 +319,22 @@ Routine Description:
     Clean up everything we did in driver entry.
 
 Arguments:
-
    DriverObject - pointer to this driverObject.
 
-
 Return Value:
-
 --*/
 {
     UNREFERENCED_PARAMETER(DriverObject);
-
     PAGED_CODE ();
 
     Bus_KdPrint_Def (BUS_DBG_SS_TRACE, ("Unload\n"));
 
-    //
     // All the device objects should be gone.
     //
-
     ASSERT (NULL == DriverObject->DeviceObject);
 
-    //
     // Here we free all the resources allocated in the DriverEntry
     //
-
     if (Globals.RegistryPath.Buffer)
         ExFreePool(Globals.RegistryPath.Buffer);
 
@@ -367,29 +349,22 @@ Bus_IncIoCount (
 /*++
 
 Routine Description:
-
     This routine increments the number of requests the device receives
 
-
 Arguments:
-
     FdoData - pointer to the FDO device extension.
 
 Return Value:
-
     VOID
-
 --*/
-
 {
 
     LONG            result;
-
     result = InterlockedIncrement((LONG *)&FdoData->OutstandingIO);
 
     ASSERT(result > 0);
-    //
-    // Need to clear StopEvent (when OutstandingIO bumps from 1 to 2)
+
+	// Need to clear StopEvent (when OutstandingIO bumps from 1 to 2)
     //
     if (result == 2) {
         //
