@@ -194,27 +194,22 @@ typedef struct _COMMON_DEVICE_DATA
     PDEVICE_OBJECT  Self;
 
     // This flag helps distinguish between PDO and FDO
-
+	//
     BOOLEAN         IsFDO;
 
     // We track the state of the device with every PnP Irp
     // that affects the device through these two variables.
-
+	//
     DEVICE_PNP_STATE DevicePnPState;
-
     DEVICE_PNP_STATE PreviousPnPState;
-
 
     ULONG           DebugLevel;
 
     // Stores the current system power state
-
     SYSTEM_POWER_STATE  SystemPowerState;
 
     // Stores current device power state
-
     DEVICE_POWER_STATE  DevicePowerState;
-
 
 } COMMON_DEVICE_DATA, *PCOMMON_DEVICE_DATA;
 
@@ -225,7 +220,6 @@ typedef struct _COMMON_DEVICE_DATA
 
 typedef struct _PDO_DEVICE_DATA
 {
-
     #pragma warning(suppress:4201)
     COMMON_DEVICE_DATA;
 
@@ -239,12 +233,10 @@ typedef struct _PDO_DEVICE_DATA
     __drv_aliasesMem
     PWCHAR      HardwareIDs;
 
-    // Unique serail number of the device on the bus
-
+    // Unique serial number of the device on the bus
     ULONG SerialNo;
 
     // Link point to hold all the PDOs for a single bus together
-
     LIST_ENTRY  Link;
 
     //
@@ -253,7 +245,6 @@ typedef struct _PDO_DEVICE_DATA
     // We will delete the PDO in IRP_MN_REMOVE only after we have reported
     // to the Plug and Play manager that it's missing.
     //
-
     BOOLEAN     Present;
     BOOLEAN     ReportedMissing;
     UCHAR       Reserved[2]; // for 4 byte alignment
@@ -345,7 +336,6 @@ typedef struct _FDO_DEVICE_DATA
     WMILIB_CONTEXT         WmiLibInfo;
 
     TOASTER_BUS_WMI_STD_DATA   StdToasterBusData;
-
 
 } FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
 

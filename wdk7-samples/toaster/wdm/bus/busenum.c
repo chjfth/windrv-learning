@@ -32,7 +32,6 @@ Revision History:
 //
 // Global Debug Level
 //
-
 ULONG BusEnumDebugLevel = BUS_DEFAULT_DEBUG_OUTPUT_LEVEL;
 
 
@@ -149,10 +148,8 @@ Return Value:
 
     Bus_IncIoCount (fdoData);
 
-    //
     // Check to see whether the bus is removed
     //
-
     if (fdoData->DevicePnPState == Deleted) {
         Irp->IoStatus.Status = status = STATUS_NO_SUCH_DEVICE;
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
@@ -249,19 +246,18 @@ Return Value:
     switch (irpStack->Parameters.DeviceIoControl.IoControlCode) {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
         if (
-            //
             // Make sure it has at least two nulls and the size
             // field is set to the declared size of the struct
             //
             ((sizeof (BUSENUM_PLUGIN_HARDWARE) + sizeof(UNICODE_NULL) * 2) <=
              inlen) &&
 
-            //
             // The size field should be set to the sizeof the struct as declared
             // and *not* the size of the struct plus the multi_sz
             //
             (sizeof (BUSENUM_PLUGIN_HARDWARE) ==
-             ((PBUSENUM_PLUGIN_HARDWARE) buffer)->Size)) {
+             ((PBUSENUM_PLUGIN_HARDWARE) buffer)->Size)) 
+		{
 
             Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("PlugIn called\n"));
 
@@ -293,7 +289,6 @@ Return Value:
             Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("Eject called\n"));
 
             status= Bus_EjectDevice((PBUSENUM_EJECT_HARDWARE)buffer, fdoData);
-
         }
         break;
 
@@ -358,7 +353,6 @@ Return Value:
     VOID
 --*/
 {
-
     LONG            result;
     result = InterlockedIncrement((LONG *)&FdoData->OutstandingIO);
 
@@ -382,22 +376,16 @@ Bus_DecIoCount(
     )
 
 /*++
-
 Routine Description:
-
     This routine decrements as it complete the request it receives
 
 Arguments:
-
     FdoData - pointer to the FDO device extension.
 
 Return Value:
-
     VOID
-
 --*/
 {
-
     LONG            result;
 
     result = InterlockedDecrement((LONG *)&FdoData->OutstandingIO);
@@ -413,24 +401,18 @@ Return Value:
         // will appear between the decrement and the moment when
         // the value is actually used.
         //
-
         KeSetEvent (&FdoData->StopEvent, IO_NO_INCREMENT, FALSE);
-
     }
 
     if (result == 0) {
 
-        //
         // The count is 1-biased, so it can be zero only if an
         // extra decrement is done when a remove Irp is received
         //
-
         ASSERT(FdoData->DevicePnPState == Deleted);
 
-        //
         // Set the remove event, so the device object can be deleted
         //
-
         KeSetEvent (&FdoData->RemoveEvent, IO_NO_INCREMENT, FALSE);
 
     }
