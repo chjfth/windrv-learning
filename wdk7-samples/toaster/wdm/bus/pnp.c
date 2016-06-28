@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
@@ -656,7 +655,7 @@ Routine Description:
                 //
                 // There is a device relations struct already present and we have
                 // nothing to add to it, so just call IoSkip and IoCall
-                //
+                // 
                 ExReleaseFastMutex (&DeviceData->Mutex);
                 break;
             }
@@ -670,17 +669,32 @@ Routine Description:
         numPdosPresent = 0;
         for (entry = DeviceData->ListOfPDOs.Flink;
              entry != &DeviceData->ListOfPDOs;
-             entry = entry->Flink) {
+             entry = entry->Flink) 
+		{
             pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
             if (pdoData->Present)
                 numPdosPresent++;
         }
 
-        // Need to allocate a new relations structure and add our
-        // PDOs to it.
+        // Need to allocate a new relations structure and add our PDOs to it.
         //
         length = sizeof(DEVICE_RELATIONS) +
                 ((numPdosPresent + prevcount) * sizeof (PDEVICE_OBJECT)) -1;
+		//
+		// Chj Q: 你 +prevcount 是什么意思? numPdosPresent 不就是当前的 PDO 数目吗?
+		// 另外, 末尾那个 -1 好像写错了, 应该是先减一再 *sizeof(PDEVICE_OBJECT) .
+		// A: oldRelations 不是指"本次拔插变动之前"的 bus-relation, 而是"Dstack中上一层driver"
+		// (说白了就是一个 upper-filter driver)已经准备好的一份 bus-relation 信息;
+		// prevcount 意思也不是"本次变动之前子设备数", 而是"上一层driver已经准备好的子设备数";
+		// 因此, 我们自己这层准备的子设备数要追加进去. 当然, oldRelation 和 prevcount 取名不佳.
+		//
+		// MSDN: IRP_MN_QUERY_DEVICE_RELATIONS -> BusRelations 段落如此说:
+		//
+		// The bus driver should check whether another driver already created a 
+		// DEVICE_RELATIONS structure for this IRP. If so, the bus driver must 
+		// *add* to the existing information. 
+		//
+		// --这套处理确实够繁琐的.
 
         relations = (PDEVICE_RELATIONS) ExAllocatePoolWithTag (PagedPool,
                                         length, BUSENUM_POOL_TAG);
@@ -695,7 +709,6 @@ Routine Description:
             return status;
         }
 
-        //
         // Copy in the device objects so far
         //
         if (prevcount) {
@@ -705,21 +718,20 @@ Routine Description:
 
         relations->Count = prevcount + numPdosPresent;
 
-        //
         // For each PDO present on this bus add a pointer to the device relations
         // buffer, being sure to take out a reference to that object.
         // The Plug & Play system will dereference the object when it is done
         // with it and free the device relations buffer.
         //
-
         for (entry = DeviceData->ListOfPDOs.Flink;
              entry != &DeviceData->ListOfPDOs;
-             entry = entry->Flink) {
-
+             entry = entry->Flink)
+		{
             pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
             if (pdoData->Present) {
                 relations->Objects[prevcount] = pdoData->Self;
                 ObReferenceObject (pdoData->Self);
+					// Chj Q: 此处到底为什么要增加 refcount ?
                 prevcount++;
             } else {
                 pdoData->ReportedMissing = TRUE;
@@ -727,12 +739,13 @@ Routine Description:
         }
 
         Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
-                           ("\t#PDOS present = %d\n\t#PDOs reported = %d\n",
+                           ("\t#PDOs present = %d\n\t#PDOs reported = %d\n",
                              DeviceData->NumPDOs, relations->Count));
 
-        //
         // Replace the relations structure in the IRP with the new one.
-        // Chj Q: oldRelations 这块内存是之前什么时候分配的？感觉突然冒出来一般。
+        // Chj: oldRelations 这块内存可以肯定是"Dstack中上一级driver"分配的, 用作 
+		// IRP_MN_QUERY_DEVICE_RELATIONS 的返回值. 由于本层 driver 已经分配了一个新的
+		// DEVICE_RELATIONS 内存块来替代 oldRelations 作为返回值, 因此 oldRelations 可以释放了.
         if (oldRelations) {
             ExFreePool (oldRelations);
         }
@@ -740,7 +753,6 @@ Routine Description:
 
         ExReleaseFastMutex (&DeviceData->Mutex);
 
-        //
         // Set up and pass the IRP further down the stack
         //
         Irp->IoStatus.Status = STATUS_SUCCESS;
@@ -749,7 +761,6 @@ Routine Description:
     default:
         // In the default case we merely call the next driver.
         // We must not modify Irp->IoStatus.Status or complete the IRP.
-        //
         break;
 	}}
 
