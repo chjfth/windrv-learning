@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "busenum", "wdm\bus_vs2010\bus_vs2010.vcxproj", "{8DFA3AFC-7522-4FEA-B604-44CEB4AEA350}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster", "wdm\func\incomplete1_vs2010\incomplete1_vs2010.vcxproj", "{123F5DA6-8249-4143-AAA0-984EB2A38A13}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster_wdm_incomplete1", "wdm\func\incomplete1_vs2010\incomplete1_vs2010.vcxproj", "{123F5DA6-8249-4143-AAA0-984EB2A38A13}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster_wdm_incomplete2", "wdm\func\incomplete2_vs2010\incomplete2_vs2010.vcxproj", "{123F5DA6-8249-4143-AAA0-984EB2A30002}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,14 @@ Global
 		{123F5DA6-8249-4143-AAA0-984EB2A38A13}.Release|Win32.Build.0 = Release|Win32
 		{123F5DA6-8249-4143-AAA0-984EB2A38A13}.Release|x64.ActiveCfg = Release|x64
 		{123F5DA6-8249-4143-AAA0-984EB2A38A13}.Release|x64.Build.0 = Release|x64
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Debug|Win32.ActiveCfg = Debug|Win32
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Debug|Win32.Build.0 = Debug|Win32
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Debug|x64.ActiveCfg = Debug|x64
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Debug|x64.Build.0 = Debug|x64
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Release|Win32.ActiveCfg = Release|Win32
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Release|Win32.Build.0 = Release|Win32
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Release|x64.ActiveCfg = Release|x64
+		{123F5DA6-8249-4143-AAA0-984EB2A30002}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -75,11 +75,9 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 Updated Routine Description:
     The dispatch routines implemented in this stage of the function driver are
     connected to the MajorFunction array member of the DriverObject parameter.
-
 --*/
 {
     ToasterDebugPrint(TRACE, "Entered DriverEntry of "_DRIVER_NAME_"  version "
@@ -116,7 +114,6 @@ ToasterAddDevice(
     __in PDEVICE_OBJECT PhysicalDeviceObject
     )
 /*++
-
 Updated Routine Description:
     ToasterAddDevice initializes additional members of the device extension,
     including those for the driver-managed IRP queue. The driver-managed IRP queue
