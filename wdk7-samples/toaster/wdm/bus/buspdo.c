@@ -201,15 +201,12 @@ Routine Description:
         break;
 
     case IRP_MN_QUERY_ID:
-
         // Query the IDs of the device
-
         Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
                 ("\tQueryId Type: %s\n",
                 DbgDeviceIDString(IrpStack->Parameters.QueryId.IdType)));
 
         status = Bus_PDO_QueryDeviceId(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_DEVICE_RELATIONS:
@@ -219,43 +216,31 @@ Routine Description:
                     IrpStack->Parameters.QueryDeviceRelations.Type)));
 
         status = Bus_PDO_QueryDeviceRelations(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_DEVICE_TEXT:
-
         status = Bus_PDO_QueryDeviceText(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_RESOURCES:
-
         status = Bus_PDO_QueryResources(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_RESOURCE_REQUIREMENTS:
-
         status = Bus_PDO_QueryResourceRequirements(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_BUS_INFORMATION:
-
         status = Bus_PDO_QueryBusInformation(DeviceData, Irp);
-
         break;
 
     case IRP_MN_DEVICE_USAGE_NOTIFICATION:
-
-        //
         // OPTIONAL for bus drivers.
         // This bus drivers any of the bus's descendants
         // (child device, child of a child device, etc.) do not
         // contain a memory file namely paging file, dump file,
         // or hibernation file. So we  fail this Irp.
         //
-
         status = STATUS_UNSUCCESSFUL;
         break;
 
@@ -350,7 +335,6 @@ Bus_PDO_QueryDeviceCaps(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
     When a device is enumerated, but before the function and
     filter drivers are loaded for the device, the PnP Manager
@@ -508,9 +492,7 @@ Bus_PDO_QueryDeviceId(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
-
     Bus drivers must handle BusQueryDeviceID requests for their
     child devices (child PDOs). Bus drivers can handle requests
     BusQueryHardwareIDs, BusQueryCompatibleIDs, and BusQueryInstanceID
@@ -523,16 +505,12 @@ Routine Description:
     Bus drivers should be prepared to handle this IRP for a child device
     immediately after the device is enumerated.
 
-
 Arguments:
-
     DeviceData - Pointer to the PDO's device extension.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
     PIO_STACK_LOCATION      stack;
@@ -540,21 +518,16 @@ Return Value:
     ULONG                   length;
     NTSTATUS                status = STATUS_SUCCESS;
     ULONG_PTR               result;
-
     PAGED_CODE ();
 
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    switch (stack->Parameters.QueryId.IdType) {
-
+    switch (stack->Parameters.QueryId.IdType) 
+	{{
     case BusQueryDeviceID:
-
-        //
         // DeviceID is unique string to identify a device.
-        // This can be the same as the hardware ids (which requires a multi
-        // sz).
+        // This can be the same as the hardware ids (which requires a multisz).
         //
-
         buffer = DeviceData->HardwareIDs;
 
         while (*(buffer++)) {
@@ -566,9 +539,7 @@ Return Value:
         status = RtlULongPtrSub((ULONG_PTR)buffer, (ULONG_PTR)DeviceData->HardwareIDs, &result);
         if (!NT_SUCCESS(status)) {
            break;
-        }
-
-
+		}
         length = (ULONG)result;
 
         buffer = ExAllocatePoolWithTag (PagedPool, length, BUSENUM_POOL_TAG);
@@ -583,7 +554,6 @@ Return Value:
         break;
 
     case BusQueryInstanceID:
-        //
         // total length = number (10 digits to be safe (2^32)) + null wide char
         //
         length = 11 * sizeof(WCHAR);
@@ -601,12 +571,9 @@ Return Value:
 
 
     case BusQueryHardwareIDs:
-
-        //
         // A device has at least one hardware id.
         // In a list of hardware IDs (multi_sz string) for a device,
         // DeviceId is the most specific and should be first in the list.
-        //
 
         buffer = DeviceData->HardwareIDs;
 
@@ -620,7 +587,6 @@ Return Value:
         if (!NT_SUCCESS(status)) {
            break;
         }
-
         length = (ULONG)result;
 
         buffer = ExAllocatePoolWithTag (PagedPool, length, BUSENUM_POOL_TAG);
@@ -633,13 +599,9 @@ Return Value:
         Irp->IoStatus.Information = (ULONG_PTR) buffer;
         break;
 
-
     case BusQueryCompatibleIDs:
-
-        //
         // The generic ids for installation of this pdo.
         //
-
         length = BUSENUM_COMPATIBLE_IDS_LENGTH;
         buffer = ExAllocatePoolWithTag (PagedPool, length, BUSENUM_POOL_TAG);
         if (!buffer) {
@@ -651,12 +613,10 @@ Return Value:
         break;
 
     default:
-
         status = Irp->IoStatus.Status;
 
-    }
+	}}
     return status;
-
 }
 
 NTSTATUS
@@ -947,9 +907,7 @@ Bus_PDO_QueryDeviceRelations(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
-
     The PnP Manager sends this IRP to gather information about
     devices with a relationship to the specified device.
     Bus drivers must handle this request for TargetDeviceRelation
@@ -968,27 +926,24 @@ Routine Description:
     removes the reference when appropriate.
 
 Arguments:
-
     DeviceData - Pointer to the PDO's device extension.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
+	// Chj: ÈÔ¾ÉºÜºıÍ¿£¡
 
     PIO_STACK_LOCATION   stack;
     PDEVICE_RELATIONS deviceRelations;
     NTSTATUS status;
-
     PAGED_CODE ();
 
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    switch (stack->Parameters.QueryDeviceRelations.Type) {
-
+    switch (stack->Parameters.QueryDeviceRelations.Type) 
+	{{
     case TargetDeviceRelation:
 
         deviceRelations = (PDEVICE_RELATIONS) Irp->IoStatus.Information;
@@ -1029,7 +984,7 @@ Return Value:
     case RemovalRelations: // // optional for PDO
     default:
         status = Irp->IoStatus.Status;
-    }
+	}}
 
     return status;
 }

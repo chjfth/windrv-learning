@@ -258,12 +258,12 @@ Bus_PnP (
 /*++
 Routine Description:
     Handles PnP Irps sent to both FDO and child PDOs.
+
 Arguments:
     DeviceObject - Pointer to deviceobject
     Irp          - Pointer to a PnP Irp.
 
 Return Value:
-
     NT Status is returned.
 --*/
 {
@@ -330,9 +330,7 @@ Bus_FDO_PnP (
     )
 /*++
 Routine Description:
-
-    Handle requests from the Plug & Play system for the BUS itself
-
+    Handle requests from the Plug & Play system for the BUS itself.
 --*/
 {
     NTSTATUS            status;
@@ -345,7 +343,8 @@ Routine Description:
 
     Bus_IncIoCount (DeviceData);
 
-    switch (IrpStack->MinorFunction) {
+    switch (IrpStack->MinorFunction) 
+	{{
 
     case IRP_MN_START_DEVICE:
 
@@ -634,13 +633,10 @@ Routine Description:
                     IrpStack->Parameters.QueryDeviceRelations.Type)));
 
         if (BusRelations != IrpStack->Parameters.QueryDeviceRelations.Type) {
-            //
             // We don't support any other Device Relations
-            //
             break;
         }
 
-        //
         // Tell the plug and play system about all the PDOs.
         //
         // There might also be device relations below and above this FDO,
@@ -669,7 +665,6 @@ Routine Description:
             prevcount = 0;
         }
 
-        //
         // Calculate the number of PDOs actually present on the bus
         //
         numPdosPresent = 0;
@@ -681,11 +676,9 @@ Routine Description:
                 numPdosPresent++;
         }
 
-        //
         // Need to allocate a new relations structure and add our
         // PDOs to it.
         //
-
         length = sizeof(DEVICE_RELATIONS) +
                 ((numPdosPresent + prevcount) * sizeof (PDEVICE_OBJECT)) -1;
 
@@ -693,7 +686,6 @@ Routine Description:
                                         length, BUSENUM_POOL_TAG);
 
         if (NULL == relations) {
-            //
             // Fail the IRP
             //
             ExReleaseFastMutex (&DeviceData->Mutex);
@@ -701,7 +693,6 @@ Routine Description:
             IoCompleteRequest (Irp, IO_NO_INCREMENT);
             Bus_DecIoCount (DeviceData);
             return status;
-
         }
 
         //
@@ -740,9 +731,8 @@ Routine Description:
                              DeviceData->NumPDOs, relations->Count));
 
         //
-        // Replace the relations structure in the IRP with the new
-        // one.
-        //
+        // Replace the relations structure in the IRP with the new one.
+        // Chj Q: oldRelations 这块内存是之前什么时候分配的？感觉突然冒出来一般。
         if (oldRelations) {
             ExFreePool (oldRelations);
         }
@@ -757,14 +747,11 @@ Routine Description:
         break;
 
     default:
-
-        //
         // In the default case we merely call the next driver.
         // We must not modify Irp->IoStatus.Status or complete the IRP.
         //
-
         break;
-    }
+	}}
 
     IoSkipCurrentIrpStackLocation (Irp);
     status = IoCallDriver (DeviceData->NextLowerDriver, Irp);
