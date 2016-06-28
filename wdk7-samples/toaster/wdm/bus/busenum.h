@@ -323,7 +323,7 @@ typedef struct _FDO_DEVICE_DATA
 
 } FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
 
-#define FDO_FROM_PDO(pdoData) \
+#define ParentFDO_FROM_PDO(pdoData) \
           ((PFDO_DEVICE_DATA) (pdoData)->ParentFdo->DeviceExtension)
 
 #define INITIALIZE_PNP_STATE(_Data_)    \

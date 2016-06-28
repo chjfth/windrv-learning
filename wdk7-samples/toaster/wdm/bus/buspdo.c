@@ -163,7 +163,7 @@ Routine Description:
             // is removed.
             //
             if (DeviceData->ParentFdo) {
-                fdoData = FDO_FROM_PDO(DeviceData);
+                fdoData = ParentFDO_FROM_PDO(DeviceData);
                 ExAcquireFastMutex (&fdoData->Mutex);
                 RemoveEntryList (&DeviceData->Link);
                 fdoData->NumPDOs--;
@@ -388,19 +388,18 @@ Return Value:
        return STATUS_UNSUCCESSFUL;
     }
 
-    //
     // Get the device capabilities of the parent
     //
     status = Bus_GetDeviceCapabilities(
-        FDO_FROM_PDO(DeviceData)->NextLowerDriver, &parentCapabilities);
-    if (!NT_SUCCESS(status)) {
+        ParentFDO_FROM_PDO(DeviceData)->NextLowerDriver, &parentCapabilities);
 
+    if (!NT_SUCCESS(status)) {
         Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
             ("\tQueryDeviceCaps failed\n"));
         return status;
-
     }
 
+	// Chj: 本段解释要参考父设备的 devcap 的理由。
     //
     // The entries in the DeviceState array are based on the capabilities
     // of the parent devnode. These entries signify the highest-powered
@@ -422,7 +421,7 @@ Return Value:
 
     //
     // Adjust the caps to what your device supports.
-    // Our device just supports D0 and D3.
+    // Our device just supports D0 and D3. (Chj: 喂，下面明明说可以支持 D1 的)
     //
 
     deviceCapabilities->DeviceState[PowerSystemWorking] = PowerDeviceD0;
@@ -439,66 +438,53 @@ Return Value:
     // We can wake the system from D1
     deviceCapabilities->DeviceWake = PowerDeviceD1;
 
-    //
     // Specifies whether the device hardware supports the D1 and D2
     // power state. Set these bits explicitly.
     //
-
     deviceCapabilities->DeviceD1 = TRUE; // Yes we can
     deviceCapabilities->DeviceD2 = FALSE;
 
-    //
     // Specifies whether the device can respond to an external wake
     // signal while in the D0, D1, D2, and D3 state.
     // Set these bits explicitly.
     //
-
     deviceCapabilities->WakeFromD0 = FALSE;
     deviceCapabilities->WakeFromD1 = TRUE; //Yes we can
     deviceCapabilities->WakeFromD2 = FALSE;
     deviceCapabilities->WakeFromD3 = FALSE;
 
-
     // We have no latencies
-
     deviceCapabilities->D1Latency = 0;
     deviceCapabilities->D2Latency = 0;
     deviceCapabilities->D3Latency = 0;
 
     // Ejection supported
-
     deviceCapabilities->EjectSupported = TRUE;
 
-    //
     // This flag specifies whether the device's hardware is disabled.
     // The PnP Manager only checks this bit right after the device is
     // enumerated. Once the device is started, this bit is ignored.
     //
     deviceCapabilities->HardwareDisabled = FALSE;
 
-    //
-    // Out simulated device can be physically removed.
+    // Our simulated device can be physically removed.
     //
     deviceCapabilities->Removable = TRUE;
-    //
-    // Setting it to TURE prevents the warning dialog from appearing
+
+	// Setting it to TRUE prevents the warning dialog from appearing
     // whenever the device is surprise removed.
     //
     deviceCapabilities->SurpriseRemovalOK = TRUE;
 
     // We don't support system-wide unique IDs.
-
     deviceCapabilities->UniqueID = FALSE;
 
-    //
     // Specify whether the Device Manager should suppress all
     // installation pop-ups except required pop-ups such as
     // "no compatible drivers found."
     //
-
     deviceCapabilities->SilentInstall = FALSE;
 
-    //
     // Specifies an address indicating where the device is located
     // on its underlying bus. The interpretation of this number is
     // bus-specific. If the address is unknown or the bus driver
@@ -506,17 +492,14 @@ Return Value:
     // member at its default value of 0xFFFFFFFF. In this example
     // the location address is same as instance id.
     //
-
     deviceCapabilities->Address = DeviceData->SerialNo;
 
-    //
     // UINumber specifies a number associated with the device that can
     // be displayed in the user interface.
     //
     deviceCapabilities->UINumber = DeviceData->SerialNo;
 
     return STATUS_SUCCESS;
-
 }
 
 NTSTATUS
@@ -1378,7 +1361,6 @@ Return Value:
     //
     irpStack = IoGetNextIrpStackLocation( pnpIrp );
 
-    //
     // Set the top of stack
     //
     RtlZeroMemory( irpStack, sizeof(IO_STACK_LOCATION ) );
@@ -1386,20 +1368,16 @@ Return Value:
     irpStack->MinorFunction = IRP_MN_QUERY_CAPABILITIES;
     irpStack->Parameters.DeviceCapabilities.Capabilities = DeviceCapabilities;
 
-    //
     // Call the driver
     //
     status = IoCallDriver( targetObject, pnpIrp );
     if (status == STATUS_PENDING) {
-
-        //
         // Block until the irp comes back.
         // Important thing to note here is when you allocate
         // the memory for an event in the stack you must do a
         // KernelMode wait instead of UserMode to prevent
         // the stack from getting paged out.
         //
-
         KeWaitForSingleObject(
             &pnpEvent,
             Executive,
@@ -1408,7 +1386,6 @@ Return Value:
             NULL
             );
         status = ioStatus.Status;
-
     }
 
 GetDeviceCapabilitiesExit:
