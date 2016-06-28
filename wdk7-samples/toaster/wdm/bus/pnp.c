@@ -1,38 +1,29 @@
 /*++
 
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     PNP.C
 
 Abstract:
-
     This module handles plug & play calls for the toaster bus controller FDO.
 
 Author:
 
-
 Environment:
-
     kernel mode only
 
 Notes:
 
-
 Revision History:
-
-
 --*/
 
 #include "busenum.h"
 #include <wdmsec.h> // for IoCreateDeviceSecure
-
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, Bus_AddDevice)
@@ -565,7 +556,6 @@ Routine Description:
         //
         // The requestCount is at least one here (is 1-biased)
         //
-
         Bus_DecIoCount (DeviceData);
 
         KeWaitForSingleObject (
@@ -575,12 +565,12 @@ Routine Description:
                 FALSE,
                 NULL);
 
-        //
+		//
         // Typically the system removes all the  children before
         // removing the parent FDO. If for any reason child Pdos are
         // still present we will destroy them explicitly, with one exception -
         // we will not delete the PDOs that are in SurpriseRemovePending state.
-        //
+        // (Chj: 强制删除自己 bus 上的子设备)
 
         ExAcquireFastMutex (&DeviceData->Mutex);
 
@@ -588,8 +578,8 @@ Routine Description:
 
         for(entry = listHead->Flink,nextEntry = entry->Flink;
             entry != listHead;
-            entry = nextEntry,nextEntry = entry->Flink) {
-
+            entry = nextEntry,nextEntry = entry->Flink) 
+		{
             pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
             RemoveEntryList (&pdoData->Link);
             if (SurpriseRemovePending == pdoData->DevicePnPState)
@@ -861,18 +851,14 @@ Bus_RemoveFdo (
     )
 /*++
 Routine Description:
-
     Frees any memory allocated by the FDO and unmap any IO mapped as well.
     This function does not the delete the deviceobject.
 
 Arguments:
-
     DeviceData - Pointer to the FDO's device extension.
 
 Return Value:
-
     NT Status is returned.
-
 --*/
 {
     PAGED_CODE ();
@@ -1011,26 +997,25 @@ Routine Description:
     The Plug & Play subsystem has instructed that this PDO should be removed.
 
     We should therefore
-    - Complete any requests queued in the driver
-    - If the device is still attached to the system,
-    - then complete the request and return.
+    - Complete any requests queued in the driver.
+    
+	- If the device is still attached to the system, then complete the request and return.
+		(Chj: "still attached to the system" 这种情况的处理体现在哪里？)
     - Otherwise, cleanup device specific allocations, memory, events...
-    - Call IoDeleteDevice
+    
+	- Call IoDeleteDevice.
     - Return from the dispatch routine.
 
     Note that if the device is still connected to the bus (IE in this case
     the enum application has not yet told us that the toaster device has disappeared)
     then the PDO must remain around, and must be returned during any
     query Device relations IRPS.
-
 --*/
-
 {
     PAGED_CODE ();
 
     //
     // BusEnum does not queue any irps at this time so we have nothing to do.
-    //
     //
     // Free any resources.
     //

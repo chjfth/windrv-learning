@@ -3,32 +3,25 @@
 Copyright (c) 1990-2000    Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BusPdo.c
 
 Abstract:
-
-    This module handles plug & play calls for the child PDO.
+    This module handles plug & play calls for the *child* PDO.
 
 Author:
 
 Environment:
-
     kernel mode only
 
 Notes:
 
-
 Revision History:
-
-
 --*/
 
 #include "busenum.h"
 
 #define VENDORNAME L"Microsoft_"
 #define MODEL       L"Eliyas_Toaster_"
-
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, Bus_PDO_PnP)
@@ -49,30 +42,24 @@ Bus_PDO_PnP (
     __in PDEVICE_OBJECT       DeviceObject,
     __in PIRP                 Irp,
     __in PIO_STACK_LOCATION   IrpStack,
-    __in PPDO_DEVICE_DATA     DeviceData
+    __in PPDO_DEVICE_DATA     DeviceData	// Chj: PDO user-data for toaster devnode(the child)
     )
 /*++
 Routine Description:
     Handle requests from the Plug & Play system for the devices on the BUS
-
 --*/
 {
     NTSTATUS                status;
-
     PAGED_CODE ();
-
 
     //
     // NB: Because we are a bus enumerator, we have no one to whom we could
-    // defer these irps.  Therefore we do not pass them down but merely
-    // return them.
+    // defer these irps.  Therefore we do not pass them down but merely return them.
     //
 
-    switch (IrpStack->MinorFunction) {
-
+    switch (IrpStack->MinorFunction) 
+	{{
     case IRP_MN_START_DEVICE:
-
-        //
         // Here we do what ever initialization and ``turning on'' that is
         // required to allow others to access this device.
         // Power up the device.
@@ -83,66 +70,46 @@ Routine Description:
         break;
 
     case IRP_MN_STOP_DEVICE:
-
-        //
         // Here we shut down the device and give up and unmap any resources
         // we acquired for the device.
         //
-
         SET_NEW_PNP_STATE(DeviceData, Stopped);
         status = STATUS_SUCCESS;
         break;
 
-
     case IRP_MN_QUERY_STOP_DEVICE:
-
-        //
         // No reason here why we can't stop the device.
         // If there were a reason we should speak now, because answering success
         // here may result in a stop device irp.
         //
-
         SET_NEW_PNP_STATE(DeviceData, StopPending);
         status = STATUS_SUCCESS;
         break;
 
     case IRP_MN_CANCEL_STOP_DEVICE:
-
-        //
         // The stop was canceled.  Whatever state we set, or resources we put
         // on hold in anticipation of the forthcoming STOP device IRP should be
         // put back to normal.  Someone, in the long list of concerned parties,
         // has failed the stop device query.
         //
-
-        //
         // First check to see whether you have received cancel-stop
         // without first receiving a query-stop. This could happen if someone
-        // above us fails a query-stop and passes down the subsequent
-        // cancel-stop.
+        // above us fails a query-stop and passes down the subsequent cancel-stop.
         //
-
         if (StopPending == DeviceData->DevicePnPState)
         {
-            //
             // We did receive a query-stop, so restore.
-            //
             RESTORE_PREVIOUS_PNP_STATE(DeviceData);
         }
         status = STATUS_SUCCESS;// We must not fail this IRP.
         break;
 
     case IRP_MN_QUERY_REMOVE_DEVICE:
-
-        //
         // Check to see whether the device can be removed safely.
-        // If not fail this request. This is the last opportunity
-        // to do so.
+        // If not fail this request. This is the last opportunity to do so.
         //
         if (DeviceData->ToasterInterfaceRefCount){
-            //
-            // Somebody is still using our interface.
-            // We must fail remove.
+            // Somebody is still using our interface. We must fail the remove-request.
             //
             status = STATUS_UNSUCCESSFUL;
             break;
@@ -153,55 +120,41 @@ Routine Description:
         break;
 
     case IRP_MN_CANCEL_REMOVE_DEVICE:
-
-        //
         // Clean up a remove that did not go through.
-        //
-
         //
         // First check to see whether you have received cancel-remove
         // without first receiving a query-remove. This could happen if
-        // someone above us fails a query-remove and passes down the
-        // subsequent cancel-remove.
+        // someone above us fails a query-remove and passes down the subsequent cancel-remove.
         //
-
         if (RemovePending == DeviceData->DevicePnPState)
         {
-            //
             // We did receive a query-remove, so restore.
-            //
             RESTORE_PREVIOUS_PNP_STATE(DeviceData);
         }
         status = STATUS_SUCCESS; // We must not fail this IRP.
         break;
 
     case IRP_MN_SURPRISE_REMOVAL:
-
-        //
         // We should stop all access to the device and relinquish all the
         // resources. Let's just mark that it happened and we will do
         // the cleanup later in IRP_MN_REMOVE_DEVICE.
         //
-
         SET_NEW_PNP_STATE(DeviceData, SurpriseRemovePending);
         status = STATUS_SUCCESS;
         break;
 
     case IRP_MN_REMOVE_DEVICE:
-
-        //
-        // Present is set to true when the pdo is exposed via PlugIn IOCTL.
+        // DeviceData->Present is set to true when the pdo is exposed via PlugIn IOCTL.
         // It is set to FALSE when a UnPlug IOCTL is received.
         // We will delete the PDO only after we have reported to the
         // Plug and Play manager that it's missing.
         //
-
+		
         if (DeviceData->ReportedMissing) {
             PFDO_DEVICE_DATA fdoData;
 
             SET_NEW_PNP_STATE(DeviceData, Deleted);
 
-            //
             // Remove the PDO from the list and decrement the count of PDO.
             // Don't forget to synchronize access to the FDO data.
             // If the parent FDO is deleted before child PDOs, the ParentFdo
@@ -209,7 +162,6 @@ Routine Description:
             // is in a SurpriseRemovePending state when the parent FDO
             // is removed.
             //
-
             if (DeviceData->ParentFdo) {
                 fdoData = FDO_FROM_PDO(DeviceData);
                 ExAcquireFastMutex (&fdoData->Mutex);
@@ -217,38 +169,35 @@ Routine Description:
                 fdoData->NumPDOs--;
                 ExReleaseFastMutex (&fdoData->Mutex);
             }
-            //
+
             // Free up resources associated with PDO and delete it.
-            //
             status = Bus_DestroyPdo(DeviceObject, DeviceData);
             break;
-
         }
+
         if (DeviceData->Present) {
-            //
             // When the device is disabled, the PDO transitions from
             // RemovePending to NotStarted. We shouldn't delete
             // the PDO because a) the device is still present on the bus,
             // b) we haven't reported missing to the PnP manager.
             //
-
             SET_NEW_PNP_STATE(DeviceData, NotStarted);
             status = STATUS_SUCCESS;
+
+			// Chj: Q: Bus_DestroyPdo 不调用就走掉了？ 当前 DeviceData 的 PDO 还有机会被删除吗？
+
         } else {
+			// Chj: 既然这个 else 是死胡同，为什么不将此句调到 if(DeviceData->Present) 之前？
             ASSERT(DeviceData->Present);
             status = STATUS_SUCCESS;
         }
         break;
 
     case IRP_MN_QUERY_CAPABILITIES:
-
-        //
         // Return the capabilities of a device, such as whether the device
         // can be locked or ejected..etc
         //
-
         status = Bus_PDO_QueryDeviceCaps(DeviceData, Irp);
-
         break;
 
     case IRP_MN_QUERY_ID:
@@ -387,7 +336,7 @@ Routine Description:
         status = Irp->IoStatus.Status;
 
         break;
-    }
+	}}
 
     Irp->IoStatus.Status = status;
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
@@ -403,7 +352,6 @@ Bus_PDO_QueryDeviceCaps(
 /*++
 
 Routine Description:
-
     When a device is enumerated, but before the function and
     filter drivers are loaded for the device, the PnP Manager
     sends an IRP_MN_QUERY_CAPABILITIES request to the parent
@@ -412,14 +360,11 @@ Routine Description:
     return it to the PnP Manager.
 
 Arguments:
-
     DeviceData - Pointer to the PDO's device extension.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
 
@@ -432,15 +377,11 @@ Return Value:
 
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    //
     // Get the packet.
-    //
-    deviceCapabilities=stack->Parameters.DeviceCapabilities.Capabilities;
+    deviceCapabilities = stack->Parameters.DeviceCapabilities.Capabilities;
 
-    //
     // Set the capabilities.
     //
-
     if (deviceCapabilities->Version != 1 ||
             deviceCapabilities->Size < sizeof(DEVICE_CAPABILITIES))
     {
@@ -1118,27 +1059,20 @@ Bus_PDO_QueryBusInformation(
 /*++
 
 Routine Description:
-
     The PnP Manager uses this IRP to request the type and
     instance number of a device's parent bus. Bus drivers
     should handle this request for their child devices (PDOs).
 
 Arguments:
-
     DeviceData - Pointer to the PDO's device extension.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
-
     PPNP_BUS_INFORMATION busInfo;
-
     UNREFERENCED_PARAMETER(DeviceData);
-
     PAGED_CODE ();
 
     busInfo = ExAllocatePoolWithTag (PagedPool, sizeof(PNP_BUS_INFORMATION),
@@ -1150,19 +1084,15 @@ Return Value:
 
     busInfo->BusTypeGuid = GUID_DEVCLASS_TOASTER;
 
-    //
     // Some buses have a specific INTERFACE_TYPE value,
     // such as PCMCIABus, PCIBus, or PNPISABus.
     // For other buses, especially newer buses like TOASTER, the bus
     // driver sets this member to PNPBus.
     //
-
     busInfo->LegacyBusType = PNPBus;
 
-    //
     // This is an hypothetical bus
     //
-
     busInfo->BusNumber = 0;
 
     Irp->IoStatus.Information = (ULONG_PTR)busInfo;
@@ -1383,20 +1313,15 @@ Bus_GetDeviceCapabilities(
     __out PDEVICE_CAPABILITIES    DeviceCapabilities
     )
 /*++
-
 Routine Description:
-
     This routine sends the get capabilities irp to the given stack
 
 Arguments:
-
     DeviceObject        A device object in the stack whose capabilities we want
     DeviceCapabilites   Where to store the answer
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     IO_STATUS_BLOCK     ioStatus;

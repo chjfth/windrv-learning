@@ -325,7 +325,7 @@ typedef struct _TOASTER_WMI_STD_DATA {
 // to Deleted and fails any new IRPs as well as fails any IRPs in the driver-managed
 // IRP queue.
 //
-typedef enum _DEVICE_PNP_STATE {
+typedef enum _DEVICE_PNP_STATE_et {
 
     NotStarted = 0,
     Started,
@@ -335,7 +335,7 @@ typedef enum _DEVICE_PNP_STATE {
     SurpriseRemovePending,
     Deleted
 
-} DEVICE_PNP_STATE;
+} DEVICE_PNP_STATE_et;
 
 //
 // The INITIALIZE_PNP_STATE macro initialized both the device extension's
@@ -480,14 +480,14 @@ typedef struct _FDO_DATA
     // ToasterDispatchPnP routines changes the PnP state in response to various PnP
     // IRPs.
     //
-    DEVICE_PNP_STATE    DevicePnPState;
+    DEVICE_PNP_STATE_et    DevicePnPState;
 
     //
     // PreviousPnPState represents the old PnP state of the hardware instance before
     // the ToasterDispatchPnP routine updates the present PnP state in response to
     // various PnP IRPs.
     //
-    DEVICE_PNP_STATE    PreviousPnPState;
+    DEVICE_PNP_STATE_et    PreviousPnPState;
 
     //
     // InterfaceName describes the device interface name returned when

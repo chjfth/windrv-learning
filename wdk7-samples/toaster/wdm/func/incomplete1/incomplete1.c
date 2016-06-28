@@ -1004,7 +1004,6 @@ ToasterSendIrpSynchronously (
     __in PIRP Irp
     )
 /*++
-
 New Routine Description:
     ToasterSendIrpSynchronously passes a PnP IRP down the device stack to be
     processed by the underlying bus driver and does not return to the caller until
@@ -1062,13 +1061,11 @@ Return Value Description:
 
     PAGED_CODE();
 
-    //
     // Initialize a kernel event to an unsignaled state. The event is signaled in
     // ToasterDispatchPnpComplete when the bus driver completes the PnP IRP.
     //
     KeInitializeEvent(&event, NotificationEvent, FALSE);
 
-    //
     // Set up the I/O stack location for the next lower driver (the target device
     // object for the IoCallDriver call). Call IoCopyCurrentIrpStackLocationToNext
     // to copy the parameters from the I/O stack location for the function driver
@@ -1077,7 +1074,6 @@ Return Value Description:
     //
     IoCopyCurrentIrpStackLocationToNext(Irp);
 
-    //
     // Set the system to call the function driver's I/O completion routine,
     // ToasterDispatchPnpComplete, after the bus driver has completed the PnP IRP.
     //
@@ -1092,7 +1088,6 @@ Return Value Description:
                            TRUE
                            );
 
-    //
     // Pass the incoming IRP down the device stack to be processed by the bus driver.
     // The value returned from IoCallDriver indicates whether the bus driver marked
     // the IRP as pending, or completed the IRP.

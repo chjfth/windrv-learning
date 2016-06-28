@@ -136,7 +136,7 @@ extern ULONG BusEnumDebugLevel;
 // diagram in DDK documentation for better understanding.
 //
 
-typedef enum _DEVICE_PNP_STATE {
+typedef enum _DEVICE_PNP_STATE_et {
 
     NotStarted = 0,         // Not started yet
     Started,                // Device has received the START_DEVICE IRP
@@ -147,7 +147,7 @@ typedef enum _DEVICE_PNP_STATE {
     Deleted,                // Device has received the REMOVE_DEVICE IRP
     UnKnown                 // Unknown state
 
-} DEVICE_PNP_STATE;
+} DEVICE_PNP_STATE_et;
 
 
 typedef struct _GLOBALS {
@@ -197,8 +197,8 @@ typedef struct _COMMON_DEVICE_DATA
     // We track the state of the device with every PnP Irp
     // that affects the device through these two variables.
 	//
-    DEVICE_PNP_STATE DevicePnPState;
-    DEVICE_PNP_STATE PreviousPnPState;
+    DEVICE_PNP_STATE_et DevicePnPState;
+    DEVICE_PNP_STATE_et PreviousPnPState;
 
     ULONG           DebugLevel;
 
@@ -221,7 +221,6 @@ typedef struct _PDO_DEVICE_DATA
     COMMON_DEVICE_DATA;
 
     // A back pointer to the bus
-
     PDEVICE_OBJECT  ParentFdo;
 
     // An array of (zero terminated wide character strings).
