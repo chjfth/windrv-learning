@@ -269,57 +269,41 @@ Routine Description:
         break;
 
     case IRP_MN_FILTER_RESOURCE_REQUIREMENTS:
-
-        //
         // OPTIONAL for bus drivers.
         // The PnP Manager sends this IRP to a device
         // stack so filter and function drivers can adjust the
         // resources required by the device, if appropriate.
-        //
-
         //break;
 
     //case IRP_MN_QUERY_PNP_DEVICE_STATE:
-
         //
         // OPTIONAL for bus drivers.
         // The PnP Manager sends this IRP after the drivers for
         // a device return success from the IRP_MN_START_DEVICE
         // request. The PnP Manager also sends this IRP when a
         // driver for the device calls IoInvalidateDeviceState.
-        //
-
         // break;
 
     //case IRP_MN_READ_CONFIG:
     //case IRP_MN_WRITE_CONFIG:
-
         //
         // Bus drivers for buses with configuration space must handle
         // this request for their child devices. Our devices don't
         // have a config space.
-        //
-
         // break;
 
     //case IRP_MN_SET_LOCK:
-
         //
         // Our device is not a lockable device
         // so we don't support this Irp.
-        //
-
         // break;
 
-    default:
-
-        //
-        //Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,("\t Not handled\n"));
+    default: // Chj:PWDM2 p437 列的 *ignore* 那种情形。
+        // Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,("\t Not handled\n"));
         // For PnP requests to the PDO that we do not understand we should
         // return the IRP WITHOUT setting the status or information fields.
         // These fields may have already been set by a filter (eg acpi).
         status = Irp->IoStatus.Status;
-
         break;
 	}}
 
@@ -527,14 +511,16 @@ Return Value:
     case BusQueryDeviceID:
         // DeviceID is unique string to identify a device.
         // This can be the same as the hardware ids (which requires a multisz).
-        //
-        buffer = DeviceData->HardwareIDs;
 
-        while (*(buffer++)) {
-            while (*(buffer++)) {
-                ;
-            }
-        }
+        buffer = DeviceData->HardwareIDs; 
+			// Sample: "{B85B7C50-6A01-11d2-B841-00C04FAD5171}\MsToaster"
+
+		while(*buffer++ || *buffer++); // concise method from LeiWei
+//      while (*(buffer++)) {
+//          while (*(buffer++)) {
+//              ;
+//          }
+//      }
 
         status = RtlULongPtrSub((ULONG_PTR)buffer, (ULONG_PTR)DeviceData->HardwareIDs, &result);
         if (!NT_SUCCESS(status)) {
@@ -575,7 +561,8 @@ Return Value:
         // In a list of hardware IDs (multi_sz string) for a device,
         // DeviceId is the most specific and should be first in the list.
 
-        buffer = DeviceData->HardwareIDs;
+        buffer = DeviceData->HardwareIDs; 
+			// Sample: "{B85B7C50-6A01-11d2-B841-00C04FAD5171}\MsToaster"
 
         while (*(buffer++)) {
             while (*(buffer++)) {
@@ -933,7 +920,8 @@ Return Value:
     NT STATUS
 --*/
 {
-	// Chj: 仍旧很糊涂！
+	// Chj: PWDM2 p443 列出了几乎相同的代码。
+	// PnP manager 发这个请求，说白了就是向一个 Dstack 查询谁是 PDO 。
 
     PIO_STACK_LOCATION   stack;
     PDEVICE_RELATIONS deviceRelations;
@@ -995,7 +983,6 @@ Bus_PDO_QueryBusInformation(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
     The PnP Manager uses this IRP to request the type and
     instance number of a device's parent bus. Bus drivers

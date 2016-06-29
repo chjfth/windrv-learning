@@ -686,7 +686,9 @@ Routine Description:
 		// A: oldRelations 不是指"本次拔插变动之前"的 bus-relation, 而是"Dstack中上一层driver"
 		// (说白了就是一个 upper-filter driver)已经准备好的一份 bus-relation 信息;
 		// prevcount 意思也不是"本次变动之前子设备数", 而是"上一层driver已经准备好的子设备数";
-		// 因此, 我们自己这层准备的子设备数要追加进去. 当然, oldRelation 和 prevcount 取名不佳.
+		// 因此, 我们自己这层准备的子设备数要追加进去. 
+		// 前几页注释文字 "propagate the relations from the upper drivers" 就是说这个意思。
+		// 当然, oldRelation 和 prevcount 取名不佳，叫 existingRelations 会更好.
 		//
 		// MSDN: IRP_MN_QUERY_DEVICE_RELATIONS -> BusRelations 段落如此说:
 		//
