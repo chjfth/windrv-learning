@@ -1201,7 +1201,6 @@ ToasterDispatchPower (
     PIRP Irp
     )
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_POWER IRPs to ToasterDispatchPower. This stage of
     the function driver does not process any specific power IRPs. All power IRPs
@@ -1214,12 +1213,12 @@ New Routine Description:
     remain connected to the computer.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the power operation associated with the hardware instance
     described by the DeviceObject parameter, such as powering up or powering down
     the hardware instance.

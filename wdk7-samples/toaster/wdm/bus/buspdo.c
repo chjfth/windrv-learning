@@ -843,7 +843,7 @@ Return Value:
     // but if the support for ISA is dropped completely in the future
     // then it will start to fail again. So it's a good idea to not
     // claim hardware resources like this unless the driver has a
-    // knowledge of or control over a piece of hardware tha will
+    // knowledge of or control over a piece of hardware that will
     // actually consume these resources.
     //
 #if 0
@@ -1043,23 +1043,19 @@ Bus_PDO_QueryInterface(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
-
     This requests enables a driver to export proprietary interface
     to other drivers. This function and the following 5 routines
     are meant to show how a typical interface is exported.
     Note: This and many other routines in this sample are not required if
     someone is using this sample for just device enumeration purpose.
-Arguments:
 
+Arguments:
     DeviceData - Pointer to the PDO's device extension.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
    PIO_STACK_LOCATION irpStack;
@@ -1083,7 +1079,7 @@ Return Value:
                                 irpStack->Parameters.QueryInterface.Interface;
 
       toasterInterfaceStandard->Context = DeviceData;
-      //
+
       // Fill in the exported functions
       //
       toasterInterfaceStandard->InterfaceReference   =
@@ -1094,7 +1090,6 @@ Return Value:
       toasterInterfaceStandard->SetCrispinessLevel   = Bus_SetCrispinessLevel;
       toasterInterfaceStandard->IsSafetyLockEnabled = Bus_IsSafetyLockEnabled;
 
-      //
       // Must take a reference before returning
       //
       Bus_InterfaceReference(DeviceData);
@@ -1113,30 +1108,21 @@ Bus_GetCrispinessLevel(
     __out  PUCHAR Level
     )
 /*++
-
 Routine Description:
-
     This routine gets the current crispiness level of the toaster.
-
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
-
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
-
     UNREFERENCED_PARAMETER(Context);
-
-    //
+	//
     // Validate the context to see if it's really a pointer
     // to PDO's device extension. You can store some kind
     // of signature in the PDO for this purpose
-    //
+
     Bus_KdPrint ((PPDO_DEVICE_DATA)Context, BUS_DBG_PNP_TRACE,
                                     ("GetCrispinessLevel\n"));
     *Level = 10;
@@ -1149,20 +1135,13 @@ Bus_SetCrispinessLevel(
     __in   UCHAR Level
     )
 /*++
-
 Routine Description:
-
     This routine sets the current crispiness level of the toaster.
-
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
-
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
     UNREFERENCED_PARAMETER(Context);
@@ -1178,19 +1157,12 @@ Bus_IsSafetyLockEnabled(
     __in PVOID Context
     )
 /*++
-
 Routine Description:
-
     Routine to check whether safety lock is enabled
-
 Arguments:
-
     Context        pointer to  PDO device extension
-
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
     UNREFERENCED_PARAMETER(Context);
@@ -1205,18 +1177,12 @@ Bus_InterfaceReference (
    __in PVOID Context
    )
 /*++
-
 Routine Description:
-
     This routine increments the refcount. We check this refcount
     during query_remove decide whether to allow the remove or not.
-
 Arguments:
-
     Context        pointer to  PDO device extension
-
 Return Value:
-
 --*/
 {
     InterlockedIncrement((LONG *)&((PPDO_DEVICE_DATA)Context)->ToasterInterfaceRefCount);
@@ -1227,22 +1193,17 @@ Bus_InterfaceDereference (
    __in PVOID Context
    )
 /*++
-
 Routine Description:
-
     This routine decrements the refcount. We check this refcount
     during query_remove decide whether to allow the remove or not.
-
 Arguments:
-
     Context        pointer to  PDO device extension
-
 Return Value:
-
 --*/
 {
     InterlockedDecrement((LONG *)&((PPDO_DEVICE_DATA)Context)->ToasterInterfaceRefCount);
 }
+
 
 NTSTATUS
 Bus_GetDeviceCapabilities(
