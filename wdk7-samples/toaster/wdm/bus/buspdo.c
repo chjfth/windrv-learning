@@ -612,9 +612,7 @@ Bus_PDO_QueryDeviceText(
     __in  PIRP   Irp
     )
 /*++
-
 Routine Description:
-
     The PnP Manager uses this IRP to get a device's
     description or location information. This string
     is displayed in the "found new hardware" pop-up
@@ -624,14 +622,11 @@ Routine Description:
     is optional.
 
 Arguments:
-
     DeviceData - Pointer to the PDO's device extension.
-    Irp          - Pointer to the irp.
+    Irp        - Pointer to the irp.
 
 Return Value:
-
     NT STATUS
-
 --*/
 {
     PWCHAR  buffer;
@@ -643,18 +638,15 @@ Return Value:
 
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    switch (stack->Parameters.QueryDeviceText.DeviceTextType) {
-
+    switch (stack->Parameters.QueryDeviceText.DeviceTextType) 
+	{{
     case DeviceTextDescription:
-
-        //
         // Check to see if any filter driver has set any information.
         // If so then remain silent otherwise add your description.
         // This string must be localized to support various languages.
-        //
 
-        switch (stack->Parameters.QueryDeviceText.LocaleId) {
-
+        switch (stack->Parameters.QueryDeviceText.LocaleId) 
+		{{
         case 0x00000407 : // German
               // Localize the device text.
               // Until we implement let us fallthru to English
@@ -672,8 +664,11 @@ Return Value:
                     break;
                 }
 
-                RtlStringCchPrintfW(buffer, length/sizeof(WCHAR), L"%ws%ws%02d", VENDORNAME, MODEL,
-                                            DeviceData->SerialNo);
+                RtlStringCchPrintfW(buffer, length/sizeof(WCHAR), 
+					L"%ws%ws%02d", VENDORNAME, MODEL, // e.g. "Microsoft_Eliyas_Toaster_01"
+                    DeviceData->SerialNo);
+					// Chj: When the driver(.inf/.sys) for those toaster devices is not installed on the system, 
+					// Windows user will see the device name as "Microsoft_Eliyas_Toaster_01" with yellow exclamation icon.
                 Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
                     ("\tDeviceTextDescription :%ws\n", buffer));
 
@@ -681,18 +676,35 @@ Return Value:
             }
             status = STATUS_SUCCESS;
             break;
-        } // end of LocalID switch
+		}} // end of LocalID switch
         break;
 
     case DeviceTextLocationInformation:
+	{
+		// Chj add location text demo:
+#define LOCTEXT "buspdo.c answers this location for PDO"
+#define MAKE_L_TEXT(str) L ## str
+#define MAKE_LEXP_TEXT(str) MAKE_L_TEXT(str)
+		WCHAR loctext[] = MAKE_LEXP_TEXT(LOCTEXT); // result in L"buspdo.c answers this location for PDO"
+		buffer = ExAllocatePoolWithTag (PagedPool,	sizeof(loctext), BUSENUM_POOL_TAG);
+		if (buffer == NULL) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+		RtlStringCchCopyW(buffer, sizeof(loctext)/sizeof(WCHAR), loctext);
 
-        Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
-            ("\tDeviceTextLocationInformation: Unknown\n"));
+		Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_TRACE,
+			("\tDeviceTextLocationInformation: %s\n", LOCTEXT));
+
+		Irp->IoStatus.Information = (ULONG_PTR) buffer;
+		status = STATUS_SUCCESS;
+		break;
+	}
 
     default:
         status = Irp->IoStatus.Status;
         break;
-    }
+	}}
 
     return status;
 
