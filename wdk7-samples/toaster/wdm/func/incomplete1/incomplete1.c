@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -90,21 +89,20 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 New Routine Description:
     DriverEntry initializes the driver and is the first routine called by the
     system after the driver is loaded. DriverEntry specifies the other entry
     points in the function driver, such as ToasterAddDevice and ToasterUnload.
 
 Parameters Description:
-    DriverObject
+    [DriverObject]
     DriverObject represents the instance of the function driver that is loaded
     into memory. DriverEntry must initialize members of DriverObject before it
     returns to the caller. DriverObject is allocated by the system before the
     driver is loaded, and it is released by the system after the system unloads
     the function driver from memory.
 
-    RegistryPath
+    [RegistryPath]
     RegistryPath represents the driver specific path in the Registry. The function
     driver can use the path to store driver related data between reboots. The path
     does not store hardware instance specific data.
@@ -125,28 +123,24 @@ Return Value Description:
     The I/O manager calls the function driver's routines to process events and I/O
     operations as needed. Multiple threads can execute simultaneously throughout the
     driver, thus special attention to how the driver operates and processes events
-    and I/O operations is required
-
+    and I/O operations is required.
 --*/
 {
     ToasterDebugPrint(TRACE, "Entered DriverEntry of "_DRIVER_NAME_" version "
                                        "built on " __DATE__" at "__TIME__ "\n");
 
-    //
     // Connect the ToasterAddDevice routine that is implemented in this stage of
     // the function driver. The system calls ToasterAddDevice when a new instance
     // of Toaster class hardware is connected to the computer.
     //
     DriverObject->DriverExtension->AddDevice           = ToasterAddDevice;
 
-    //
     // Connect the ToasterUnload routine that is implemented in this stage of the
     // function driver. The system calls ToasterUnload when no more instances of
     // Toaster class hardware are connected to the computer.
     //
     DriverObject->DriverUnload                         = ToasterUnload;
 
-    //
     // Connect the dispatch routines which are implemented in this stage of the
     // function driver, including PnP, Power Management and WMI. The system calls
     // these dispatch routines to handle PnP, Power and WMI operations.
@@ -165,7 +159,6 @@ ToasterAddDevice(
     __in PDEVICE_OBJECT PhysicalDeviceObject
     )
 /*++
-
 New Routine Description:
     The system calls ToasterAddDevice to create and initialize a device object to
     represent a new instance of Toaster class hardware when the underlying bus
@@ -190,12 +183,12 @@ New Routine Description:
     and other drivers use this interface to interact with the hardware instance.
 
 Parameters Description:
-    DriverObject
+    [DriverObject]
     DriverObject represents the instance of the function driver that is loaded
     into memory. The FDO that ToasterAddDevice creates is associated with the
     DriverObject parameter.
 
-    PhysicalDeviceObject
+    [PhysicalDeviceObject]
     PhysicalDeviceObject represents a device object that was created by the
     underlying bus driver for the new hardware instance. PhysicalDeviceObject is
     called the PDO, for physical device object. The PDO forms the base of the
@@ -218,16 +211,13 @@ Return Value Description:
 
     After ToasterAddDevice returns to the caller, the new hardware instance is
     represented in the system. However, before applications can use it, the
-    function driver must receive and process IRP_MN_START_DEVICE in
-    ToasterDispatchPnP.
-
+    function driver must receive and process IRP_MN_START_DEVICE in ToasterDispatchPnP.
 --*/
 {
     NTSTATUS                status = STATUS_SUCCESS;
     PDEVICE_OBJECT          deviceObject = NULL;
     PFDO_DATA               fdoData;
 
-    //
     // Call the PAGED_CODE macro because this routine must only execute at
     // IRQL = PASSIVE_LEVEL. The macro halts the system in the checked build
     // of Windows if IRQL >= DISPATCH_LEVEL, because then the Dispatcher cannot
@@ -237,7 +227,6 @@ Return Value Description:
 
     ToasterDebugPrint(TRACE, "AddDevice PDO (0x%p)\n", PhysicalDeviceObject);
 
-    //
     // Create the functional device object (FDO) for the new hardware instance. In
     // the past, applications have usually communicated with a hardware instance
     // using the FDO's name. However, the FDO created in the call to IoCreateDevice is
@@ -252,8 +241,8 @@ Return Value Description:
                              FILE_DEVICE_SECURE_OPEN,
                              FALSE,
                              &deviceObject);
+		// Chj: On return, DriverObject->DeviceObject==deviceObject.
 
-    //
     // Test the return value with the NT_SUCCESS macro instead of testing for a
     // specific value like STATUS_SUCCESS, because system calls can return multiple
     // values that indicate success other than STATUS_SUCCESS.
@@ -265,7 +254,6 @@ Return Value Description:
 
     ToasterDebugPrint(INFO, "AddDevice FDO (0x%p)\n", deviceObject);
 
-    //
     // Get the pointer to the FDO's device extension. The device extension stores
     // data in non-paged memory. This includes hardware state variables, variables
     // for mechanisms implemented by the function driver, and pointers to the
@@ -277,7 +265,6 @@ Return Value Description:
     //
     fdoData = (PFDO_DATA) deviceObject->DeviceExtension;
 
-    //
     // Tag the FDO's device extension with TOASTER_FDO_INSTANCE_SIGNATURE.
     // TOASTER_FDO_INSTANCE_SIGNATURE is defined in Toaster.h as "odFT". "odFT" is
     // "TFdo" backwards (for "Toaster FDO"). Specify "TFdo" when using a debugger to
@@ -286,7 +273,6 @@ Return Value Description:
     //
     fdoData->Signature = TOASTER_FDO_INSTANCE_SIGNATURE;
 
-    //
     // Initialize the variable that indicates the hardware state of the toaster
     // instance. The INITIALIZE_PNP_STATE macro is defined in Toaster.h. The macro
     // initializes the DevicePnPState member of the device extension to NotStarted.
@@ -296,7 +282,6 @@ Return Value Description:
     //
     INITIALIZE_PNP_STATE(fdoData);
 
-    //
     // Save the pointer to the PDO in the device extension. In later stages of the
     // function driver the PDO, which represents the base of the device stack for the
     // hardware instance, is required when making a change that affects the entire
@@ -304,7 +289,6 @@ Return Value Description:
     //
     fdoData->UnderlyingPDO = PhysicalDeviceObject;
 
-    //
     // Save the pointer to the FDO in the device extension. Saving a pointer to the
     // FDO in the device extension allows just the device extension to be passed to
     // routines where the routines can get the FDO from the device extension. This
@@ -312,7 +296,6 @@ Return Value Description:
     //
     fdoData->Self = deviceObject;
 
-    //
     // Set the DO_POWER_PAGABLE bit to indicate to the power manager that it must
     // only send power IRPs to the function driver at IRQL = PASSIVE_LEVEL. In later
     // stages of the function driver the ToasterDispatchPower must only execute at
@@ -323,7 +306,6 @@ Return Value Description:
     //
     deviceObject->Flags |= DO_POWER_PAGABLE;
 
-    //
     // Set the DO_BUFFERED_IO bit to indicate to the I/O manager that it must copy
     // data that is passed between a calling application and the function driver. For
     // example, this bit specifies that the I/O manager must copy the data buffer
@@ -334,7 +316,6 @@ Return Value Description:
     //
     deviceObject->Flags |= DO_BUFFERED_IO;
 
-    //
     // Attach the FDO to the top of the device stack for the hardware instance. If
     // the call succeeds then the value returned is the device object that was
     // previously at the top of the device stack. This is the device object that
@@ -348,7 +329,6 @@ Return Value Description:
                                                        fdoData->UnderlyingPDO);
     if (NULL == fdoData->NextLowerDriver)
     {
-        //
         // If the call failed, then the FDO is not attached to the device stack.
         // Because the call failed, the FDO must be deleted to prevent leaking
         // memory before returning to the caller.
@@ -358,19 +338,25 @@ Return Value Description:
         return STATUS_NO_SUCH_DEVICE;
     }
 
-    //
     // Register a new instance of the toaster device interface for the new hardware
     // instance. Applications use the device interface to interact with the new
     // hardware instance.
     //
     status = IoRegisterDeviceInterface (
-                PhysicalDeviceObject,
-                (LPGUID) &GUID_DEVINTERFACE_TOASTER,
-                NULL,
-                &fdoData->InterfaceName);
+        PhysicalDeviceObject,
+        (LPGUID) &GUID_DEVINTERFACE_TOASTER,
+        NULL,
+        &fdoData->InterfaceName); // InterfaceName 输出一个字串, 在IRP_MN_REMOVE_DEVICE时free掉.
+		/* Chj: Sample interface name string: 
 
-    //
-    // Test the return value with the !NT_SUCCESS macro instead of testing for a
+			\??\{B85B7C50-6A01-11d2-B841-00C04FAD5171}#MsToaster#1&79f5d87&0&01#{781ef630-72b2-11d2-b852-00c04fad5171}
+		 
+		 - where {B85B7C50-6A01-11d2-B841-00C04FAD5171} is the ClassGuid in toaster.inf
+		 - and the trailing {781ef630-72b2-11d2-b852-00c04fad5171} is random generated?
+		   different Windows target machine will receive different random numbers.
+		*/
+
+	// Test the return value with the !NT_SUCCESS macro instead of testing for a
     // specific value like STATUS_UNSUCCESSFUL, because system calls can return
     // multiple values that indicate failure other than STATUS_UNSUCCESSFUL.
     //
@@ -387,7 +373,6 @@ Return Value Description:
         return status;
     }
 
-    //
     // Clear the DO_DEVICE_INITIALIZING bit. The I/O manager verifies that this bit
     // is cleared after ToasterAddDevice returns. After this bit is cleared the I/O
     // manager can send IRPs to the function driver's dispatch routines.
@@ -403,7 +388,6 @@ ToasterUnload(
     __in PDRIVER_OBJECT DriverObject
     )
 /*++
-
 New Routine Description:
     ToasterUnload releases any memory or resources allocated in DriverEntry and is
     the last routine called by the system before the system unloads the function
@@ -414,18 +398,16 @@ New Routine Description:
     resources in DriverEntry, so there is nothing for ToasterUnload to release.
 
 Parameters Description:
-    DriverObject
+    [DriverObject]
     DriverObject represents the instance of the function driver that the system is
     ready to unload from memory.
 
 Return Value Description:
     ToasterUnload does not return a value.
-
 --*/
 {
     PAGED_CODE();
 
-    //
     // Test the assumption that DriverObject's DeviceObject pointer is NULL. The
     // DeviceObject member of DriverObject is a single-linked list of all FDOs
     // created earlier by ToasterAddDevice. DriverObject->DeviceObject should equal

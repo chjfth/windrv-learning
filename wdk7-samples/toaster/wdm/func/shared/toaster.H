@@ -440,21 +440,18 @@ typedef enum {
 //
 typedef struct _FDO_DATA
 {
-
     //
     // All the members below this point are present in all the stages of the function
     // driver.
     // ----------------------------------------------------------------------------
     //
 
-    //
     // Signature specifies a 4 byte tag that can be used to identify Toaster device
     // extensions. ToasterAddDevice initializes this member to
     // TOASTER_FDO_INSTANCE_SIGNATURE.
     //
     ULONG   Signature;
 
-    //
     // Self represents a pointer back to the device object that is the parent of
     // the device extension instance. Saving a pointer to the parent device object
     // allows the device extension to be passed to the function driver's routines
@@ -463,33 +460,28 @@ typedef struct _FDO_DATA
     //
     PDEVICE_OBJECT      Self;
 
-    //
     // UnderlyingPDO specifies the pointer to the physical device object (PDO)
     // created by the underlying bus driver to represent the hardware instance.
     //
     PDEVICE_OBJECT      UnderlyingPDO;
 
-    //
     // NextLowerDriver specifies the pointer to the driver layered immediately under
     // the function driver in the device stack.
     //
     PDEVICE_OBJECT      NextLowerDriver;
 
-    //
     // DevicePnPState describes the present PnP state of the hardware instance. The
     // ToasterDispatchPnP routines changes the PnP state in response to various PnP
     // IRPs.
     //
     DEVICE_PNP_STATE_et    DevicePnPState;
 
-    //
     // PreviousPnPState represents the old PnP state of the hardware instance before
     // the ToasterDispatchPnP routine updates the present PnP state in response to
     // various PnP IRPs.
     //
     DEVICE_PNP_STATE_et    PreviousPnPState;
 
-    //
     // InterfaceName describes the device interface name returned when
     // ToasterAddDevice calls IoRegisterDeviceInterface.
     //
@@ -501,13 +493,11 @@ typedef struct _FDO_DATA
     // ----------------------------------------------------------------------------
     //
 
-    //
     // QueueState describes the state of the driver-managed IRP queue. The state
     // changes in response to certain PnP IRPs.
     //
     QUEUE_STATE         QueueState;
 
-    //
     // NewRequestsQueue represents the driver-managed IRP queue. New
     // read/write/device control IRPs are added to the queue whenever the hardware
     // instance is not able to process the IRPs.
