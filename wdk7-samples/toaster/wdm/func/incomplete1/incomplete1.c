@@ -429,7 +429,6 @@ ToasterDispatchPnp (
     PIRP Irp
     )
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_PNP IRPs to ToasterDispatchPnP. This stage of the
     function processes three PnP IRPs:
@@ -447,20 +446,22 @@ New Routine Description:
     -IRP_MN_CANCEL_REMOVE_DEVICE
 
     Each IRP updates the hardware instance's PnP state in the device extension.
-    For example, when ToasterDispatchPnP processes IRP_MN_REMOVE_DEVICE, the PnP
-    state is updated to Deleted. The other dispatch routines in the function
+    For example, when ToasterDispatchPnP processes *IRP_MN_REMOVE_DEVICE*, the PnP
+    state is updated to *Deleted*. The other dispatch routines in the function
     driver check if the PnP state equals Deleted before processing any IRPs
     dispatched to them. If the PnP state is set to Deleted then any IRPs
     dispatched to the other routines can immediately be failed.
 
-    All PnP IRPs must be passed down the device stack so that lower drivers can
-    also process them by calling IoCallDriver (or ToasterSendIrpSynchronously,
+    All PnP IRPs must be [passed down the device stack so that lower drivers can
+    also process them] by calling IoCallDriver (or ToasterSendIrpSynchronously,
     which calls IoCallDriver). Some IRPs must be processed by the bus driver
-    before they are processed by the function driver. IRPs that must be processed
+    before they are processed by the function driver. 
+	                                                  IRPs that must be processed // 这句话有语病, that 从句到哪里为止?
     by the bus driver before the function driver processes call the function
     driver routine, ToasterSendIrpSynchronously, to block the thread that is
     processing them until the bus driver completes the IRP. For example,
-    IRP_MN_START_DEVICE must be processed this way. Other IRPs must be processed
+    IRP_MN_START_DEVICE must be processed this way. 
+	                                               Other IRPs must be processed
     by the function driver before they are passed down the device stack. For
     example, IRP_MN_SURPRISE_REMOVAL is processed this way.
 
@@ -470,12 +471,11 @@ New Routine Description:
     the data. This allows the system to reuse I/O stack locations.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is a FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is a FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the PnP event associated with the hardware instance described
     by the DeviceObject parameter, such as to start or remove a hardware instance.
 
@@ -484,7 +484,6 @@ Return Value Description:
     represented by DeviceObject has been removed. Other return values indicate if
     the IRP was successfully processed by the device stack, or if an error
     occurred.
-
 --*/
 {
     PFDO_DATA               fdoData;
@@ -495,7 +494,6 @@ Return Value Description:
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    //
     // Get the parameters of the IRP from the function driver's location in the IRP's
     // I/O stack. The results of the function driver's processing of the IRP, if any,
     // are then stored back in the same I/O stack location.
@@ -509,7 +507,8 @@ Return Value Description:
 
     if (Deleted == fdoData->DevicePnPState)
     {
-        //
+		// Chj: 这段解释得好!
+		//
         // Fail the incoming IRP if the hardware instance has been removed. A driver
         // can receive an IRP to process after it's hardware is removed because
         // multiple threads might execute simultaneously. One thread might process
@@ -521,7 +520,6 @@ Return Value Description:
         //
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
 
-        //
         // Call IoCompleteRequest to complete the incoming IRP. When calling
         // IoCompleteRequest to complete an IRP, the caller can supply a priority
         // boost. The priority boost increment the runtime priority of the original
@@ -532,7 +530,8 @@ Return Value Description:
         //
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
-        //
+        // Chj: 本段提示说 IoCompleteRequest(Irp, ...) 之后, Irp 指向的东西就已经销毁了.
+		//
         // Note that the return statement does not dereference the Irp pointer.
         // Instead, the return statement returns the same value that the
         // IoStatus.Status member is set to. Dereferencing the Irp pointer after
@@ -547,24 +546,24 @@ Return Value Description:
         return STATUS_NO_SUCH_DEVICE;
     }
 
+	// Chj Q: 要是在这个间隙, 另一个线程处理了 IRP_MN_REMOVE_DEVICE, 再切回本线程继续执行会如何? 会有灾难吗?
+
     //
     // Determine the PnP IRP's minor function code which describes the PnP operation.
     //
     switch (stack->MinorFunction)
-    {
+    {{
     case IRP_MN_START_DEVICE:
         //
         // The system sends IRP_MN_START_DEVICE to start the hardware instance.
-        // The system sends IRP_MN_START_DEVICE after the system has called
-        // ToasterAddDevice. The system also sends IRP_MN_START_DEVICE if the
-        // PnP hardware was connected when the computer booted. The system also
-        // sends IRP_MN_START_DEVICE after it sends a previous IRP_MN_STOP_DEVICE.
+        // The system sends IRP_MN_START_DEVICE after the system has called ToasterAddDevice. 
+		// The system also sends IRP_MN_START_DEVICE if the PnP hardware was connected when the computer booted. 
+		// The system also sends IRP_MN_START_DEVICE after it sends a previous IRP_MN_STOP_DEVICE.
         //
-        // The underlying bus driver must process IRP_MN_START_DEVICE before the
-        // function driver can because the bus driver must assign the hardware
-        // resources, such as the I/O ports, I/O memory ranges, and interrupts,
-        // that the toaster instance can use before the function driver can use
-        // them.
+        // The underlying bus driver must process IRP_MN_START_DEVICE *before* the
+        // function driver can, because the bus driver must assign the hardware resources, 
+        // such as the I/O ports, I/O memory ranges, and interrupts,
+        // that the toaster instance can use before the function driver can use them.
         //
         // The function driver calls ToasterSendIrpSynchronously to have the bus
         // driver process the IRP before the function driver processes the IRP.
@@ -579,15 +578,14 @@ Return Value Description:
 
         if (NT_SUCCESS (status))
         {
-            //
             // Enable the device interface that was registered earlier in
             // ToasterAddDevice to allow applications to interact with the toaster
             // instance.
             //
             // If IoSetDeviceInterfaceState returns STATUS_OBJECT_NAME_EXISTS then
             // the interface is already enabled. The interface might already be
-            // enabled if the system sent and earlier IRP_MN_STOP_DEVICE to
-            // rebalance hardware resources.
+            // enabled if the system sent an earlier IRP_MN_STOP_DEVICE to
+            // rebalance hardware resources. // Chj Q: rebalance 什么意思?
             //
             status = IoSetDeviceInterfaceState(&fdoData->InterfaceName, TRUE);
 
@@ -595,7 +593,7 @@ Return Value Description:
             {
                 //
                 // Update the variable that indicates the hardware state of the
-                // toaster instance to Started. When the hardware state is set to
+                // toaster instance to *Started*. When the hardware state is set to
                 // Started the function driver is ready to process I/O operations,
                 // such as read, write, and device control in its DispatchRead,
                 // DispatchWrite, and DispatchDeviceControl routines. These routines
@@ -620,19 +618,15 @@ Return Value Description:
             }
         }
 
-        //
         // Set the status of the IRP to the value returned by the bus driver. The
         // value returned by the bus driver is also the value returned to the caller.
         //
         Irp->IoStatus.Status = status;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         return status;
 
     case IRP_MN_QUERY_STOP_DEVICE:
-        //
-        // The system sends IRP_MN_QUERY_STOP_DEVICE to query the function driver if
+        // The system sends IRP_MN_QUERY_STOP_DEVICE to query the function driver if(=whether)
         // the hardware instance can be stopped safely, without losing any data. When
         // the function driver receives this IRP it must also prepare to stop the
         // hardware instance. If the function driver is unable to stop the hardware
@@ -641,50 +635,43 @@ Return Value Description:
         // IRP down the device stack.
         //
         // The function driver must process this IRP before it passes the IRP down
-        // the device stack to be processed by the underlying bus driver.
+        // the device stack.
         //
         // If the system does not later send IRP_MN_STOP_DEVICE to stop the hardware
         // instance because another driver in the device stack failed
         // IRP_MN_QUERY_STOP_DEVICE, then the system sends IRP_MN_CANCEL_STOP_DEVICE
         // to inform the function driver that it can resume processing IRPs on the
         // hardware instance.
-        //
 
-        //
         // Update the variable that indicates the hardware state of the toaster
-        // instance to StopPending. When the hardware state is set to StopPending,
+        // instance to *StopPending*. When the hardware state is set to StopPending,
         // any new IRPs that the system dispatches to the function driver are added
-        // to the driver-managed IRP queue for later processing. The driver-managed
+        // to the driver-managed IRP queue for later processing. The driver-managed   //重要
         // IRP queue is implemented in later stages of the function driver.
         //
         // Otherwise, if the system subsequently sends IRP_MN_CANCEL_STOP_DEVICE then
         // any IRPs the system dispatched between IRP_MN_QUERY_STOP_DEVICE and
-        // IRP_MN_CANCEL_STOP_DEVICE would be lost.
+        // IRP_MN_CANCEL_STOP_DEVICE would be lost.  // 意思是: 如果没有用 IRP queue, 就会出现这种 lost 结果.
         //
         SET_NEW_PNP_STATE(fdoData, StopPending);
 
-        //
         // Set the status of the IRP to STATUS_SUCCESS before passing it down the
         // device stack to indicate that the function driver successfully processed
         // the IRP.
         //
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         //
         // Break out of the switch case statement. The IRP is passed down the device
         // stack before it is completed at the end of ToasterDispatchPnP.
         //
-        break;
+        break; // break 出去后会进而调用 IoCallDriver()
 
    case IRP_MN_CANCEL_STOP_DEVICE:
-        //
         // The system sends IRP_MN_CANCEL_STOP_DEVICE to inform the function driver
         // that it can resume processing IRPs on the hardware instance. The system
         // should have sent a previous IRP_MN_QUERY_STOP_DEVICE, which the function
         // driver completed, before the system sends IRP_MN_CANCEL_STOP_DEVICE.
-        //
 
-        //
         // Restore the variable that indicates the hardware state of the toaster
         // instance to its previous saved state. The previous state was saved when
         // the function driver processed IRP_MN_QUERY_STOP_DEVICE. The
@@ -698,13 +685,10 @@ Return Value Description:
         // value.
         //
         RESTORE_PREVIOUS_PNP_STATE(fdoData);
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         break;
 
     case IRP_MN_STOP_DEVICE:
-        //
         // The system sends IRP_MN_STOP_DEVICE to stop a toaster instance's hardware.
         // The system should have sent a previous IRP_MN_QUERY_STOP_DEVICE, which the
         // function driver completed, before the system sends IRP_MN_STOP_DEVICE.
@@ -715,11 +699,9 @@ Return Value Description:
         // After IRP_MN_STOP_DEVICE is passed down the device stack, the function
         // driver must not pass any more IRPs down the device stack until the
         // function driver receives and completes another IRP_MN_START_DEVICE.
-        //
 
-        //
         // Update the variable that indicates the hardware state of the toaster
-        // instance to Stopped. When the hardware state is set to Stopped, any new
+        // instance to *Stopped*. When the hardware state is set to Stopped, any new
         // IRPs that the system dispatches to the function driver are added to the
         // driver-managed IRP queue for later processing. The driver-managed IRP
         // queue is implemented in later stages of the function driver.
@@ -729,9 +711,7 @@ Return Value Description:
         // IRP_MN_START_DEVICE would be lost.
         //
         SET_NEW_PNP_STATE(fdoData, Stopped);
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         break;
 
     case IRP_MN_QUERY_REMOVE_DEVICE:
@@ -960,7 +940,7 @@ Return Value Description:
         // underlying bus driver can process them.
         //
         break;
-    }
+	}}
 
     //
     // Set up the I/O stack location for the next lower driver (the target device
@@ -997,9 +977,9 @@ New Routine Description:
     ToasterSendIrpSynchronously passes the incoming IRP down the device stack to
     be processed by the bus driver. If the bus driver does not immediately
     complete the IRP then the bus driver marks the IRP as pending and the thread
-    executing in ToasterSendIrpSynchronously must wait until the bus driver
+    executing in ToasterSendIrpSynchronously must wait until [the bus driver
     completes the IRP and the system calls the function driver's I/O completion
-    routine, ToasterDispatchPnpComplete.
+    routine, ToasterDispatchPnpComplete].
 
     If the bus driver marks the PnP IRP as pending, then
     ToasterSendIrpSynchronously calls KeWaitForSingleObject to suspend the
@@ -1011,7 +991,7 @@ New Routine Description:
     This mechanism prevents the function driver from processing the PnP IRP until
     the bus driver has completed it.
 
-    For example, the bus driver must process IRP_MN_START_DEVICE before the
+    For example, the bus driver must process IRP_MN_START_DEVICE *before* the
     function driver. If the bus driver marks the IRP as pending, then the function
     driver cannot proceed until the bus driver completes it. In this case, the
     thread that processes IRP_MN_START_DEVICE in ToasterDispatchPnP (which calls
@@ -1019,28 +999,26 @@ New Routine Description:
     the IRP.
 
     When the bus driver completes IRP_MN_START_DEVICE, the I/O manager passes the
-    IRP back up the device stack, calling any I/O completion routines previously
-    set to be called. ToasterSendIrpSynchronously calls IoSetCompletionRoutine to
-    set the function driver's I/O completion routine, ToasterDispatchPnpComplete,
-    to be called before IRP_MN_START_DEVICE is passed down the device stack.
+    IRP back up the device stack, calling any I/O completion routines previously _set_.
+    ToasterSendIrpSynchronously [ calls IoSetCompletionRoutine to
+    _set_ the function driver's I/O completion routine, ToasterDispatchPnpComplete,
+    to be called ] before IRP_MN_START_DEVICE is passed down the device stack.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the target device object to pass the PnP IRP to.
 
-    Irp
+    [Irp]
     Irp represents the PnP operation that must be processed by the bus driver
     before the function driver can process it.
 
 Return Value Description:
     ToasterSendIrpSynchronously returns the status value returned by the next
     Lower driver.
-
 --*/
 {
     KEVENT   event;
     NTSTATUS status;
-
     PAGED_CODE();
 
     // Initialize a kernel event to an unsignaled state. The event is signaled in
@@ -1078,7 +1056,6 @@ Return Value Description:
 
     if (STATUS_PENDING == status)
     {
-        //
         // If the bus driver marked the IRP as pending, then call
         // KeWaitForSingleObject to suspend the thread executing in
         // ToasterSendIrpSynchronously until the kernel event is signaled.
@@ -1110,28 +1087,26 @@ ToasterDispatchPnpComplete (
     PVOID Context
     )
 /*++
-
 New Routine Description:
     ToasterDispatchPnpComplete signals the kernel event which unblocks the call to
     KeWaitForSingleObject in ToasterSendIrpSynchronously, allowing the thread to
     resume and continue to process the PnP IRP. ToasterSendIrpSynchronously called
-    IoSetCompletionRoutine to set the system to call ToasterDispatchPnpComplete
-    after the bus driver completes the PnP IRP.
+    IoSetCompletionRoutine to set the system to [call ToasterDispatchPnpComplete
+    after the bus driver completes the PnP IRP].
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is a FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is a FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the PnP operation that has been completed by the underlying bus
     driver. The IRP now contains the data required by the function driver to
     proceed. For example, if the bus driver completed IRP_MN_START_DEVICE, then
     the IRP now contains the hardware resources the function driver can use, such
     as DMA channels, I/O ports, I/O memory ranges, and/or interrupt(s).
 
-    Context
+    [Context]
     Context represents the kernel event that the call to KeWaitForSingleObject in
     ToasterSendIrpSynchronously is waiting on. ToasterSendIrpSynchronously set the
     system to pass the kernel event as the context parameter in the call to
@@ -1141,17 +1116,16 @@ Return Value Description:
     ToasterDispatchPnpComplete returns STATUS_MORE_PROCESSING_REQUIRED.
     STATUS_MORE_PROCESSING_REQUIRED indicates to the I/O manager that the function
     driver must process the IRP further before the I/O manager resumes calling any
-    other I/O completion routines.
-
+    other I/O completion routines.  
+	// Chj: 意思是作出这样一个指示: 此回调函数对应的那级 driver, 在 IoCallDriver+KeWaitForSingleObject
+	// 之后, 还要接着调用 IoCompleteRequest 来接续 completion-routine 回调链.
 --*/
 {
-    //
     // The Context parameter is a PVOID. The PVOID must be recast to the data type of
     // the kernel event, PKEVENT.
     //
     PKEVENT             event = (PKEVENT)Context;
 
-    //
     // The UNREFERENCED_PARAMETER macro suppresses the compiler warning about
     // unreferenced parameters.
     //
@@ -1159,7 +1133,6 @@ Return Value Description:
 
     if (TRUE == Irp->PendingReturned)
     {
-        //
         // If the bus driver marked the IRP as pending, then signal the kernel event.
         // When the kernel event is signaled, the thread that was suspended earlier
         // when ToasterSendIrpSynchronously called KeWaitForSingleObject can resume
@@ -1169,11 +1142,10 @@ Return Value Description:
         KeSetEvent (event, IO_NO_INCREMENT, FALSE);
     }
 
-    //
     // Do not complete the IRP here in the I/O completion routine. Instead, the IRP
     // is completed in ToasterDispatchPnP.
     //
-    return STATUS_MORE_PROCESSING_REQUIRED;
+    return STATUS_MORE_PROCESSING_REQUIRED; // =StopCompletion (me: StopRecursiveCompletion)
 }
 
 
