@@ -895,25 +895,19 @@ Bus_SendIrpSynchronously (
     __in PDEVICE_OBJECT DeviceObject,
     __in PIRP Irp
     )
-/*++
+/*++                // Chj: 此函数实现跟 incomplete1.c 的 ToasterSendIrpSynchronously 完全一样.
 Routine Description:
-
     Sends the Irp down to lower driver and waits for it to
     come back by setting a completion routine.
-
 Arguments:
     DeviceObject - Pointer to deviceobject
     Irp          - Pointer to a PnP Irp.
-
 Return Value:
-
     NT Status is returned.
-
 --*/
 {
     KEVENT   event;
     NTSTATUS status;
-
     PAGED_CODE();
 
     KeInitializeEvent(&event, NotificationEvent, FALSE);
@@ -930,14 +924,12 @@ Return Value:
 
     status = IoCallDriver(DeviceObject, Irp);
 
-    //
     // Wait for lower drivers to be done with the Irp.
     // Important thing to note here is when you allocate
     // the memory for an event in the stack you must do a
     // KernelMode wait instead of UserMode to prevent
     // the stack from getting paged out.
     //
-
     if (status == STATUS_PENDING) {
        KeWaitForSingleObject(&event,
                              Executive,
@@ -947,7 +939,6 @@ Return Value:
                              );
        status = Irp->IoStatus.Status;
     }
-
     return status;
 }
 
@@ -961,21 +952,16 @@ Bus_CompletionRoutine(
 Routine Description:
     A completion routine for use when calling the lower device objects to
     which our bus (FDO) is attached.
-
 Arguments:
-
     DeviceObject - Pointer to deviceobject
     Irp          - Pointer to a PnP Irp.
     Context      - Pointer to an event object
 Return Value:
-
     NT Status is returned.
-
 --*/
 {
     UNREFERENCED_PARAMETER (DeviceObject);
 
-    //
     // If the lower driver didn't return STATUS_PENDING, we don't need to
     // set the event because we won't be waiting on it.
     // This optimization avoids grabbing the dispatcher lock and improves perf.

@@ -489,7 +489,6 @@ Return Value Description:
     PFDO_DATA               fdoData;
     PIO_STACK_LOCATION      stack;
     NTSTATUS                status = STATUS_SUCCESS;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -715,12 +714,11 @@ Return Value Description:
         break;
 
     case IRP_MN_QUERY_REMOVE_DEVICE:
-        //
-        // The system sends IRP_MN_QUERY_REMOVE_DEVICE to query the function driver if
+        // The system sends IRP_MN_QUERY_REMOVE_DEVICE to query the function driver if(=whether)
         // the hardware instance can be removed safely, without losing any data. When
         // the function driver receives this IRP, it must also prepare to remove the
         // hardware instance. If the function driver is unable to remove the hardware
-        // instance, then it should fail this IRP with STATUS_UNSUCCESSFUL.
+        // instance, then it should fail this IRP with STATUS_UNSUCCESSFUL (Chj: without passing down the IRP?).
         //
         // The function driver must process this IRP before it passes the IRP down
         // the device stack to be processed by the underlying bus driver.
@@ -735,11 +733,10 @@ Return Value Description:
         // hardware instance.
         //
 
-        //
         // Update the variable that indicates the hardware state of the toaster
         // instance to RemovePending. When the hardware state is set to RemovePending,
         // any new IRPs that the system dispatches to the function driver are added
-        // to the driver-managed IRP queue for later processing. The driver-managed
+        // to the driver-managed IRP queue for later processing. The driver-managed   // 同 query-stop 一样,也需要 queue
         // IRP queue is implemented in later stages of the function driver.
         //
         // Otherwise, if the system later sends IRP_MN_CANCEL_REMOVE_DEVICE then any
@@ -747,20 +744,15 @@ Return Value Description:
         // IRP_MN_CANCEL_REMOVE_DEVICE would be lost.
         //
         SET_NEW_PNP_STATE(fdoData, RemovePending);
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         break;
 
     case IRP_MN_CANCEL_REMOVE_DEVICE:
-        //
         // The system sends IRP_MN_CANCEL_REMOVE_DEVICE to inform the function driver
         // that is can resume processing IRPs on the hardware instance. The system
         // should have sent a previous IRP_MN_QUERY_STOP_DEVICE, which the function
         // driver completed, before the system sends IRP_MN_CANCEL_REMOVE_DEVICE.
-        //
 
-        //
         // Restore the variable that indicates the hardware state of the toaster
         // instance to its previous saved state. The previous state was saved when
         // the function driver processed IRP_MN_QUERY_REMOVE_DEVICE. The
@@ -774,14 +766,11 @@ Return Value Description:
         // value.
         //
         RESTORE_PREVIOUS_PNP_STATE(fdoData);
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         break;
 
    case IRP_MN_SURPRISE_REMOVAL:
-        //
-        // The system sends IRP_MN_SURPRISE_REMOVAL when the hardware instance is no
+        // The system sends IRP_MN_SURPRISE_REMOVAL when the hardware instance is no longer
         // connected to the computer. A surprise removal usually occurs when the user
         // disconnects the hardware instance from the computer without first
         // notifying the system.
@@ -791,9 +780,7 @@ Return Value Description:
         //
         // This process can be initiated using the Enum program with the "-u #"
         // syntax to simulate unplugging a toaster instance from the computer.
-        //
 
-        //
         // Update the variable that indicates the hardware state of the toaster
         // instance to SurpriseRemovePending. When the hardware state is set to
         // SurpriseRemovePending, any new IRPs that the system dispatches to the
@@ -802,7 +789,6 @@ Return Value Description:
         //
         SET_NEW_PNP_STATE(fdoData, SurpriseRemovePending);
 
-        //
         // Disable the device interface that was enabled earlier when
         // ToasterDispatchPnP processed IRP_MN_START_DEVICE. This operation stops
         // applications from interacting with the (now removed) hardware instance.
@@ -815,14 +801,12 @@ Return Value Description:
                 "IoSetDeviceInterfaceState failed: 0x%x\n", status);
         }
 
-        //
         // Set the status of the IRP to STATUS_SUCCESS before passing it down the
         // device stack to indicate that the function driver successfully processed
-        // IRP_MN_SURPRISE_REMOVAL.
+        // IRP_MN_SURPRISE_REMOVAL.   // Chj: 这个要求还蛮特别的.
         //
         Irp->IoStatus.Status = STATUS_SUCCESS;
 
-        //
         // Set up the I/O stack location for the next lower driver (the target device
         // object for the IoCallDriver call). Call IoSkipCurrentIrpStackLocation
         // because the function driver does not change any of the IRP's values in the
@@ -831,23 +815,20 @@ Return Value Description:
         //
         IoSkipCurrentIrpStackLocation (Irp);
 
-        //
         // Pass IRP_MN_SURPRISE_REMOVAL down the device stack to be processed by the
         // bus driver.
         //
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
-        //
         // Return the status returned by IoCallDriver to the caller.
         //
         return status;
 
    case IRP_MN_REMOVE_DEVICE:
-        //
         // The system sends IRP_MN_REMOVE_DEVICE to delete the FDO that represents
         // the hardware instance. The system sends IRP_MN_REMOVE_DEVICE after it
         // sends IRP_MN_QUERY_REMOVE_DEVICE, or after the it sends
-        // IRP_MN_SURPRISE_REMOVAL if there are no open handles to this device.
+        // IRP_MN_SURPRISE_REMOVAL if there are no open handles to this device.  (Chj Q: if 管到哪里?)
         //
         // The function driver must process this IRP before it passes the IRP down
         // the device stack to be processed by the underlying bus driver.
@@ -859,7 +840,6 @@ Return Value Description:
         // in the tray, near the time.
         //
 
-        //
         // Update the variable that indicates the hardware state of the toaster
         // instance to Deleted. When the hardware state is set to Deleted, any new
         // IRPs that the system dispatches to the function driver are failed because
@@ -867,14 +847,12 @@ Return Value Description:
         //
         SET_NEW_PNP_STATE(fdoData, Deleted);
 
-        //
         // Check the previous PnP state, instead of the present device state because
         // the earlier call to the SET_NEW_PNP_STATE macro changed the current device
         // state.
         //
         if (SurpriseRemovePending != fdoData->PreviousPnPState)
         {
-            //
             // If the function driver did not process IRP_MN_SURPRISE_REMOVAL earlier
             // then it must disable the device interface that was enabled earlier
             // when it processed IRP_MN_START_DEVICE. This operation stops
@@ -889,14 +867,12 @@ Return Value Description:
             }
         }
 
-        //
         // Set the status of the IRP to STATUS_SUCCESS before passing it down the
         // device stack to indicate that the function driver successfully processed
         // IRP_MN_REMOVE_DEVICE.
         //
         Irp->IoStatus.Status = STATUS_SUCCESS;
 
-        //
         // Set up the I/O stack location for the next lower driver (the target device
         // object for the IoCallDriver call). Call IoSkipCurrentIrpStackLocation
         // because the function driver does not change any of the IRP's values in the
@@ -905,36 +881,30 @@ Return Value Description:
         //
         IoSkipCurrentIrpStackLocation (Irp);
 
-        //
         // Pass IRP_MN_REMOVE_DEVICE down the device stack to be processed by the
         // bus driver.
         //
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
-        //
         // Detach the hardware instance's FDO from the device stack.
         //
         IoDetachDevice (fdoData->NextLowerDriver);
 
-        //
         // Release the memory that was allocated for the device interface's name
         // earlier when ToasterAddDevice called IoRegisterDeviceInterface.
         //
         RtlFreeUnicodeString(&fdoData->InterfaceName);
 
-        //
         // Delete the hardware instance's FDO. After IoDeleteDevice returns, the FDO
         // becomes invalid and must not be used.
         //
         IoDeleteDevice (fdoData->Self);
 
-        //
         // Return the status returned by IoCallDriver to the caller.
         //
         return status;
 
     default:
-        //
         // Break out of the switch case statement. All PnP IRPs that the function
         // driver does not process must be passed down the device stack so that the
         // underlying bus driver can process them.
@@ -942,7 +912,6 @@ Return Value Description:
         break;
 	}}
 
-    //
     // Set up the I/O stack location for the next lower driver (the target device
     // object for the IoCallDriver call). Call IoSkipCurrentIrpStackLocation
     // because the function driver does not change any of the IRP's values in the
@@ -951,7 +920,6 @@ Return Value Description:
     //
     IoSkipCurrentIrpStackLocation (Irp);
 
-    //
     // Pass the IRP down the device stack to be processed by the bus driver.
     //
     status = IoCallDriver (fdoData->NextLowerDriver, Irp);

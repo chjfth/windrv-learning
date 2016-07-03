@@ -467,7 +467,7 @@ typedef struct _FDO_DATA
 
     // NextLowerDriver specifies the pointer to the driver layered immediately under
     // the function driver in the device stack.
-    //
+    //						// Chj: 命名陷阱: 类型是 DEVICE_OBJECT 指针, 但变量起名却叫 driver.
     PDEVICE_OBJECT      NextLowerDriver;
 
     // DevicePnPState describes the present PnP state of the hardware instance. The
