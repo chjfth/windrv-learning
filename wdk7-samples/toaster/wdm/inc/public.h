@@ -108,41 +108,31 @@ DEFINE_GUID (TOASTER_NOTIFY_DEVICE_ARRIVAL_EVENT,
 #pragma warning(disable:4200)
 typedef struct _BUSENUM_PLUGIN_HARDWARE
 {
-    //
     // sizeof (struct _BUSENUM_HARDWARE)
     //
     __in ULONG Size;                          
     
-    //
     // Unique serial number of the device to be enumerated.
     // Enumeration will be failed if another device on the 
     // bus has the same serail number.
-    //
-
+	//
     __in ULONG SerialNo;
-
     
-    //
     // An array of (zero terminated wide character strings). The array itself
     //  also null terminated (ie, MULTI_SZ)
-    //
-    
+    //    
     __in  WCHAR   HardwareIDs[]; 
                                                                         
 } BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
 #pragma warning(default:4200)
 typedef struct _BUSENUM_UNPLUG_HARDWARE
 {
-    //
     // sizeof (struct _REMOVE_HARDWARE)
     //
-
     __in ULONG Size;                                    
 
-    //
     // Serial number of the device to be plugged out    
     //
-
     ULONG   SerialNo;
     
     ULONG Reserved[2];    
@@ -151,16 +141,12 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
 
 typedef struct _BUSENUM_EJECT_HARDWARE
 {
-    //
     // sizeof (struct _EJECT_HARDWARE)
     //
-
     __in ULONG Size;                                    
 
-    //
     // Serial number of the device to be ejected
     //
-
     ULONG   SerialNo;
     
     ULONG Reserved[2];    

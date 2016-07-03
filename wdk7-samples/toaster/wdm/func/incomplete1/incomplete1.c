@@ -147,7 +147,7 @@ Return Value Description:
     //
     DriverObject->MajorFunction[IRP_MJ_PNP]            = ToasterDispatchPnp;
     DriverObject->MajorFunction[IRP_MJ_POWER]          = ToasterDispatchPower;
-    DriverObject->MajorFunction[IRP_MJ_SYSTEM_CONTROL] = ToasterSystemControl;
+    DriverObject->MajorFunction[IRP_MJ_SYSTEM_CONTROL] = ToasterSystemControl; // WMI related
 
     return STATUS_SUCCESS;
 }
@@ -652,7 +652,7 @@ Return Value Description:
         // any IRPs the system dispatched between IRP_MN_QUERY_STOP_DEVICE and
         // IRP_MN_CANCEL_STOP_DEVICE would be lost.  // 意思是: 如果没有用 IRP queue, 就会出现这种 lost 结果.
         //
-        SET_NEW_PNP_STATE(fdoData, StopPending);
+        SET_NEW_PNP_STATE(fdoData, StopPending); // case IRP_MN_QUERY_STOP_DEVICE
 
         // Set the status of the IRP to STATUS_SUCCESS before passing it down the
         // device stack to indicate that the function driver successfully processed
@@ -723,9 +723,11 @@ Return Value Description:
         // The function driver must process this IRP before it passes the IRP down
         // the device stack to be processed by the underlying bus driver.
         //
-        // Failing this IRP does not prevent the system from sending a subsequent
+        // Failing this IRP *does not prevent* the system from sending a subsequent
         // IRP_MN_REMOVE_DEVICE, it just informs the system that the function driver
         // is unable to remove without losing data.
+		// -- Chj: 但我发现此处 *does not prevent* 说得不对! 
+		// 我用 STATUS_UNSUCCESSFUL 来 fail 这个 IRP, IRP_MN_REMOVE_DEVICE 就不会出现. 见 Evernote 20160703.4 .
         //
         // If the system does not later send IRP_MN_REMOVE_DEVICE to remove the
         // hardware instance, then the system sends IRP_MN_CANCEL_REMOVE_DEVICE to
@@ -743,7 +745,13 @@ Return Value Description:
         // IRPs the system dispatched between IRP_MN_QUERY_REMOVE_DEVICE and
         // IRP_MN_CANCEL_REMOVE_DEVICE would be lost.
         //
-        SET_NEW_PNP_STATE(fdoData, RemovePending);
+#if 0 
+	// Chj test:
+	Irp->IoStatus.Status = STATUS_UNSUCCESSFUL;
+	IoCompleteRequest (Irp, IO_NO_INCREMENT);
+	return STATUS_UNSUCCESSFUL;
+#endif
+        SET_NEW_PNP_STATE(fdoData, RemovePending); // case IRP_MN_QUERY_REMOVE_DEVICE
         Irp->IoStatus.Status = STATUS_SUCCESS;
         break;
 
@@ -787,7 +795,7 @@ Return Value Description:
         // function driver are failed because the hardware instance is no longer
         // present.
         //
-        SET_NEW_PNP_STATE(fdoData, SurpriseRemovePending);
+        SET_NEW_PNP_STATE(fdoData, SurpriseRemovePending); // case IRP_MN_SURPRISE_REMOVAL
 
         // Disable the device interface that was enabled earlier when
         // ToasterDispatchPnP processed IRP_MN_START_DEVICE. This operation stops
@@ -1153,7 +1161,6 @@ Return Value Description:
 {
     PFDO_DATA           fdoData;
     NTSTATUS            status;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ToasterDispatchPower\n");
@@ -1162,7 +1169,6 @@ Return Value Description:
 
     if (Deleted == fdoData->DevicePnPState)
     {
-        //
         // Start the next power IRP. Power IRPs are processes differently than
         // non-power IRPs. A driver's DispatchPower routine must call
         // PoStartNextPowerIrp to signal the power manager to send the next power
@@ -1179,35 +1185,27 @@ Return Value Description:
         PoStartNextPowerIrp (Irp);
 
         status = STATUS_NO_SUCH_DEVICE;
-
         Irp->IoStatus.Status = status;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         return status;
     }
 
-    //
     // Start the next power IRP. It would not be safe to call PoStartNextPowerIrp
     // before checking to see if the DevicePnPState equals Deleted (above) because
-    // a driver should only call PoStartNextPowerIrp immediately before it completes
+    // a driver should *only* call PoStartNextPowerIrp immediately *before* it completes
     // the current power IRP. Because additional logic appears in the Featured1 stage
-    // for ToasterDispatchPower the safe method requires these separate calls to
+    // for ToasterDispatchPower , the safe method requires these separate calls to
     // PoStartNextPowerIrp.
     //
-
     PoStartNextPowerIrp(Irp);
 
-    //
     // Set up the I/O stack location for the next lower driver (the target device
     // object for the IoCallDriver call). Call IoSkipCurrentIrpStackLocation
     // because the function driver does not change any of the IRP's values in the
-    // current I/O stack location. This allows the system to reuse I/O stack
-    // locations.
+    // current I/O stack location. This allows the system to reuse I/O stack locations.
     //
     IoSkipCurrentIrpStackLocation(Irp);
 
-    //
     // Pass the power IRP down the device stack. Drivers must call PoCallDriver
     // instead of IoCallDriver to pass power IRPs down the device stack. PoCallDriver
     // ensures that power IRPs are properly synchronized throughout the system.
@@ -1224,7 +1222,6 @@ ToasterSystemControl (
     PIRP            Irp
     )
 /*++
-
 New Routine Description:
     The system dispatches WMI IRPs to ToasterSystemControl. This stage of the
     function driver does not process any specific WMI IRPs. All WMI IRPs that the
@@ -1236,12 +1233,11 @@ New Routine Description:
     and status of a toaster hardware instance.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is a FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is a FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the WMI operation associated with the hardware instance
     described by the DeviceObject parameter, such as querying the number of
     failures that the hardware instance has recorded.
@@ -1249,12 +1245,10 @@ Parameters Description:
 Return Value Description:
     ToasterSystemControl returns a value that indicates if the IRP was
     successfully processed by the device stack, or an error, if one occurred.
-
 --*/
 {
     PFDO_DATA               fdoData;
     NTSTATUS                status;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "FDO received WMI IRP\n");
@@ -1264,15 +1258,11 @@ Return Value Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         status = STATUS_NO_SUCH_DEVICE;
-
         Irp->IoStatus.Status = status;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         return status;
     }
 
-    //
     // Set up the I/O stack location for the next lower driver (the target device
     // object for the IoCallDriver call). Call IoSkipCurrentIrpStackLocation
     // because the function driver does not change any of the IRP's values in the
@@ -1281,12 +1271,10 @@ Return Value Description:
     //
     IoSkipCurrentIrpStackLocation (Irp);
 
-    //
     // Pass the WMI (system control) IRP down the device stack to be processed by the
     // bus driver.
     //
     status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
     return status;
 }
 

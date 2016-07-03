@@ -1221,21 +1221,17 @@ Routine Description:
     and then tell Plug and Play about it.
 
 Arguments:
-
     Remove   - pointer to remove hardware structure.
     FdoData - contains the list to iterate over
 
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
-
 --*/
 {
     PLIST_ENTRY         entry;
     PPDO_DEVICE_DATA    pdoData;
     BOOLEAN             found = FALSE, plugOutAll;
-
     PAGED_CODE ();
 
     plugOutAll = (0 == UnPlug->SerialNo);
@@ -1262,8 +1258,8 @@ Returns:
 
     for (entry = FdoData->ListOfPDOs.Flink;
          entry != &FdoData->ListOfPDOs;
-         entry = entry->Flink) {
-
+         entry = entry->Flink) 
+	{
         pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
 
         Bus_KdPrint (FdoData, BUS_DBG_IOCTL_NOISE,
@@ -1306,21 +1302,17 @@ Routine Description:
     user presses the Eject button on the device.
 
 Arguments:
-
     Eject   - pointer to Eject hardware structure.
     FdoData - contains the list to iterate over
 
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
-
 --*/
 {
     PLIST_ENTRY         entry;
     PPDO_DEVICE_DATA    pdoData;
     BOOLEAN             found = FALSE, ejectAll;
-
     PAGED_CODE ();
 
     ejectAll = (0 == Eject->SerialNo);
@@ -1339,8 +1331,8 @@ Returns:
         //
         // Somebody in user space isn't playing nice!!!
         //
-        Bus_KdPrint (FdoData, BUS_DBG_IOCTL_ERROR,
-                      ("No devices to eject!\n"));
+        Bus_KdPrint (FdoData, BUS_DBG_IOCTL_ERROR, ("No devices to eject!\n"));
+
         ExReleaseFastMutex (&FdoData->Mutex);
         return STATUS_NO_SUCH_DEVICE;
     }
@@ -1350,14 +1342,15 @@ Returns:
     //
     for (entry = FdoData->ListOfPDOs.Flink;
          entry != &FdoData->ListOfPDOs;
-         entry = entry->Flink) {
-
+         entry = entry->Flink) 
+	{
         pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
 
         Bus_KdPrint (FdoData, BUS_DBG_IOCTL_NOISE,
                       ("found device %d\n", pdoData->SerialNo));
 
-        if (ejectAll || Eject->SerialNo == pdoData->SerialNo) {
+        if (ejectAll || Eject->SerialNo == pdoData->SerialNo) 
+		{
             Bus_KdPrint (FdoData, BUS_DBG_IOCTL_INFO,
                           ("Ejected %d\n", pdoData->SerialNo));
             found = TRUE;

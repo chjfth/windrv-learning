@@ -243,14 +243,15 @@ Return Value:
 
     status = STATUS_INVALID_PARAMETER;
 
-    switch (irpStack->Parameters.DeviceIoControl.IoControlCode) {
+    switch (irpStack->Parameters.DeviceIoControl.IoControlCode) 
+	{{
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
         if (
             // Make sure it has at least two nulls and the size
             // field is set to the declared size of the struct
             //
-            ((sizeof (BUSENUM_PLUGIN_HARDWARE) + sizeof(UNICODE_NULL) * 2) <=
-             inlen) &&
+            ((sizeof (BUSENUM_PLUGIN_HARDWARE) + sizeof(UNICODE_NULL) * 2) <= inlen)
+              &&
 
             // The size field should be set to the sizeof the struct as declared
             // and *not* the size of the struct plus the multi_sz
@@ -258,34 +259,28 @@ Return Value:
             (sizeof (BUSENUM_PLUGIN_HARDWARE) ==
              ((PBUSENUM_PLUGIN_HARDWARE) buffer)->Size)) 
 		{
-
             Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("PlugIn called\n"));
 
-            status= Bus_PlugInDevice((PBUSENUM_PLUGIN_HARDWARE)buffer,
-                                inlen, fdoData);
-
-
+            status= Bus_PlugInDevice((PBUSENUM_PLUGIN_HARDWARE)buffer, inlen, fdoData);
         }
         break;
 
     case IOCTL_BUSENUM_UNPLUG_HARDWARE:
 
         if ((sizeof (BUSENUM_UNPLUG_HARDWARE) == inlen) &&
-              (((PBUSENUM_UNPLUG_HARDWARE)buffer)->Size == inlen)) {
-
+              (((PBUSENUM_UNPLUG_HARDWARE)buffer)->Size == inlen)) 
+		{
             Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("UnPlug called\n"));
 
-            status= Bus_UnPlugDevice(
-                    (PBUSENUM_UNPLUG_HARDWARE)buffer, fdoData);
-
+            status= Bus_UnPlugDevice((PBUSENUM_UNPLUG_HARDWARE)buffer, fdoData);
         }
         break;
 
     case IOCTL_BUSENUM_EJECT_HARDWARE:
 
         if ((sizeof (BUSENUM_EJECT_HARDWARE) == inlen) &&
-            (((PBUSENUM_EJECT_HARDWARE)buffer)->Size == inlen)) {
-
+            (((PBUSENUM_EJECT_HARDWARE)buffer)->Size == inlen)) 
+		{
             Bus_KdPrint(fdoData, BUS_DBG_IOCTL_TRACE, ("Eject called\n"));
 
             status= Bus_EjectDevice((PBUSENUM_EJECT_HARDWARE)buffer, fdoData);
@@ -294,7 +289,7 @@ Return Value:
 
     default:
         break; // default status is STATUS_INVALID_PARAMETER
-    }
+	}}
 
     Irp->IoStatus.Information = 0;
 END:
