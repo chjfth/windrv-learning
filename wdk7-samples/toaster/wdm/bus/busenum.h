@@ -94,13 +94,14 @@ Revision History:
 #define BUS_DBG_WMI_INFO                0x00040000
 #define BUS_DBG_WMI_ERROR               0x00080000
 
+extern int g_seq;
 
 #if DBG
 #define BUS_DEFAULT_DEBUG_OUTPUT_LEVEL 0x000FFFFF
 
 #define Bus_KdPrint(_d_,_l_, _x_) \
             if (!(_l_) | (_d_)->DebugLevel & (_l_)) { \
-               DbgPrint ("BusEnum.SYS: "); \
+               DbgPrint ("[%d]BusEnum.SYS: ", g_seq++); \
                DbgPrint _x_; \
             }
 
@@ -111,7 +112,7 @@ Revision History:
 
 #define Bus_KdPrint_Def(_l_, _x_) \
             if (!(_l_) | BusEnumDebugLevel & (_l_)) { \
-               DbgPrint ("BusEnum.SYS: "); \
+               DbgPrint ("[%d]BusEnum.SYS: ", g_seq++); \
                DbgPrint _x_; \
             }
 

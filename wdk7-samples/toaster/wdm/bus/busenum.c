@@ -1,20 +1,15 @@
 /*++
-
 Copyright (c) 1990-2000  Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BUSENUM.C
 
 Abstract:
-
     This module contains the entry points for a toaster bus driver.
 
 Author:
 
-
 Environment:
-
     kernel mode only
 
 Revision History:
@@ -22,8 +17,6 @@ Revision History:
     Cleaned up sample 05/05/99
     Fixed the create_close and ioctl handler to fail the request 
     sent on the child stack - 3/15/04
-
-
 --*/
 
 #include "busenum.h"
@@ -34,6 +27,7 @@ Revision History:
 //
 ULONG BusEnumDebugLevel = BUS_DEFAULT_DEBUG_OUTPUT_LEVEL;
 
+int g_seq = 0; // debug info sequence number
 
 GLOBALS Globals;
 
@@ -188,19 +182,14 @@ Bus_IoCtl (
     )
 /*++
 Routine Description:
-
     Handle user mode PlugIn, UnPlug and device Eject requests.
 
 Arguments:
-
    DeviceObject - pointer to a device object.
-
    Irp - pointer to an I/O Request Packet.
 
 Return Value:
-
    NT status code
-
 --*/
 {
     PIO_STACK_LOCATION      irpStack;
@@ -209,7 +198,6 @@ Return Value:
     PFDO_DEVICE_DATA        fdoData;
     PVOID                   buffer;
     PCOMMON_DEVICE_DATA     commonData;
-
     PAGED_CODE ();
 
     commonData = (PCOMMON_DEVICE_DATA) DeviceObject->DeviceExtension;

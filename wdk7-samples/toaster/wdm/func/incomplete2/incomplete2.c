@@ -2079,16 +2079,15 @@ ToasterDebugPrint    (
     )
 
 /*++
-
 Updated Routine Description:
     ToasterDebugPrint does not change in this stage of the function driver.
-
 --*/
 {
 #define     TEMP_BUFFER_SIZE        1024
     va_list    list;
     UCHAR      debugMessageBuffer[TEMP_BUFFER_SIZE];
     NTSTATUS status;
+	static int s_seq;
 
     va_start(list, DebugMessage);
 
@@ -2103,7 +2102,7 @@ Updated Routine Description:
         }
         if (DebugPrintLevel <= DebugLevel)
         {
-            KdPrint ((_DRIVER_NAME_": %s", debugMessageBuffer));
+            KdPrint (("[%d]" _DRIVER_NAME_": %s", s_seq++, debugMessageBuffer));
         }
     }
     va_end(list);
