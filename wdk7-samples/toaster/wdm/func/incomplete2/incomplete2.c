@@ -119,7 +119,7 @@ Updated Routine Description:
     mechanism uses the following three members of the device extension:
 
     -QueueState
-     The QueueState member of the device extension is a custom enumeration data
+     The QueueState member of the device extension is a custom enum data
      type defined by the function driver that specifies three states which control
      how the driver-managed IRP queue mechanism operates. The three states are:
 
@@ -187,7 +187,7 @@ Updated Routine Description:
      synchronize thread access to NewRequestsQueue because multiple threads could
      attempt to simultaneously manipulate the queue's contents, but only one
      thread at a time is allowed have access to the queue. Otherwise the IRPs in
-     the queue cannot be processed in order resulting in unpredictable behavior.
+     the queue cannot be processed in order, resulting in unpredictable behavior.
      The queue must be accessed whenever an IRP is added or removed from the queue.
 
     ToasterAddDevice also initializes the kernel event members of the device
@@ -205,12 +205,15 @@ Updated Routine Description:
     driver calls ToasterIoIncrement to increment OutstandingIO every time the
     system dispatches a new IRP to the function driver. The function driver calls
     ToasterIoDecrement to decrement OutstandingIO when the function driver
-    completes a dispatched IRP. The function driver must make an equal number of
+    completes a dispatched IRP. 
+	                            The function driver must make an equal number of
     calls to increment and decrement OutstandingIO, except when ToasterDispatchPnP
     processes IRP_MN_REMOVE_DEVICE. When the function driver processes
     IRP_MN_REMOVE_DEVICE, the function driver must call ToasterIoDecrement twice
     in order to signal RemoveEvent. The extra call to ToasterIoDecrement is the
     only time OutstandingIO is decremented to 0.
+	//
+	// --上头说的这套东西好像就是 remove-lock 。
 
     ToasterDispatchPnP uses StopEvent to synchronize the processing of
     IRP_MN_QUERY_STOP_DEVICE and IRP_MN_QUERY_REMOVE_DEVICE with any other threads
@@ -222,14 +225,12 @@ Updated Routine Description:
     IRP_MN_REMOVE_DEVICE with any other threads that might be processing other IRPs
     in the function driver. Any thread that processes IRP_MN_REMOVE_DEVICE is
     blocked from completing the IRP until ToasterIoDecrement signals RemoveEvent.
-
 --*/
 {
     NTSTATUS                status = STATUS_SUCCESS;
     PDEVICE_OBJECT          deviceObject = NULL;
     PFDO_DATA               fdoData;
 
-    //
     // Call the PAGED_CODE macro because this routine must only execute at
     // IRQL = PASSIVE_LEVEL. The macro halts the system in the checked build
     // of Windows if IRQL >= DISPATCH_LEVEL, because then the Dispatcher cannot
@@ -262,12 +263,11 @@ Updated Routine Description:
 
     fdoData->UnderlyingPDO = PhysicalDeviceObject;
 
-    //
     // Initialize QueueState to HoldRequests. The function driver queues any new IRPs
     // that the system dispatches to it until ToasterDispatchPnP changes QueueState
     // to AllowRequests.
     //
-    // In Windows 2000, the system does not dispatch any read, write, or device
+    // In Windows 2000+, the system does not dispatch any read, write, or device
     // control operations until the function driver has started the hardware. However,
     // if the function driver executes in Win9x, initializing QueueState to
     // HoldRequests is a preventative measure because Win9x does dispatch read, write
@@ -279,20 +279,17 @@ Updated Routine Description:
     fdoData->Self = deviceObject;
     fdoData->NextLowerDriver = NULL;
 
-    //
     // Initialize the driver-managed IRP queue. New IRPs are added to the tail of the
     // list and queued IRPs are processed from the head of the queue.
     //
     InitializeListHead(&fdoData->NewRequestsQueue);
 
-    //
     // Initialize the spin lock that protects and synchronizes thread access to the
     // driver-managed IRP queue. QueueLock synchronizes access to NewRequestsQueue by
     // allowing only one thread at a time to acquire the spin lock.
     //
     KeInitializeSpinLock(&fdoData->QueueLock);
 
-    //
     // Initialize RemoveEvent to an unsignaled state. ToasterIoDecrement later
     // signals RemoveEvent when OutstandingIO transitions from 1 to 0.
     //
@@ -300,7 +297,6 @@ Updated Routine Description:
                       SynchronizationEvent,
                       FALSE);
 
-    //
     // Initialize StopEvent to a signaled state. ToasterIoIncrement unsignals
     // StopEvent when OutstandingIO transitions from 1 to 2. When StopEvent is in an
     // unsignaled state, ToasterDispatchPnP is blocked from continuing to process
@@ -312,7 +308,6 @@ Updated Routine Description:
                       SynchronizationEvent,
                       TRUE);
 
-    //
     // Initialize OutstandingIO to 1. The function driver must make an equal number
     // of calls to ToasterIoIncrement and ToasterIoDecrement in order for
     // ToasterIoDecrement to properly signal StopEvent or RemoveEvent. The only time
@@ -332,7 +327,6 @@ Updated Routine Description:
     if (NULL == fdoData->NextLowerDriver)
     {
         IoDeleteDevice(deviceObject);
-
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -362,18 +356,13 @@ ToasterUnload(
     __in PDRIVER_OBJECT DriverObject
     )
 /*++
-
 Updated Routine Description:
     ToasterUnload does not change in this stage of the function driver.
-
 --*/
 {
     PAGED_CODE();
-
     ASSERT(NULL == DriverObject->DeviceObject);
-
     ToasterDebugPrint(TRACE, "unload\n");
-
     return;
 }
 
