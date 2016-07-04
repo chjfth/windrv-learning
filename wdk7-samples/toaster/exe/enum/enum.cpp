@@ -129,7 +129,7 @@ main(
 
     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
     
-	return err ? 1 : 0;
+	return err ? 4 : 0;
 
 usage:
     printf(USAGE);
