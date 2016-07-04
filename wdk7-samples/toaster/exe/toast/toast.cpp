@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -8,24 +7,18 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
     PURPOSE.
 
 Module Name:
-
-    TOAST.C
+    TOAST.C (Chj rename it to toast.cpp)
 
 Abstract:
-
     Lists all the toaster device and interfaces present in the system
     and opens the last interface to send an invalidate device Ioctl request
     or read requests.
 
 Environment:
-
     usermode console application
 
 Revision History:
-
   Eliyas Yakub  Nov 2, 1998
-
-
 --*/
 
 #include <basetyps.h>
@@ -38,7 +31,7 @@ Revision History:
 #include <winioctl.h>
 #include "public.h"
 #include <conio.h>
-#include <dontuse.h>
+// #include <dontuse.h>
 
 #define USAGE  \
 "Usage: Toast <-h> {-h option causes the device to hide from Device Manager UI}\n"
@@ -114,12 +107,14 @@ main(
     // Enumerate devices of toaster class
     //
 
-    for(;;) {
+    for(;;) 
+	{
         if (SetupDiEnumDeviceInterfaces (hardwareDeviceInfo,
                                  0, // No care about specific PDOs
                                  (LPGUID)&GUID_DEVINTERFACE_TOASTER,
                                  i, //
-                                 &deviceInterfaceData)) {
+                                 &deviceInterfaceData)) 
+		{
 
             if(deviceInterfaceDetailData) {
                 free (deviceInterfaceDetailData);
@@ -141,7 +136,8 @@ main(
                     NULL, // probing so no output buffer yet
                     0, // probing so output buffer length of zero
                     &requiredLength,
-                    NULL)) { // not interested in the specific dev-node
+                    NULL)) 
+			{ // not interested in the specific dev-node
                 if(ERROR_INSUFFICIENT_BUFFER != GetLastError()) {
                     printf("SetupDiGetDeviceInterfaceDetail failed %d\n", GetLastError());
                     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
@@ -152,7 +148,7 @@ main(
 
             predictedLength = requiredLength;
 
-            deviceInterfaceDetailData = malloc (predictedLength);
+            deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(predictedLength);
 
             if(deviceInterfaceDetailData) {
                 deviceInterfaceDetailData->cbSize =
@@ -163,14 +159,14 @@ main(
                 return FALSE;
             }
 
-
             if (! SetupDiGetDeviceInterfaceDetail (
                        hardwareDeviceInfo,
                        &deviceInterfaceData,
                        deviceInterfaceDetailData,
                        predictedLength,
                        &requiredLength,
-                       NULL)) {
+                       NULL)) 
+			{
                 printf("Error in SetupDiGetDeviceInterfaceDetail\n");
                 SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
                 free (deviceInterfaceDetailData);
@@ -189,7 +185,6 @@ main(
 
     }
 
-
     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
 
     if(!deviceInterfaceDetailData)
@@ -201,7 +196,6 @@ main(
     //
     // Open the last toaster device interface
     //
-
     printf("\nOpening the last interface:\n %s\n",
                     deviceInterfaceDetailData->DevicePath);
 
@@ -216,13 +210,12 @@ main(
     if (INVALID_HANDLE_VALUE == file) {
         printf("Error in CreateFile: %x", GetLastError());
         free (deviceInterfaceDetailData);
-        return 0;
+        return 4;
     }
 
     //
     // Invalidate the Device State
     //
-
     if(bHide)
     {
         if (!DeviceIoControl (file,
@@ -233,17 +226,14 @@ main(
             printf("Invalidate device request failed:0x%x\n", GetLastError());
             free (deviceInterfaceDetailData);
             CloseHandle(file);
-            return 0;
+            return 4;
         }
         printf("\nRequest to hide the device completed successfully\n");
-
     }
-
 
     //
     // Read/Write to the toaster device.
     //
-
     printf("\nPress 'q' to exit, any other key to read...\n");
     fflush(stdin);
     ch = _getche();
@@ -264,7 +254,6 @@ main(
     CloseHandle(file);
     return 0;
 }
-
 
 
 BOOL
