@@ -13,6 +13,6 @@ INCLUDES=..\..\wdm\inc
 
 TARGETLIBS=$(SDK_LIB_PATH)\setupapi.lib
             
-SOURCES= toast.c
+SOURCES= toast.cpp
 
 _NT_TARGET_VERSION=$(_NT_TARGET_VERSION_WINXP)
