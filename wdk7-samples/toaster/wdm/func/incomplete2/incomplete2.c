@@ -245,7 +245,7 @@ Updated Routine Description:
                              FILE_DEVICE_UNKNOWN,
                              FILE_DEVICE_SECURE_OPEN,
                              FALSE,
-                             &deviceObject);
+                             &deviceObject); // incomplete2.c
 
     if (!NT_SUCCESS (status))
     {
@@ -384,7 +384,6 @@ ToasterDispatchPnp (
     PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchPnP calls ToasterIoIncrement when the system dispatches a PnP
     IRP to it. ToasterDispatchPnP later calls ToasterIoDecrement when it completes
@@ -411,14 +410,12 @@ Updated Routine Description:
     Some of the PnP IRPs are completed directly in the switch case statement, and
     then immediately return to the caller. Other PnP IRPs break out of the switch
     case to be completed at the end of ToasterDispatchPnP.
-
 --*/
 {
     PFDO_DATA               fdoData;
     PIO_STACK_LOCATION      stack;
     NTSTATUS                status = STATUS_SUCCESS;
     ULONG                   requestCount;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -458,7 +455,7 @@ Updated Routine Description:
     }
 
     switch (stack->MinorFunction)
-    {
+    {{
     case IRP_MN_START_DEVICE:
         status = ToasterSendIrpSynchronously(fdoData->NextLowerDriver, Irp);
 
@@ -615,7 +612,6 @@ Updated Routine Description:
     case IRP_MN_QUERY_REMOVE_DEVICE:
         SET_NEW_PNP_STATE(fdoData, RemovePending);
 
-        //
         // Change the driver-managed IRP queue state to HoldRequests. Any new incoming
         // IRPs dispatched to ToasterDispatchIO will be added to the tail of the
         // driver-managed IRP queue instead of being processed immediately.
@@ -624,14 +620,12 @@ Updated Routine Description:
 
         ToasterDebugPrint(INFO, "Query - remove holding requests...\n");
 
-        //
         // The count of uncompleted IRPs must be decremented before the call to
         // KeWaitForSingleObject in order for the StopEvent and RemoveEvent kernel
         // events to be signaled correctly.
         //
         ToasterIoDecrement(fdoData);
 
-        //
         // Block ToasterDispatchPnP from passing IRP_MN_QUERY_REMOVE_DEVICE down the
         // device stack until StopEvent is signaled. IRP_MN_QUERY_REMOVE_DEVICE must
         // not be passed down the device stack to be processed by the bus driver
@@ -658,11 +652,8 @@ Updated Routine Description:
             NULL);
 
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
         return status;
 
     case IRP_MN_CANCEL_REMOVE_DEVICE:
@@ -720,7 +711,6 @@ Updated Routine Description:
    case IRP_MN_SURPRISE_REMOVAL:
         SET_NEW_PNP_STATE(fdoData, SurpriseRemovePending);
 
-        //
         // Change the driver-managed IRP queue state to FailRequests. Any new
         // incoming IRPs dispatch to ToasterDispatchIO will be failed immediately.
         // In addition, FailRequests also specifies that any IRPs in the
@@ -729,7 +719,6 @@ Updated Routine Description:
         //
         fdoData->QueueState = FailRequests;
 
-        //
         // Call ToasterProcessQueuedRequests to fail all IRPs in the driver-managed
         // IRP queue. ToasterProcessQueuedRequests simply flushes the queue and
         // fails each IRP in the queue with STATUS_NO_SUCH_DEVICE.
@@ -840,7 +829,6 @@ Updated Routine Description:
                 FALSE,
                 NULL);
 
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
 
         IoSkipCurrentIrpStackLocation (Irp);
@@ -856,21 +844,16 @@ Updated Routine Description:
         return status;
 
     default:
-        //
         // Pass all unprocessed IRPs down the device stack. All PnP IRPs, as well as
         // all power and WMI IRPSs, must be passed down the device stack so that the
         // underlying bus driver can process them, regardless of whether the function
         // driver processes them.
         //
-
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
         ToasterIoDecrement(fdoData);
-
         return status;
-    }
+	}}
 
     //
     // The IRP_MN_START_DEVICE, IRP_MN_CANCEL_STOP_DEVICE, and
@@ -905,15 +888,11 @@ ToasterDispatchPnpComplete (
     PVOID Context
     )
 /*++
-
 Updated Routine Description:
-    ToasterDispatchPnpComplete does not change in this stage of the function
-    driver.
-
+    ToasterDispatchPnpComplete does not change in this stage of the function driver.
 --*/
 {
     PKEVENT             event = (PKEVENT)Context;
-
     UNREFERENCED_PARAMETER (DeviceObject);
 
     if (TRUE == Irp->PendingReturned)
@@ -931,7 +910,6 @@ ToasterReadWrite (
     __in PIRP Irp
     )
 /*++
-
 New Routine Description:
     ToasterDispatchIO dispatches IRP_MJ_READ and IRP_MJ_WRITE IRPs to
     ToasterReadWrite. Read and write operations can be processed by a single,
@@ -940,12 +918,12 @@ New Routine Description:
     ToasterReadWrite processes user-mode ReadFile and WriteFile calls.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp describes the read or write operation to perform on hardware instance
     described by the DeviceObject parameter, such as read 4KB of data from the
     hardware, or write 10 bytes to it.
@@ -955,7 +933,6 @@ Return Value Description:
     operation succeeded. Because the Toaster hardware is imaginary, the read/write
     operation always succeeds. However, in practice, ToasterReadWrite could return
     many errors to the caller.
-
 --*/
 {
     NTSTATUS    status;
@@ -989,11 +966,8 @@ Return Value Description:
     // Because the toaster hardware is imaginary, 0 bytes are transferred.
     //
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = status;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -1003,9 +977,7 @@ ToasterCreate (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_CREATE IRPs to ToasterCreate. ToasterCreate
     processes user-mode CreateFile calls.
@@ -1026,12 +998,12 @@ New Routine Description:
     does not need to be manipulated.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp describes the handle creation operation to perform on the hardware
     instance described by the DeviceObject parameter.
 
@@ -1039,33 +1011,28 @@ Return Value Description:
     ToasterCreate returns STATUS_NO_SUCH_DEVICE if the hardware instance
     represented by DeviceObject has been removed. Otherwise ToasterCreate returns
     STATUS_SUCCESS to indicate that the create handle operation succeeded.
-
 --*/
 {
+	IO_STACK_LOCATION *stack = IoGetCurrentIrpStackLocation(Irp); // chj test
     PFDO_DATA    fdoData;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
     ToasterDebugPrint(TRACE, "Create \n");
 
-    //
     // Because the toaster hardware is imaginary, it is not necessary to access the
     // hardware to process create IRPs, nor is it necessary to add the incoming IRP
     // to the driver-managed IRP queue.
     //
-
     ToasterIoIncrement (fdoData);
 
     if (Deleted == fdoData->DevicePnPState)
     {
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
-        ToasterIoDecrement(fdoData);
-
+		ToasterIoDecrement(fdoData);
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -1076,13 +1043,10 @@ Return Value Description:
     // transferred is 0.
     //
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = STATUS_SUCCESS;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
     ToasterIoDecrement(fdoData);
-
     return STATUS_SUCCESS;
 }
 
@@ -1092,9 +1056,7 @@ ToasterClose (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_CLOSE IRPs to ToasterClose. ToasterClose
     processes user-mode CloseHandle calls.
@@ -1121,32 +1083,30 @@ New Routine Description:
     Windows 9x does send IRP_MJ_CLOSE after it sends IRP_MN_REMOVE_DEVICE.
 
     In addition, Windows 2000 sends IRP_MN_SURPRISE_REMOVAL and then waits for all
-    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE.
+    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE. // 待验证
     However, Windows 9x immediately sends IRP_MN_REMOVE_DEVICE, even if there are
     open handles to the hardware instance. Therefore, to prevent leaking memory,
     ToasterClose does not check if the hardware instance has been deleted, and
-    proceeds to close all handles even after the hardware instance has been
+    proceeds to close all handles even after the hardware instance has been        // 此句 close handle 动作是谁做的？
     deleted.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp describes the close handle operation to perform on the hardware instance
     described by the DeviceObject parameter.
 
 Return Value Description:
     ToasterClose returns STATUS_SUCCESS to indicate the close handle operation
     succeeded. Close IRPs can be pended but cannot be failed.
-
 --*/
 {
     PFDO_DATA    fdoData;
     NTSTATUS     status;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -1156,14 +1116,12 @@ Return Value Description:
     ToasterIoIncrement (fdoData);
 
     status = STATUS_SUCCESS;
-
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = status;
 
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
-    ToasterIoDecrement(fdoData);
+    
+	ToasterIoDecrement(fdoData);
 
     return status;
 }
@@ -1926,9 +1884,7 @@ LONG
 ToasterIoIncrement    (
     __in  PFDO_DATA   FdoData
     )
-
 /*++
-
 New Routine Description:
     ToasterIoIncrement increments the count of uncompleted IRPs dispatched to the
     function driver. The count of uncompleted IRPs affects the StopEvent and
@@ -1983,13 +1939,10 @@ Parameters Description:
 Return Value Description:
     ToasterIoIncrement returns the number of uncompleted IRPs after the value has
     been incremented.
-
 --*/
-
 {
     LONG            result;
 
-    //
     // Increment the count of uncompleted IRPs. The InterlockedIncrement function
     // increments the count in a thread-safe manner. Thus, the function driver does
     // not need to define a separate spin lock in the device extension to protect
@@ -2001,13 +1954,15 @@ Return Value Description:
 
     ASSERT(result > 1);
 
-    //
     // Determine if StopEvent should be unsignaled (cleared). StopEvent must only be
     // unsignaled when the count of uncompleted IRPs increments from 1 to 2.
     // Unsignaling StopEvent prevents ToasterDispatchPnP from prematurely passing
     // IRP_MN_QUERY_STOP_DEVICE or IRP_MN_QUERY_REMOVE_DEVICE down the device stack
     // to be processed by the underlying bus driver.
     //
+	//
+	// Chj Q: 这个间隙被 decrement 动作给 race condition 了该怎么办？
+	//
     if (2 == result)
     {
         KeClearEvent(&FdoData->StopEvent);
@@ -2021,9 +1976,7 @@ LONG
 ToasterIoDecrement    (
     __in PFDO_DATA  FdoData
     )
-
 /*++
-
 New Routine Description:
     ToasterIoDecrement decrements the count of uncompleted IRPs dispatched to the
     function driver. The count of uncompleted IRPs affects the StopEvent and
@@ -2063,12 +2016,10 @@ Parameters Description:
 Return Value Description:
     ToasterIoDecrement returns the number of uncompleted IRPs after the value has
     been decremented.
-
 --*/
 {
     LONG            result;
 
-    //
     // Decrement the count of uncompleted IRPs. The InterlockedDecrement function
     // decrements the count in a thread-safe manner. Thus, the function driver does
     // not need to define a separate spin lock in its device extension to protect
@@ -2080,7 +2031,6 @@ Return Value Description:
 
     ASSERT(result >= 0);
 
-    //
     // Determine if StopEvent should be signaled. StopEvent must only be signaled
     // when the count of uncompleted IRPs decrements from 2 to 1. A count of 1
     // indicates that there are no more uncompleted IRPs.

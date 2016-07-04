@@ -504,28 +504,24 @@ typedef struct _FDO_DATA
     //
     LIST_ENTRY          NewRequestsQueue;
 
-    //
     // QueueLock represents the spin lock that protects and synchronizes multiple
     // threads access to the driver-managed IRP queue, so that only one thread at
     // a time can manipulate the queue's contents.
     //
     KSPIN_LOCK          QueueLock;
 
-    //
     // RemoveEvent represents the kernel event that synchronizes the function
     // driver's processing of IRP_MN_REMOVE_DEVICE. RemoveEvent is only signaled
     // when OutstandingIO equals 0.
     //
     KEVENT              RemoveEvent;
 
-    //
-    // StopEvent represents the kernel event the synchronizes the function driver's
+    // StopEvent represents the kernel event that synchronizes the function driver's
     // processing of IRP_MN_QUERY_STOP_DEVICE and IRP_MN_QUERY_REMOVE_DEVICE.
     // StopEvent is only signaled when OutstandingIO equals 1.
     //
     KEVENT              StopEvent;
 
-    //
     // OutstandingIO represents a 1 based count of unprocessed IRPs the function
     // driver has received. When OutstandingIO equals 1 the function driver has no
     // unprocessed IRPs and the hardware can be stopped. When OutstandingIO equals

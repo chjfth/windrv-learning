@@ -335,12 +335,10 @@ Return Value:
     NT STATUS
 --*/
 {
-
     PIO_STACK_LOCATION      stack;
     PDEVICE_CAPABILITIES    deviceCapabilities;
     DEVICE_CAPABILITIES     parentCapabilities;
     NTSTATUS                status;
-
     PAGED_CODE ();
 
     stack = IoGetCurrentIrpStackLocation (Irp);
@@ -380,7 +378,6 @@ Return Value:
     // but cannot loosen them.
     // First copy the parent's S to D state mapping
     //
-
     RtlCopyMemory(
         deviceCapabilities->DeviceState,
         parentCapabilities.DeviceState,
@@ -1062,7 +1059,6 @@ Return Value:
    PTOASTER_INTERFACE_STANDARD toasterInterfaceStandard;
    GUID *interfaceType;
    NTSTATUS    status = STATUS_SUCCESS;
-
    PAGED_CODE();
 
    irpStack = IoGetCurrentIrpStackLocation(Irp);
