@@ -10,7 +10,7 @@ INCLUDES=..\..\wdm\inc;
 
 TARGETLIBS=$(SDK_LIB_PATH)\setupapi.lib
            
-SOURCES= enum.c
+SOURCES= enum.cpp
 USE_MSVCRT=1
          
 _NT_TARGET_VERSION=$(_NT_TARGET_VERSION_WINXP)

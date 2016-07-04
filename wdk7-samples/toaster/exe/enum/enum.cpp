@@ -1,29 +1,22 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
-    Enum.c
+    Enum.c (Chj rename it ot enum.cpp)
 
 Abstract:
         This application simulates the plugin, unplug or ejection
         of devices.
 
 Environment:
-
     usermode console application
 
 Revision History:
-
   Eliyas Yakub  Oct 14, 1998
-
-
 --*/
 
 #include <basetyps.h>
@@ -35,7 +28,7 @@ Revision History:
 #include <string.h>
 #include <winioctl.h>
 #include "public.h"
-#include <dontuse.h>
+// #include <dontuse.h> // Chj: this is WDK header
 
 //
 // Prototypes
@@ -46,7 +39,6 @@ OpenBusInterface (
     __in       HDEVINFO                    HardwareDeviceInfo,
     __in       PSP_DEVICE_INTERFACE_DATA   DeviceInterfaceData
     );
-
 
 
 #define USAGE  \
@@ -67,6 +59,7 @@ main(
 {
     HDEVINFO                    hardwareDeviceInfo;
     SP_DEVICE_INTERFACE_DATA    deviceInterfaceData;
+	bool err = false;
 
     bPlugIn = bUnplug = bEject = FALSE;
 
@@ -125,18 +118,22 @@ main(
                                  0, //
                                  &deviceInterfaceData)) {
 
-        OpenBusInterface(hardwareDeviceInfo, &deviceInterfaceData);
-    } else if (ERROR_NO_MORE_ITEMS == GetLastError()) {
-
-        printf(
-        "Error:Interface GUID_DEVINTERFACE_BUSENUM_TOASTER is not registered\n");
+        BOOLEAN bSuccess = OpenBusInterface(hardwareDeviceInfo, &deviceInterfaceData);
+		err = !bSuccess;
+    } 
+	else if (ERROR_NO_MORE_ITEMS == GetLastError()) 
+	{
+		err = true;
+        printf( "Error:Interface GUID_DEVINTERFACE_BUSENUM_TOASTER is not registered\n");
     }
 
     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
-    return 0;
+    
+	return err ? 1 : 0;
+
 usage:
     printf(USAGE);
-    exit(0);
+    exit(1);
 }
 
 BOOLEAN
@@ -169,14 +166,13 @@ OpenBusInterface (
             NULL); // not interested in the specific dev-node
 
     if(ERROR_INSUFFICIENT_BUFFER != GetLastError()) {
-        printf("Error in SetupDiGetDeviceInterfaceDetail%d\n",
-                                                            GetLastError());
+        printf("Error in SetupDiGetDeviceInterfaceDetail%d\n", GetLastError());
         return FALSE;
     }
 
     predictedLength = requiredLength;
 
-    deviceInterfaceDetailData = malloc (predictedLength);
+    deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc (predictedLength);
 
     if(deviceInterfaceDetailData) {
         deviceInterfaceDetailData->cbSize =
@@ -228,12 +224,12 @@ OpenBusInterface (
     // Enumerate Devices
     //
 
-    if(bPlugIn) {
-
+    if(bPlugIn) 
+	{
         printf("SerialNo. of the device to be enumerated: %d\n", SerialNo);
 
-        hardware = malloc (bytes = (sizeof (BUSENUM_PLUGIN_HARDWARE) +
-                                              BUS_HARDWARE_IDS_LENGTH));
+        bytes = sizeof (BUSENUM_PLUGIN_HARDWARE) + BUS_HARDWARE_IDS_LENGTH;
+		hardware = (PBUSENUM_PLUGIN_HARDWARE)malloc(bytes);
 
         if(hardware) {
             hardware->Size = sizeof (BUSENUM_PLUGIN_HARDWARE);
@@ -255,7 +251,8 @@ OpenBusInterface (
                               IOCTL_BUSENUM_PLUGIN_HARDWARE ,
                               hardware, bytes,
                               NULL, 0,
-                              &bytes, NULL)) {
+                              &bytes, NULL)) 
+		{
               free (hardware);
               printf("PlugIn failed:0x%x\n", GetLastError());
               goto End;
@@ -269,7 +266,8 @@ OpenBusInterface (
     // ioctls removes all the devices that are enumerated so far.
     //
 
-    if(bUnplug) {
+    if(bUnplug) 
+	{
         printf("Unplugging device(s)....\n");
 
         unplug.Size = bytes = sizeof (unplug);
@@ -278,8 +276,10 @@ OpenBusInterface (
                               IOCTL_BUSENUM_UNPLUG_HARDWARE,
                               &unplug, bytes,
                               NULL, 0,
-                              &bytes, NULL)) {
+                              &bytes, NULL)) 
+		{
             printf("Unplug failed: 0x%x\n", GetLastError());
+			bSuccess = FALSE;
             goto End;
         }
     }
