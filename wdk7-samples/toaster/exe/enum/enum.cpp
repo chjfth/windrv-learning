@@ -189,7 +189,8 @@ OpenBusInterface (
                deviceInterfaceDetailData,
                predictedLength,
                &requiredLength,
-               NULL)) {
+               NULL)) 
+	{
         printf("Error in SetupDiGetDeviceInterfaceDetail\n");
         free (deviceInterfaceDetailData);
         return FALSE;
@@ -299,7 +300,8 @@ OpenBusInterface (
                               IOCTL_BUSENUM_EJECT_HARDWARE,
                               &eject, bytes,
                               NULL, 0,
-                              &bytes, NULL)) {
+                              &bytes, NULL)) 
+		{
             printf("Eject failed: 0x%x\n", GetLastError());
             goto End;
         }
