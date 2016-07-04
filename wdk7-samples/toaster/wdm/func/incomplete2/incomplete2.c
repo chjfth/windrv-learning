@@ -971,14 +971,14 @@ New Routine Description:
     The system dispatches IRP_MJ_CREATE IRPs to ToasterCreate. ToasterCreate
     processes user-mode CreateFile calls.
 
-    The presence of a driver-implemented routine in the IRP_MN_CREATE MajorFunction
-    array entry of the DriverObject parameter in DriverEntry allows the system to
-    successfully return a handle to the hardware instance to the CreateFile call.
+    The presence of [a driver-implemented routine in the IRP_MN_CREATE MajorFunction
+    array entry of the DriverObject parameter in DriverEntry] allows the system to
+    successfully return a handle to the hardware (open-)instance to the CreateFile call.
     Without a driver implemented routine in this array entry, the system fails
     any calls to CreateFile.
 
-    A DispatchCreate routine for PnP hardware is not usually required to perform
-    any special tasks to create and return a handle to the caller, except return
+    A DispatchCreate routine for PnP hardware is [not usually required to perform
+    any special tasks] to create and return a handle to the caller, except return
     STATUS_SUCCESS to the caller.
 
     In the case of the Toaster sample function driver, it is not necessary to
@@ -1050,14 +1050,14 @@ New Routine Description:
     The system dispatches IRP_MJ_CLOSE IRPs to ToasterClose. ToasterClose
     processes user-mode CloseHandle calls.
 
-    The presence of a driver implemented routine in the IRP_MN_CLOSE MajorFunction
-    array entry of the DriverObject parameter in DriverEntry allows the system to
+    The presence of [a driver implemented routine in the IRP_MN_CLOSE MajorFunction
+    array entry of the DriverObject parameter in DriverEntry] allows the system to
     successfully close a handle to the hardware instance to the CloseHandle call.
     Without a driver implemented routine in this array entry, the system fails
     any calls to CloseHandle.
 
-    The DispatchClose routine for PnP hardware is not usually required to perform
-    any special tasks to close a handle and return to the caller, except return
+    The DispatchClose routine for PnP hardware is [not usually required to perform
+    any special tasks] to close a handle and return to the caller, except return
     STATUS_SUCCESS to the caller.
 
     In the case of the Toaster sample function driver, it is not necessary to
@@ -1072,12 +1072,12 @@ New Routine Description:
     Windows 9x does send IRP_MJ_CLOSE after it sends IRP_MN_REMOVE_DEVICE.
 
     In addition, Windows 2000 sends IRP_MN_SURPRISE_REMOVAL and then waits for all
-    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE. // 待验证
+    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE. // 已验证
     However, Windows 9x immediately sends IRP_MN_REMOVE_DEVICE, even if there are
     open handles to the hardware instance. Therefore, to prevent leaking memory,
     ToasterClose does not check if the hardware instance has been deleted, and
-    proceeds to close all handles even after the hardware instance has been        // 此句 close handle 动作是谁做的？
-    deleted.
+    proceeds to close all handles even after the hardware instance has been        
+    deleted.       // Chj Q: 此句 close handle 动作是谁做的？在代码里没写啊!
 
 Parameters Description:
     [DeviceObject]

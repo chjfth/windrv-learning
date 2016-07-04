@@ -1286,7 +1286,6 @@ ToasterDebugPrint    (
     ...
     )
 /*++
-
 New Routine Description:
     ToasterDebugPrint outputs information from the function driver to a debugger.
 
@@ -1307,7 +1306,6 @@ Parameters Description:
 
 Return Value Description:
     ToasterDebugPrint does not return a value.
-
 --*/
 {
 #define     TEMP_BUFFER_SIZE        1024
@@ -1319,7 +1317,6 @@ Return Value Description:
 
     if (DebugMessage)
     {
-        //
         // Use the safe string function, RtlStringCbVPrintfA, instead of _vsnprintf.
         // RtlStringCbVPrintfA NULL terminates the output buffer even if the message
         // is longer than the buffer. This prevents malicious code from compromising
