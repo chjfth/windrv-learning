@@ -325,7 +325,6 @@ Bus_IncIoCount (
     )
 
 /*++
-
 Routine Description:
     This routine increments the number of requests the device receives
 
@@ -370,7 +369,6 @@ Return Value:
 --*/
 {
     LONG            result;
-
     result = InterlockedDecrement((LONG *)&FdoData->OutstandingIO);
 
     ASSERT(result >= 0);
@@ -402,5 +400,3 @@ Return Value:
 
     return;
 }
-
-
