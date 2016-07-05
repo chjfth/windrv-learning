@@ -352,8 +352,7 @@ Return Value Description:
 			\??\{B85B7C50-6A01-11d2-B841-00C04FAD5171}#MsToaster#1&79f5d87&0&01#{781ef630-72b2-11d2-b852-00c04fad5171}
 		 
 		 - where {B85B7C50-6A01-11d2-B841-00C04FAD5171} is the ClassGuid in toaster.inf
-		 - and the trailing {781ef630-72b2-11d2-b852-00c04fad5171} is random generated?
-		   different Windows target machine will receive different random numbers.
+		 - and the trailing {781ef630-72b2-11d2-b852-00c04fad5171} matches GUID_DEVINTERFACE_TOASTER.
 		*/
 
 	// Test the return value with the !NT_SUCCESS macro instead of testing for a

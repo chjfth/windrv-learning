@@ -331,10 +331,18 @@ Updated Routine Description:
     }
 
     status = IoRegisterDeviceInterface (
-                PhysicalDeviceObject,
+                PhysicalDeviceObject,     // Chj: 接口是针对 PDO 来注册的，而非针对 FDO .
                 (LPGUID) &GUID_DEVINTERFACE_TOASTER,
                 NULL,
-                &fdoData->InterfaceName);
+                &fdoData->InterfaceName); // InterfaceName 输出一个字串, 在IRP_MN_REMOVE_DEVICE时free掉.
+		/* Chj: Sample interface name string: 
+
+			\??\{B85B7C50-6A01-11d2-B841-00C04FAD5171}#MsToaster#1&1a590e2c&0&01#{781ef630-72b2-11d2-b852-00c04fad5171}
+		 
+		 - where {B85B7C50-6A01-11d2-B841-00C04FAD5171} is the ClassGuid in toaster.inf
+		 - and the trailing {781ef630-72b2-11d2-b852-00c04fad5171} matches GUID_DEVINTERFACE_TOASTER.
+		 - fdoData->InterfaceName is exactly the string passed to CreateFile in toast.exe .
+		*/
 
     if (!NT_SUCCESS (status))
     {
