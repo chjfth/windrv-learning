@@ -304,7 +304,8 @@ Return Value:
                     (PFDO_DEVICE_DATA) commonData);
     } else {
         Bus_KdPrint (commonData, BUS_DBG_PNP_TRACE,
-                      ("PDO %s IRP: 0x%p\n",
+                      ("PDO(sn=%02d) %s IRP: 0x%p\n", 
+					  ((PPDO_DEVICE_DATA)(DeviceObject->DeviceExtension))->SerialNo,
                       PnPMinorFunctionString(irpStack->MinorFunction),
                       Irp));
         //
@@ -1088,24 +1089,22 @@ Routine Description:
     ULONG               length;
     BOOLEAN             unique;
     PLIST_ENTRY         entry;
-
     PAGED_CODE ();
-
 
     length = (PlugInSize - sizeof (BUSENUM_PLUGIN_HARDWARE))/sizeof(WCHAR);
 
     Bus_KdPrint (FdoData, BUS_DBG_PNP_INFO,
                   ("Exposing PDO\n"
-                   "======SerialNo:   %d\n"
-                   "======HardwareId:     %ws\n"
-                   "======Length:         %d\n",
+                   "  ======SerialNo:   %02d\n"
+                   "  ======HardwareId: %ws\n"
+                   "  ======Length:     %d\n",
                    PlugIn->SerialNo,
                    PlugIn->HardwareIDs,
                    length));
 
     if ((L'\0' != PlugIn->HardwareIDs[length - 1]) ||
-        (L'\0' != PlugIn->HardwareIDs[length - 2])) {
-
+        (L'\0' != PlugIn->HardwareIDs[length - 2])) 
+	{
         return STATUS_INVALID_PARAMETER;
     }
 
@@ -1194,11 +1193,10 @@ Routine Description:
 	//
     RtlCopyMemory (pdoData->HardwareIDs, PlugIn->HardwareIDs, length);
 
-	pdoData->SerialNo = PlugIn->SerialNo;
+	pdoData->SerialNo = PlugIn->SerialNo; // Chj: 这句话应该放到 ExAcquireFastMutex (&FdoData->Mutex); 里头去保护，否则有可能产生 SerialNo 冲撞。
     
 	Bus_InitializePdo (pdo, FdoData);
 
-    //
     // Device Relation changes if a new pdo is created. So let
     // the PNP system know about that. This forces it to send bunch of pnp
     // queries and cause the function driver to be loaded.
