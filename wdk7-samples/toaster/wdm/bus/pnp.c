@@ -1457,6 +1457,7 @@ DbgDeviceIDString(
     BUS_QUERY_ID_TYPE Type
     )
 {
+	static char textbuf[20]; // Chj add: not multi-thread safe, just for convenience.
     switch (Type)
     {
         case BusQueryDeviceID:
@@ -1469,8 +1470,11 @@ DbgDeviceIDString(
             return "BusQueryInstanceID";
         case BusQueryDeviceSerialNumber:
             return "BusQueryDeviceSerialNumber";
+		case BusQueryContainerID:
+			return "BusQueryContainerID";
         default:
-            return "UnKnown ID";
+			RtlStringCbPrintfA(textbuf, sizeof(textbuf), "Unknown ID(%d)", Type);
+            return textbuf;
     }
 }
 

@@ -79,18 +79,16 @@ Updated Routine Description:
     connected to the MajorFunction array member of the DriverObject parameter.
 --*/
 {
-    ToasterDebugPrint(TRACE, "Entered DriverEntry of "_DRIVER_NAME_"  version "
+    ToasterDebugPrint(TRACE, "Entered DriverEntry() of "_DRIVER_NAME_", version "
                                                          "built on " __DATE__" at "__TIME__ "\n");
 
     DriverObject->DriverExtension->AddDevice           = ToasterAddDevice;
-
     DriverObject->DriverUnload                         = ToasterUnload;
 
     DriverObject->MajorFunction[IRP_MJ_PNP]            = ToasterDispatchPnp;
     DriverObject->MajorFunction[IRP_MJ_POWER]          = ToasterDispatchPower;
     DriverObject->MajorFunction[IRP_MJ_SYSTEM_CONTROL] = ToasterSystemControl;
 
-    //
     // Connect the new dispatch routines implemented in this stage of the function
     // driver that support communication from applications. ToasterDispatchIO
     // initially processes read, write, and device control operations. These
@@ -214,7 +212,7 @@ Updated Routine Description:
     in order to signal RemoveEvent. The extra call to ToasterIoDecrement is the
     only time OutstandingIO is decremented to 0.
 	//
-	// --上头说的这套东西好像就是 remove-lock 。
+	// --上头说的这套东西好像就是 remove-lock 的作用。
 
     ToasterDispatchPnP uses StopEvent to synchronize [the processing of
     IRP_MN_QUERY_STOP_DEVICE and IRP_MN_QUERY_REMOVE_DEVICE] with [any other threads
@@ -377,7 +375,7 @@ Updated Routine Description:
 {
     PAGED_CODE();
     ASSERT(NULL == DriverObject->DeviceObject);
-    ToasterDebugPrint(TRACE, "unload\n");
+    ToasterDebugPrint(TRACE, "driver-unload.\n");
     return;
 }
 
@@ -496,7 +494,7 @@ Updated Routine Description:
         //
         fdoData->QueueState = HoldRequests;
 
-        ToasterDebugPrint(INFO, "Holding requests...\n");
+        ToasterDebugPrint(INFO, "Query-stop: Holding requests...\n");
 
         // The count of uncompleted IRPs must be decremented before the call to
         // KeWaitForSingleObject in order for the StopEvent and RemoveEvent kernel
@@ -617,7 +615,7 @@ Updated Routine Description:
         //
         fdoData->QueueState = HoldRequests;
 
-        ToasterDebugPrint(INFO, "Query - remove holding requests...\n");
+        ToasterDebugPrint(INFO, "Query-remove: holding requests...\n");
 
         // The count of uncompleted IRPs must be decremented before the call to
         // KeWaitForSingleObject in order for the StopEvent and RemoveEvent kernel
@@ -648,7 +646,14 @@ Updated Routine Description:
             Executive,
             KernelMode,
             FALSE,
-            NULL);
+            NULL); // NULL=wait for ever
+
+		// Chj: 从此刻起可以保证不会有其他线程突然抢入执行, 导致 "PDO 的 stopping 操作" 与 
+		// "PDO 的 stopped 状态被打扰" 这类糟糕事情的发生.
+		// 那种糟糕事情不会发生, 是因为前几句刚刚设了 fdoData->QueueState=HoldRequests;, 此后
+		// 若有另一线程抢在此间隙执行了 ToasterDispatchIO(), 都会因为 ToasterDispatchIO() 入口处
+		// 判断了 if(HoldRequests==fdoData->QueueState) 而转去执行 ToasterQueueRequest(),
+		// 不会去打扰 PDO,  好极了.
 
         Irp->IoStatus.Status = STATUS_SUCCESS;
         IoSkipCurrentIrpStackLocation (Irp);
@@ -1127,7 +1132,6 @@ ToasterDispatchIoctl(
     __in  PIRP            Irp
     )
 /*++
-
 New Routine Description:
     ToasterDispatchIO dispatches IRP_MJ_DEVICE_CONTROL IRPs to
     ToasterDispatchIoctl. ToasterDispatchIoctl processes user-mode DeviceIoControl
@@ -1152,20 +1156,17 @@ Parameters Description:
 Return Value Description:
     ToasterDispatchIoctl returns STATUS_INVALID_DEVICE_REQUEST for all incoming
     device control operations in this stage of the function driver.
-
 --*/
 {
     PIO_STACK_LOCATION      stack;
     NTSTATUS                status= STATUS_SUCCESS;
     PFDO_DATA               fdoData;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Ioctl called\n");
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    //
     // Get the parameters of the IRP from the function driver's location in the IRP's
     // I/O stack. The results of the function driver's processing of the IRP, if any,
     // are then stored back in the same I/O stack location.
@@ -1180,16 +1181,12 @@ Return Value Description:
     switch (stack->Parameters.DeviceIoControl.IoControlCode)
     {
     default:
-        //
         // Fail all device control requests in this stage of the function driver.
-        //
         status = STATUS_INVALID_DEVICE_REQUEST;
     }
 
     Irp->IoStatus.Status = status;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -1200,7 +1197,6 @@ ToasterDispatchIO(
     PIRP            Irp
     )
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_READ, IRP_MJ_WRITE, and IRP_MJ_DEVICE_CONTROL
     IRPs to ToasterDispatchIO. ToasterDispatchIO processes user-mode ReadFile,
@@ -1210,7 +1206,8 @@ New Routine Description:
 
     If QueueState equals AllowRequests, then ToasterDispatchIO dispatches the
     incoming IRP to the respective DispatchRead, DispatchWrite, or
-    DispatchDeviceControl routine. If QueueState equals HoldRequests then
+    DispatchDeviceControl routine. 
+	                                If QueueState equals HoldRequests then
     ToasterDispatchIO queues the incoming IRP and returns to the caller.
 
     If QueueState equals AllowRequests, then the major function code of the
@@ -1218,19 +1215,19 @@ New Routine Description:
     that ToasterDispatchIO can dispatch the IRP to the respective routine.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp describes a read, write, or device control operation to perform on the
     hardware instance described by the DeviceObject parameter.
 
 Return Value Description:
     If QueueState equals HoldRequests then ToasterDispatchIO returns the status
     returned by ToasterQueueRequest, which indicates if the incoming IRP was
-    successfully added to the driver-managed IRP queue.
+    successfully added to the driver-managed IRP queue. (其实就是 return STATUS_PENDING)
 
     ToasterDispatchIO returns STATUS_NO_SUCH_DEVICE if the hardware instance
     represented by DeviceObject has been removed. Otherwise, ToasterDispatchIO
@@ -1238,13 +1235,11 @@ Return Value Description:
 
     ToasterDispatchIO returns STATUS_UNSUCCESSFUL if it is passed an IRP that is
     not a read, write, or device control operation.
-
 --*/
 {
     PIO_STACK_LOCATION      stack;
     NTSTATUS                status= STATUS_SUCCESS;
     PFDO_DATA               fdoData;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -1299,7 +1294,6 @@ Return Value Description:
         break;
 
     default:
-        //
         // Fail the incoming IRP if it is not a read, write, or device control
         // operation. The I/O manager will not pass a non read, write, or device
         // control IRP to the function driver. However, it is possible another driver
@@ -1310,17 +1304,13 @@ Return Value Description:
         ASSERTMSG(FALSE, "ToasterDispatchIO invalid IRP");
 
         status = STATUS_UNSUCCESSFUL;
-
         Irp->IoStatus.Status = status;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         break;
     }
 
     ToasterIoDecrement(fdoData);
 
-    //
     // After ToasterDispatchIO returns, the IRP is finished. Depending on the
     // operation described by the IRP, the results of the operation must then be
     // copied back to the caller by the I/O manager. The Toaster sample function
@@ -1411,9 +1401,7 @@ ToasterQueueRequest    (
     __in PFDO_DATA FdoData,
     __in PIRP Irp
     )
-
 /*++
-
 New Routine Description:
     The ToasterQueueRequest and ToasterProcessQueuedRequests implement the
     driver-managed IRP queue. These routines are closely related.
@@ -1432,12 +1420,13 @@ New Routine Description:
     system calls are only required when using the system-managed IRP queue.
 
     ToasterQueueRequest adds the incoming IRP to the tail of the driver-managed
-    IRP queue whenever the hardware instance is in a paused or hold state as a
+    IRP queue [whenever the hardware instance is in a paused or hold state [as a
     result of the function driver processing IRP_MN_QUERY_STOP_DEVICE or
-    IRP_MN_QUERY_REMOVE_DEVICE in ToasterDispatchPnP, thus allowing any operation
+    IRP_MN_QUERY_REMOVE_DEVICE in ToasterDispatchPnP]], thus allowing any operation
     in progress on the hardware instance to continue uninterrupted. When the
-    operation completes, the hardware instance becomes available to process the
+    _operation_ completes, the hardware instance becomes available to process the
     next queued IRP in the driver-managed IRP queue.
+	// Chj: 这句话的 _operation_ 用得很怪异, 到底指什么样的 operation ?
 
     The queue is processed later, when QueueState is set to AllowRequests and the
     function driver calls ToasterProcessQueuedRequests. Access to the IRPs in the
@@ -1448,35 +1437,32 @@ New Routine Description:
     processes IRP_MN_QUERY_STOP_DEVICE or IRP_MN_QUERY_REMOVE_DEVICE.
 
     The number of uncompleted IRPs is already incremented before ToasterQueueRequest
-    is called. After ToasterQueueRequest has queued the incoming IRP it must
-    decrement the number of uncompleted IRPs even though the IRP is not completed.
+    is called. After ToasterQueueRequest has queued the incoming IRP it 
+    **must decrement** the number of uncompleted IRPs even though the IRP is not completed.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance
     that contains the driver-managed IRP queue to add the incoming IRP to.
 
-    Irp
+    [Irp]
     Irp represents an IRP to be added to the driver-managed IRP queue.
 
 Return Value Description:
     ToasterQueueRequest must return STATUS_PENDING because the incoming IRP is
     marked pending.
-
 --*/
 {
     KIRQL               oldIrql;
+	// Chj: 此函数是 non-paged
 
     ToasterDebugPrint(TRACE, "Queuing Requests\n");
 
-    //
-    // Test the assumption that ToasterQueueRequest is called when QueueState equals
-    // HoldRequests. ToasterQueueRequest should not be called when QueueState equals
-    // AllowRequests or FailRequests.
+    // Test the assumption that ToasterQueueRequest is called when QueueState equals HoldRequests. 
+	// ToasterQueueRequest should not be called when QueueState equals AllowRequests or FailRequests.
     //
     ASSERT(HoldRequests == FdoData->QueueState);
 
-    //
     // Mark the incoming IRP as pending. Because the IRP is going to be added to the
     // driver-managed IRP queue and will not be processed immediately, it must be
     // marked pending. When an IRP is marked pending, the function driver must return
@@ -1484,11 +1470,10 @@ Return Value Description:
     //
     // The function driver will later resume processing the IRP in
     // ToasterDispatchPnpComplete. The system calls ToasterDispatchPnpComplete after
-    // the bus driver has completed the IRP.
+    // the bus driver has completed the IRP.     // Chj Q: 此句两个 IRP 是同一个东西?
     //
     IoMarkIrpPending(Irp);
 
-    //
     // Acquire the spin lock that protects and synchronizes thread access to
     // NewRequestsQueue. Only one thread at a time is allowed to have access to the
     // driver-managed IRP queue. Otherwise the IRPs in the queue cannot be processed
@@ -1501,7 +1486,6 @@ Return Value Description:
     //
     KeAcquireSpinLock(&FdoData->QueueLock, &oldIrql);
 
-    //
     // Add the incoming IRP to the tail of the driver-managed IRP queue. The queue is
     // a FIFO queue. The oldest IRPs in the queue are the first to be removed and
     // processed from the queue when the function driver calls
@@ -1510,7 +1494,6 @@ Return Value Description:
     InsertTailList(&FdoData->NewRequestsQueue,
                    &Irp->Tail.Overlay.ListEntry);
 
-    //
     // Release the spin lock that protects the driver-managed IRP queue. If another
     // thread was waiting in a call to KeAcquireSpinLock while attempting to acquire
     // QueueLock, it can now acquire it and manipulate the contents of the queue.
@@ -1522,7 +1505,6 @@ Return Value Description:
 
     ToasterIoDecrement(FdoData);
 
-    //
     // Return STATUS_PENDING. ToasterQueueRequest must return STATUS_PENDING to the
     // caller because ToasterQueueRequest called IoMarkIrpPending earlier. If the
     // read, write, or device control operation is synchronous (that is, the
@@ -1543,9 +1525,7 @@ VOID
 ToasterProcessQueuedRequests    (
     __in PFDO_DATA FdoData
     )
-
 /*++
-
 New Routine Description:
     The ToasterQueueRequest and ToasterProcessQueuedRequests implement the
     driver-managed IRP queue. These routines are closely related.
@@ -1565,72 +1545,65 @@ New Routine Description:
 
     ToasterProcessQueuedRequests processes the entire driver-managed IRP queue
     until it is empty. For each queued IRP, ToasterProcessQueuedRequests
-    determines if the IRP shold be failed because the hardware instance is no
+    determines if the IRP should be failed because the hardware instance is no
     longer connected to the computer, or dispatched again to ToasterDispatchIO if
     the hardware instance is present.
 
-    If ToasterDispatchPnP calls ToasterProcessQueuedRequests when processesing
+    If ToasterDispatchPnP calls ToasterProcessQueuedRequests when processing
     IRP_MN_REMOVE_DEVICE, or IRP_MN_SURPRISE_REMOVAL, then QueueState should
     equal FailRequests and each IRP in the driver-managed IRP queue is failed with
     STATUS_NO_SUCH_DEVICE.
 
-    If ToasterDispatchPnP calls ToasterProcessQueuedRequests when processesing
+    If ToasterDispatchPnP calls ToasterProcessQueuedRequests when processing
     IRP_MN_CANCEL_STOP_DEVICE, IRP_MN_CANCEL_REMOVE_DEVICE, or IRP_MN_START_DEVICE,
     then QueueState should equals AllowRequests and each IRP in the driver-managed
     IRP queue is dispatched to ToasterDispatchIO.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance
     that contains the driver-managed IRP queue.
 
 Return Value Description:
     This routine does not return a value.
-
 --*/
 {
     KIRQL               oldIrql;
     PIRP                nextIrp;
     PLIST_ENTRY         listEntry;
     NTSTATUS            status;
+	// Chj: 此函数是 non-paged 的
 
-    ToasterDebugPrint(TRACE, "Process or fail queued Requests\n");
+    ToasterDebugPrint(TRACE, "In ToasterProcessQueuedRequests().\n");
 
     for(;;)
     {
-        //
         // Enter a loop to process all the IRPs in the driver-managed IRP queue. The
         // loop exits when the queue is empty because either all the IRPs have been
         // processed, or the hardware instance has been disconnected and all the IRPs
         // have been failed.
-        //
 
         KeAcquireSpinLock(&FdoData->QueueLock, &oldIrql);
 
-        //
         // Determine if the queue is empty. If the queue is empty then break out of
         // the for loop.
         //
         if (IsListEmpty(&FdoData->NewRequestsQueue))
         {
-            //
             // It is very important to release the spin lock that protects the queue
             // before breaking out of the for loop. Otherwise a system deadlock
             // could result.
             //
             KeReleaseSpinLock(&FdoData->QueueLock, oldIrql);
-
             break;
         }
 
-        //
         // Remove the list entry at the head of the queue. The driver-managed IRP
         // queue is processed in a first-in first-out (FIFO) order. The oldest IRP
         // in the queue is processed first.
         //
         listEntry = RemoveHeadList(&FdoData->NewRequestsQueue);
 
-        //
         // Get the next IRP to process from the list entry. The CONTAINING_RECORD
         // macro returns the IRP from the list entry at the head of the queue.
         //
@@ -1638,27 +1611,22 @@ Return Value Description:
 
         KeReleaseSpinLock(&FdoData->QueueLock, oldIrql);
 
-        //
         // Determine if the IRP should be failed because the hardware instance has
         // been disconnected from the computer.
         //
         if (FailRequests == FdoData->QueueState)
         {
-            //
             // Complete the IRP with STATUS_NO_SUCH_DEVICE. The IRP's
             // IoStatus.Information member must also be set to the number of bytes
             // transferred before the IRP is completed. Because no data was
             // transferred for failed IRPs, the member is set to 0.
             //
             nextIrp->IoStatus.Information = 0;
-
             nextIrp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
             IoCompleteRequest (nextIrp, IO_NO_INCREMENT);
         }
         else
         {
-            //
             // The hardware instance is still connected to the computer. Dispatch the
             // IRP to ToasterDispatchIO. If ToasterDispatchIO returns STATUS_PENDING
             // then that is because QueueState has been changed to HoldRequests. If
@@ -1678,6 +1646,8 @@ Return Value Description:
 
             if (STATUS_PENDING == status)
             {
+				// 这同时意味着 nextIrp 刚刚又被 ToasterDispatchIO 重新送回了 NewRequestsQueue.
+				// 只能等待下一次 ToasterProcessQueuedRequests 被执行时才有机会再次被处理.
                 break;
             }
         }
@@ -1693,22 +1663,17 @@ ToasterSendIrpSynchronously (
     __in PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterSendIrpSynchronously does not change in this stage of the function
     driver.
-
 --*/
 {
     KEVENT   event;
     NTSTATUS status;
-
     PAGED_CODE();
 
     KeInitializeEvent(&event, NotificationEvent, FALSE);
-
     IoCopyCurrentIrpStackLocationToNext(Irp);
-
     IoSetCompletionRoutine(Irp,
                            ToasterDispatchPnpComplete,
                            &event,
@@ -1716,9 +1681,7 @@ Updated Routine Description:
                            TRUE,
                            TRUE
                            );
-
     status = IoCallDriver(DeviceObject, Irp);
-
     if (STATUS_PENDING == status)
     {
        KeWaitForSingleObject(&event,
@@ -1729,7 +1692,6 @@ Updated Routine Description:
                              );
        status = Irp->IoStatus.Status;
     }
-
     return status;
 }
 
@@ -1892,7 +1854,13 @@ New Routine Description:
     the hardware resources being used by the hardware instance causing any
     requests being processed by the hardware instance to become invalid.
 	//
-	// 你意思是将 toaster bus 想象成是一个真实的硬件总线，这种总线同一个时刻只能处理一项操作，是吗？
+	Chj: 此处的意思是, 对于一个 toaster devnode 来说, FDO 要完成从外界得到的 IRP 请求, 单靠
+	FDO 自己肯定是不行的, 得靠此 devnode 下层的 PDO, 就好比一个 USB 外设 devnode, 其 FDO 自身
+	的代码并不能进行 USB 数据的收发, 得靠下层的 PDO——即 USB bus driver 提供的代码才行.
+	因此, 如果在有人发起 query-remove 时, 我们已经知道当前 PDO 正在忙着处理前头的某个 IRP 请求,
+	此时就不应该立即将 query-remove 请求立即往下层发, 如果非要这么干, 下层有可能先处理了
+	query-remove (本线程抢先了前头那个 IRP 请求线程), PDO 的 query-remove 动作很可能导致前头那个
+	IRP 请求遭遇失败. 为了尽量避免这种失败, FDO 这层应该在 PDO "空闲时" 才发 query-remove 给它.
 
     When the function driver later calls ToasterIoDecrement when it completes an IRP,
     ToasterIoDecrement signals StopEvent if that IRP is the last uncompleted IRP.
@@ -1953,7 +1921,6 @@ Return Value Description:
     {
         KeClearEvent(&FdoData->StopEvent);
     }
-
     return result;
 }
 
@@ -1968,9 +1935,8 @@ New Routine Description:
     function driver. The count of uncompleted IRPs affects the StopEvent and
     RemoveEvent kernel events.
 
-    If the resulting count equals 1, then that indicates the hardware instance is
-    stopping. If the resulting count equals 0, then that indicates the device is
-    being removed.
+    If the resulting count equals 1, then that indicates the hardware instance is stopping. 
+	If the resulting count equals 0, then that indicates the device is being removed.
 
     ToasterIoDecrement signals StopEvent when the count of uncompleted IRPs
     decrements from 2 to 1. Signaling StopEvent allows ToasterDispatchPnP to
@@ -1991,10 +1957,10 @@ New Routine Description:
     decrements to 0 is when ToasterDispatchPnP processes IRP_MN_REMOVE_DEVICE and
     calls ToasterIoDecrement one extra time. The transition from 1 to 0 indicates
     that the system is removing the hardware instance. ToasterIoDecrement only
-    signals RemoveEvent is after it has signaled StopEvent.
+    signals RemoveEvent *after* it has signaled StopEvent.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance
     that contains the OutstandingIO member, which stores the count of uncompleted
     IRPs dispatched to the function driver.
@@ -2032,7 +1998,6 @@ Return Value Description:
                     FALSE);
     }
 
-    //
     // Determine if RemoveEvent should be signaled. RemoveEvent must only be signaled
     // after StopEvent has been signaled, when the count of uncompleted IRPs
     // decrements from 1 to 0. A count of 0 indicates that ToasterDispatchPnP is
@@ -2041,12 +2006,11 @@ Return Value Description:
     //
     if (0 == result)
     {
-        //
-        // Test the assumption that the toaster instance's hardware state equals
-        // Deleted. RemoveEvent should not be signaled if the hardware instance is
+        // Test the assumption that the toaster instance's hardware state equals Deleted.
+        // RemoveEvent should not be signaled if the hardware instance is
         // still connected to the computer.
         //
-        ASSERT(Deleted == FdoData->DevicePnPState);
+        ASSERT(Deleted == FdoData->DevicePnPState); // 此处断言失败说明本程序自身逻辑有错
 
         KeSetEvent (&FdoData->RemoveEvent,
                     IO_NO_INCREMENT,
@@ -2063,7 +2027,6 @@ ToasterDebugPrint    (
     __in PCCHAR  DebugMessage,
     ...
     )
-
 /*++
 Updated Routine Description:
     ToasterDebugPrint does not change in this stage of the function driver.
@@ -2102,10 +2065,8 @@ PnPMinorFunctionString (
     __in UCHAR MinorFunction
 )
 /*++
-
 Updated Routine Description:
     PnPMinorFunctionString does not change in this stage of the function driver.
-
 --*/
 {
     switch (MinorFunction)
