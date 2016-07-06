@@ -189,12 +189,13 @@ Updated Routine Description:
      thread at a time is allowed have access to the queue. Otherwise the IRPs in
      the queue cannot be processed in order, resulting in unpredictable behavior.
      The queue must be accessed whenever an IRP is added or removed from the queue.
+	.
 
     ToasterAddDevice also initializes the kernel event members of the device
     extension that are used to synchronize the processing of
     IRP_MN_QUERY_STOP_DEVICE, IRP_MN_QUERY_REMOVE_DEVICE and IRP_MN_REMOVE_DEVICE.
     The mechanism to synchronize the processing of these IRPs uses the
-    RemoveEvent, StopEvent, and OutstandingIO members of the device extension.
+    <RemoveEvent>, <StopEvent>, and <OutstandingIO> members of the device extension.
 
     The OutstandingIO member keeps the count of uncompleted IRPs that the system
     has dispatched to the function driver. OutstandingIO controls when the
@@ -215,9 +216,11 @@ Updated Routine Description:
 	//
 	// --上头说的这套东西好像就是 remove-lock 。
 
-    ToasterDispatchPnP uses StopEvent to synchronize the processing of
-    IRP_MN_QUERY_STOP_DEVICE and IRP_MN_QUERY_REMOVE_DEVICE with any other threads
-    that might be processing other IRPs in the function driver. Any thread that
+    ToasterDispatchPnP uses StopEvent to synchronize [the processing of
+    IRP_MN_QUERY_STOP_DEVICE and IRP_MN_QUERY_REMOVE_DEVICE] with [any other threads
+    that might be processing other IRPs in the function driver]. 
+	                                                  具体方法是：
+	                                                             Any thread that
     processes IRP_MN_QUERY_STOP_DEVICE or IRP_MN_QUERY_REMOVE_DEVICE is blocked
     from completing its respective IRP until ToasterIoDecrement signals StopEvent.
 
@@ -495,14 +498,12 @@ Updated Routine Description:
 
         ToasterDebugPrint(INFO, "Holding requests...\n");
 
-        //
         // The count of uncompleted IRPs must be decremented before the call to
         // KeWaitForSingleObject in order for the StopEvent and RemoveEvent kernel
         // events to be signaled correctly.
         //
         ToasterIoDecrement(fdoData);
 
-        //
         // Block ToasterDispatchPnP from passing IRP_MN_QUERY_STOP_DEVICE down the
         // device stack until StopEvent is signaled. IRP_MN_QUERY_STOP_DEVICE must
         // not be passed down the device stack to be processed by the bus driver
@@ -523,11 +524,8 @@ Updated Routine Description:
            NULL);
 
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
         return status;
 
    case IRP_MN_CANCEL_STOP_DEVICE:
@@ -866,7 +864,6 @@ Updated Routine Description:
 
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
-    //
     // Decrement the count of how many IRPs remain uncompleted. This call to
     // ToasterIoDecrement balances the earlier call to ToasterIoIncrement. An equal
     // number of calls to ToasterIoincrement and ToasterIoDecrement is essential for
@@ -874,10 +871,7 @@ Updated Routine Description:
     //
     ToasterIoDecrement(fdoData);
 
-    //
-    // Return the status value returned from ToasterSendIrpSynchronously to the
-    // caller.
-    //
+    // Return the status value returned from ToasterSendIrpSynchronously to the caller.
     return status;
 }
 
@@ -937,7 +931,6 @@ Return Value Description:
 --*/
 {
     NTSTATUS    status;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "ReadWrite called\n");
@@ -1831,7 +1824,6 @@ ToasterSystemControl (
     PIRP            Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterSystemControl calls ToasterIoIncrement to increment OutstandingIO.
     ToasterSystemControl calls ToasterIoDecrement to decrement OutstandingIO after
@@ -1844,12 +1836,10 @@ Updated Return Value Description:
     ToasterSystemControl returns STATUS_NO_SUCH_DEVICE if the hardware instance
     represented by DeviceObject has been removed. Otherwise, ToasterSystemControl
     returns the value returned by the underlying bus driver.
-
 --*/
 {
     PFDO_DATA               fdoData;
     NTSTATUS                status;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "FDO received WMI IRP\n");
@@ -1903,17 +1893,18 @@ New Routine Description:
 
     ToasterDispatchPnP uses StopEvent to block the execution of any thread
     processing IRP_MN_QUERY_STOP_DEVICE or IRP_MN_QUERY_REMOVE_DEVICE because
-    those IRPs must not be passed down the device stack to be processed by the
-    underlying bus driver until the hardware instance is idle and no longer
+    those IRPs must not [be passed down the device stack to be processed by the
+    underlying bus driver] until the hardware instance is idle and no longer
     processing any requests. Otherwise, the function driver would prematurely pass
     those IRPs down the device stack to be processed by the bus driver while the
     hardware instance is processing requests. The bus driver might then reassign
     the hardware resources being used by the hardware instance causing any
     requests being processed by the hardware instance to become invalid.
+	//
+	// 你意思是将 toaster bus 想象成是一个真实的硬件总线，这种总线同一个时刻只能处理一项操作，是吗？
 
-    When the function driver later calls ToasterIoDecrement when it completes an
-    IRP, ToasterIoDecrement signals StopEvent if that IRP is the last uncompleted
-    IRP.
+    When the function driver later calls ToasterIoDecrement when it completes an IRP,
+    ToasterIoDecrement signals StopEvent if that IRP is the last uncompleted IRP.
 
     ToasterDispatchPnP uses RemoveEvent to block the execution of any thread
     processing IRP_MN_REMOVE_DEVICE because the IRP must not be passed down the
@@ -1932,7 +1923,7 @@ New Routine Description:
     complete an IRP, they must call ToasterIoDecrement.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance
     that contains the OutstandingIO member, which stores the count of uncompleted
     IRPs dispatched to the function driver.
@@ -1963,6 +1954,9 @@ Return Value Description:
     //
 	//
 	// Chj Q: 这个间隙被 decrement 动作给 race condition 了该怎么办？
+	// A: 没关系的。如果此处 result==2 前提成立，说明 FdoData->OutstandingIO 已经是 2 了。此间隙不管其他线程怎么抢，
+	// FdoData->OutstandingIO 都不可能降到 1 ，换言之，不可能有其他线程会在这个间隙去把 FdoData->StopEvent 变成有信号的
+	//（唯一使其有信号的地方是在 ToasterIoDecrement 里头，但受阻于 OutstandingIO 不会降到 1）
 	//
     if (2 == result)
     {
