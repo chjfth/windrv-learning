@@ -1254,21 +1254,17 @@ Return Value Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
-        ToasterIoDecrement(fdoData);
-
+		ToasterIoDecrement(fdoData);
         return STATUS_NO_SUCH_DEVICE;
     }
 
     if (HoldRequests == fdoData->QueueState)
     {
-        //
         // If the driver-managed IRP queue is holding requests, then the incoming
         // IRP must be added to the queue. The IRP will be processed at a later
         // time when ToasterDispatchPnP changes QueueState to AllowRequests.
-        //
         return ToasterQueueRequest(fdoData, Irp);
     }
 
@@ -1284,27 +1280,22 @@ Return Value Description:
     switch (stack->MajorFunction)
     {
     case IRP_MJ_READ:
-        //
         // Fall through to the next case statement.
         //
     case IRP_MJ_WRITE:
-        //
         // Send the read or write IRP to the combined ToasterReadWrite dispatch
         // routine. The value returned from ToasterReadWrite is returned to the
         // original user-mode ReadFile or WriteFile caller.
         //
         status =  ToasterReadWrite(DeviceObject, Irp);
-
         break;
 
     case IRP_MJ_DEVICE_CONTROL:
-        //
         // Send the device control IRP to the ToasterDispatchIoctl dispatch
         // routine. The value returned from ToasterDispatchIoctl is returned to the
         // user-mode DeviceIoControl caller.
         //
         status =  ToasterDispatchIoctl(DeviceObject, Irp);
-
         break;
 
     default:
