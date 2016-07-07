@@ -387,11 +387,10 @@ Updated Routine Description:
         break;
 
     case IRP_MN_QUERY_STOP_DEVICE:
-        //
         // Determine if the hardware instance can safely be stopped, without losing
         // any data.
         //
-        status = ToasterCanStopDevice(DeviceObject, Irp);
+        status = ToasterCanStopDevice(DeviceObject, Irp); // new in featured1
 
         if (NT_SUCCESS(status))
         {
@@ -411,18 +410,13 @@ Updated Routine Description:
                NULL);
 
             Irp->IoStatus.Status = STATUS_SUCCESS;
-
             IoSkipCurrentIrpStackLocation (Irp);
-
             status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
             return status;
         }
-
         break;
 
    case IRP_MN_CANCEL_STOP_DEVICE:
-        //
         // Determine if the function driver previously processed
         // IRP_MN_QUERY_STOP_DEVICE. If the function driver previously processed
         // IRP_MN_QUERY_STOP_DEVICE, then the hardware instance's DevicePnPState
@@ -447,13 +441,11 @@ Updated Routine Description:
 
             ToasterProcessQueuedRequests(fdoData);
         }
-
         break;
 
     case IRP_MN_STOP_DEVICE:
         SET_NEW_PNP_STATE(fdoData, Stopped);
 
-        //
         // Return the hardware resources that ToasterStartDevice used earlier to
         // start the hardware instance when ToasterDispatchPnP processed
         // IRP_MN_START_DEVICE.
@@ -483,7 +475,7 @@ Updated Routine Description:
 
             fdoData->QueueState = HoldRequests;
 
-            ToasterDebugPrint(INFO, "Query - remove holding requests...\n");
+            ToasterDebugPrint(INFO, "Query-remove: holding requests...\n");
 
             ToasterIoDecrement(fdoData);
 
@@ -496,13 +488,11 @@ Updated Routine Description:
 
             Irp->IoStatus.Status = STATUS_SUCCESS;
 
-            IoSkipCurrentIrpStackLocation (Irp);
-
-            status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
+			IoCopyCurrentIrpStackLocationToNext(Irp); //IoSkipCurrentIrpStackLocation (Irp); 
+				// just chj's test, to see that IoCallDriver may really modify Irp->CurrentLocation .
+			status = IoCallDriver (fdoData->NextLowerDriver, Irp);
             return status;
         }
-
         break;
 
     case IRP_MN_CANCEL_REMOVE_DEVICE:
