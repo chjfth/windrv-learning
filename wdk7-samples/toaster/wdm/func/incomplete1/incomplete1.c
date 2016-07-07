@@ -559,9 +559,9 @@ Return Value Description:
 		// The system also sends IRP_MN_START_DEVICE after it sends a previous IRP_MN_STOP_DEVICE.
         //
         // The underlying bus driver must process IRP_MN_START_DEVICE *before* the
-        // function driver can, because the bus driver must assign the hardware resources, 
+        // function driver can, because the bus driver must [assign the hardware resources, 
         // such as the I/O ports, I/O memory ranges, and interrupts,
-        // that the toaster instance can use before the function driver can use them.
+        // that the toaster instance can use] before the function driver can use them.
         //
         // The function driver calls ToasterSendIrpSynchronously to have the bus
         // driver process the IRP before the function driver processes the IRP.

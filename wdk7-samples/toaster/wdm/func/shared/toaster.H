@@ -440,11 +440,10 @@ typedef enum {
 //
 typedef struct _FDO_DATA
 {
-    //
+	// ----------------------------------------------------------------------------
     // All the members below this point are present in all the stages of the function
     // driver.
-    // ----------------------------------------------------------------------------
-    //
+	// ----------------------------------------------------------------------------
 
     // Signature specifies a 4 byte tag that can be used to identify Toaster device
     // extensions. ToasterAddDevice initializes this member to
@@ -487,11 +486,10 @@ typedef struct _FDO_DATA
     //
     UNICODE_STRING      InterfaceName;
 
-    //
+	// ----------------------------------------------------------------------------
     // All the members below this point are present in the Incomplete2, Featured1,
     // and Featured2 stages of the function driver.
     // ----------------------------------------------------------------------------
-    //
 
     // QueueState describes the state of the driver-managed IRP queue. The state
     // changes in response to certain PnP IRPs.
@@ -530,13 +528,11 @@ typedef struct _FDO_DATA
     ULONG               OutstandingIO;
 
 
-    //
+	// ----------------------------------------------------------------------------
     // All the members below this point are present in the Featured1 and Featured2
     // stages of the function driver.
     // ----------------------------------------------------------------------------
-    //
 
-    //
     // DontDisplayInUI represents whether the Device Manager displays the hardware
     // instance to the user. When this member equals TRUE, the hardware instance is
     // not displayed in the Device Manager, unless the "Show hidden devices" menu
@@ -544,65 +540,56 @@ typedef struct _FDO_DATA
     //
     BOOLEAN             DontDisplayInUI;
 
-    //
     // SystemPowerState describes the overall system power level. Possible values for
     // this member range from S0 (fully on and operational) to S5 (power off).
     //
     SYSTEM_POWER_STATE  SystemPowerState;
 
-    //
     // DevicePowerState describes the power level of the hardware instance. Possible
     // values for this member range from D0 (fully on and operation) to D3 (power
     // off).
     //
     DEVICE_POWER_STATE  DevicePowerState;
 
-    //
-    // WmiLibInfo dewscribes the function driver's context information for the WMI
+    // WmiLibInfo describes the function driver's context information for the WMI
     // library. The ToasterWmiRegistration routine initializes this member to
     // register the function driver as a WMI data provider.
     //
     WMILIB_CONTEXT      WmiLibInfo;
 
-    //
     // StdDeviceData represents information that applies to standard toaster devices.
     //
     TOASTER_WMI_STD_DATA   StdDeviceData;
 
-    //
     // DeviceCaps represents the hardware instances device capabilities. This member
     // is used to find the system power state to device power state mappings.
     //
     DEVICE_CAPABILITIES DeviceCaps;
 
-    //
     // PendingSIrp represents the IRP_MN_SET_POWER S-IRP that the function driver
     // processes a corresponding IRP_MN_SET_POWER D-IRP. When this member equals
     // NULL, the function driver is not processing any IRP_MN_SET_POWER operation.
     //
     PIRP                PendingSIrp;
 
-    //
     // AllowIdleDetectionRegistration represents the current state of the "Allow the
     // computer to turn off this device to save power." checkbox in the Power
     // Management tab of the hardware instance's Properties dialog. This member
     // equals TRUE when the check box is checked. The initial value of this member
-    // should be read from the deviec registry.
+    // should be read from the device registry.
     //
     BOOLEAN             AllowIdleDetectionRegistration;
 
-    //
     // AllowWakeArming represents whether requests to arm the hardware instance to
     // signal wake-up are acknowledged. This member equals TRUE if WMI requests to
     // arm the hardware instance to signal wake-up should be acknowledged.
     //
     BOOLEAN             AllowWakeArming;
 
-    //
+	// ----------------------------------------------------------------------------
     // All the members below this point are present in the Featured2 stage of the
     // function driver.
     // ----------------------------------------------------------------------------
-    //
 
     //
     // WakeState describes the present wait/wake power state of the function driver.

@@ -463,7 +463,6 @@ Updated Routine Description:
 
         if (NT_SUCCESS (status))
         {
-            //
             // After ToasterSendIrpSynchronously returns, the underlying bus driver
             // has completed IRP_MN_START_DEVICE. The IRP now contains the data
             // required by the function driver to start the hardware instance, such
@@ -476,7 +475,6 @@ Updated Routine Description:
             status = ToasterStartDevice (fdoData, Irp);
         }
 
-        //
         // Break out of the switch case. The function driver stopped processing the
         // IRP in ToasterDispatchPnpComplete where the IRP's status was set to
         // STATUS_MORE_PROCESSING_REQUIRED. ToasterDispatchPnP completes the IRP
@@ -866,7 +864,6 @@ Updated Routine Description:
     // returned from ToasterSendIrpSynchronously.
     //
     Irp->IoStatus.Status = status;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
     // Decrement the count of how many IRPs remain uncompleted. This call to
@@ -1040,7 +1037,7 @@ Return Value Description:
     // during the create operation. Because it is not necessary to access the toaster
     // instance's hardware to process the create request, the number of bytes
     // transferred is 0.
-    //
+    //                    Chj: 这个注释有错吧，IRP_MJ_CREATE 怎么需要返回 bytes transfered?
     Irp->IoStatus.Information = 0;
     Irp->IoStatus.Status = STATUS_SUCCESS;
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
@@ -1081,8 +1078,8 @@ New Routine Description:
     a 3rd party driver higher in the device stack could fake one). However,
     Windows 9x does send IRP_MJ_CLOSE after it sends IRP_MN_REMOVE_DEVICE.
 
-    In addition, Windows 2000 sends IRP_MN_SURPRISE_REMOVAL and then waits for all
-    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE. // 已验证
+    In addition, Windows 2000 sends IRP_MN_SURPRISE_REMOVAL, and then waits for all
+    handles to the hardware instance to close before it sends IRP_MN_REMOVE_DEVICE. // IRP_MN_REMOVE_DEVICE 延迟送出行为已验证
     However, Windows 9x immediately sends IRP_MN_REMOVE_DEVICE, even if there are
     open handles to the hardware instance. Therefore, to prevent leaking memory,
     ToasterClose does not check if the hardware instance has been deleted, and
@@ -1328,7 +1325,6 @@ ToasterStartDevice (
     __in PIRP             Irp
     )
 /*++
-
 New Routine Description:
     ToasterDispatchPnP calls ToasterStartDevice after the underlying bus driver
     has processed IRP_MN_START_DEVICE. ToasterStartDevice performs the operations
@@ -1342,11 +1338,10 @@ New Routine Description:
     the hardware instance was started.
 
 Parameters Description:
-    FdoData
-    FdoData represents the device extension of the FDO of the hardware instance to
-    start.
+    [FdoData]
+    FdoData represents the device extension of the FDO of the hardware instance to start.
 
-    Irp
+    [Irp]
     Irp represents the IRP_MN_START_DEVICE that now contains the data required by
     the function driver to start the hardware instance, such as I/O port
     resources, I/O memory ranges, or interrupt.
@@ -1355,12 +1350,10 @@ Return Value Description:
     ToasterStartDevice returns STATUS_SUCCESS to indicate the device hardware was
     successfully started. Otherwise ToasterStartDevice returns the status returned
     by IoSetDeviceInterfaceState if an error occurred.
-
 --*/
 {
     NTSTATUS    status = STATUS_SUCCESS;
     PIO_STACK_LOCATION      stack;
-
     PAGED_CODE();
 
     stack = IoGetCurrentIrpStackLocation (Irp);
@@ -1376,7 +1369,6 @@ Return Value Description:
 
     SET_NEW_PNP_STATE(FdoData, Started);
 
-    //
     // Change the driver-managed IRP queue state to AllowRequests. Any new incoming
     // IRPs dispatched to ToasterDispatchIO will be processed immediately instead of
     // being added to the tail of the driver-managed IRP queue. In addition,
@@ -1386,7 +1378,6 @@ Return Value Description:
     //
     FdoData->QueueState = AllowRequests;
 
-    //
     // Process any IRPs that the system might have dispatched to the function driver
     // before the hardware instance was started.
     //
@@ -1664,8 +1655,7 @@ ToasterSendIrpSynchronously (
     )
 /*++
 Updated Routine Description:
-    ToasterSendIrpSynchronously does not change in this stage of the function
-    driver.
+    ToasterSendIrpSynchronously does not change in this stage of the function driver.
 --*/
 {
     KEVENT   event;
@@ -1702,7 +1692,6 @@ ToasterDispatchPower (
     PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchPower calls ToasterIoIncrement to increment OutstandingIO.
     ToasterDispatchPower calls ToasterIoDecrement to decrement OutstandingIO after
@@ -1721,6 +1710,8 @@ Updated Routine Description:
     the power IRP as pending, change the driver-managed IRP queue to begin
     queuing any new non-power IRPs, and then return STATUS_PENDING to the system
     until the function driver completes the pending power IRP.
+	//
+	// Power IRP 未被 PDO 处理前，FDO 就不应该再打扰 PDO, 可以这么理解？
 
     This stage of the function driver does not implement support pending power
     IRPs. The Featured1 stage of the function driver implements support for
@@ -1730,12 +1721,10 @@ Updated Return Value Description:
     ToasterDispatchPower returns STATUS_NO_SUCH_DEVICE if the hardware instance
     represented by DeviceObject has been removed. Otherwise, ToasterDispatchPower
     returns the value returned by the underlying bus driver.
-
 --*/
 {
     PFDO_DATA           fdoData;
     NTSTATUS            status;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ToasterDispatchPower\n");
@@ -1804,18 +1793,13 @@ Updated Return Value Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         status = STATUS_NO_SUCH_DEVICE;
-
         Irp->IoStatus.Status = status;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         ToasterIoDecrement (fdoData);
-
         return status;
     }
 
     IoSkipCurrentIrpStackLocation (Irp);
-
     status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
     ToasterIoDecrement (fdoData);

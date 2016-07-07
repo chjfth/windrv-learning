@@ -153,10 +153,8 @@ typedef enum _DEVICE_PNP_STATE_et {
 
 typedef struct _GLOBALS {
 
-    //
     // Path to the driver's Services Key in the registry
     //
-
     UNICODE_STRING RegistryPath;
 
 } GLOBALS;
@@ -170,15 +168,12 @@ extern GLOBALS Globals;
 
 typedef struct _TOASTER_BUS_WMI_STD_DATA {
 
-    //
     // The error Count
     //
     UINT32   ErrorCount;
 
-    //
     // Debug Print Level
     //
-
     UINT32  DebugPrintLevel;
 
 } TOASTER_BUS_WMI_STD_DATA, * PTOASTER_BUS_WMI_STD_DATA;
@@ -226,7 +221,6 @@ typedef struct _PDO_DEVICE_DATA
 
     // An array of (zero terminated wide character strings).
     // The array itself also null terminated
-
     __drv_aliasesMem
     PWCHAR      HardwareIDs;
 
@@ -236,7 +230,6 @@ typedef struct _PDO_DEVICE_DATA
     // Link point to hold all the PDOs for a single bus together
     LIST_ENTRY  Link;
 
-    //
     // Present is set to TRUE when the PDO is exposed via PlugIn IOCTL,
     // and set to FALSE when a UnPlug IOCTL is received.
     // We will delete the PDO in IRP_MN_REMOVE only after we have reported
@@ -246,14 +239,13 @@ typedef struct _PDO_DEVICE_DATA
     BOOLEAN     ReportedMissing;
     UCHAR       Reserved[2]; // for 4 byte alignment
 
-    //
-    // Used to track the intefaces handed out to other drivers.
+    // Used to track the interfaces handed out to other drivers.
     // If this value is non-zero, we fail query-remove.
     //
     ULONG       ToasterInterfaceRefCount;
 
     //
-    // In order to reduce the complexity of the driver, I chose not
+    // In order to reduce the complexity of the driver, I choose not
     // to use any queues for holding IRPs when the system tries to
     // rebalance resources to accommodate a new device, and stops our
     // device temporarily. But in a real world driver this is required.
@@ -268,7 +260,6 @@ typedef struct _PDO_DEVICE_DATA
     // The spin lock that protects access to  the queue
 
     //KSPIN_LOCK          PendingQueueLock;
-
 
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
@@ -298,7 +289,6 @@ typedef struct _FDO_DEVICE_DATA
     FAST_MUTEX      Mutex;
 
     // The number of IRPs sent from the bus to the underlying device object
-    //
     ULONG           OutstandingIO; // Biased to 1
 
     // On remove device plug & play request we must wait until all outstanding
@@ -308,7 +298,6 @@ typedef struct _FDO_DEVICE_DATA
     KEVENT          RemoveEvent;
 
     // This event is set when the Outstanding IO count goes to 1.
-    //
     KEVENT          StopEvent;
 
     // The name returned from IoRegisterDeviceInterface,
@@ -586,7 +575,4 @@ WMI_QUERY_DATABLOCK_CALLBACK Bus_QueryWmiDataBlock;
 WMI_QUERY_REGINFO_CALLBACK Bus_QueryWmiRegInfo;
 
 #endif
-
-
-
 
