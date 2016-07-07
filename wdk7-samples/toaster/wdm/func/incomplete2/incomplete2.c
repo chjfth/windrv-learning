@@ -1993,7 +1993,7 @@ Return Value Description:
     //
     if (1 == result)
     {
-/*** Chj: 此处貌似有 race condition 问题 ！
+/*** Chj: 此处貌似有 race condition 问题！
 (1) 假设当前线程为 A，此间隙假想暂停。
 (2) B 线程抢入执行 ToasterDispatchIO -> ToasterIoIncrement -> KeClearEvent ,
 (3) 线程 B KeClearEvent 执行完时假想暂停，此时 OutstandingIO==2 。
