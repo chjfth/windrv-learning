@@ -2048,7 +2048,6 @@ Updated Routine Description:
         }
     }
     va_end(list);
-
     return;
 }
 

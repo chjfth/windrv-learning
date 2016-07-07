@@ -154,7 +154,6 @@ typedef enum _DEVICE_PNP_STATE_et {
 typedef struct _GLOBALS {
 
     // Path to the driver's Services Key in the registry
-    //
     UNICODE_STRING RegistryPath;
 
 } GLOBALS;

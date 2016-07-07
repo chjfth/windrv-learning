@@ -91,7 +91,6 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 Updated Routine Description:
     DriverEntry saves a copy of the registry path string. A copy of the string
     must be saved instead of the pointer because the pointer becomes invalid after
@@ -111,21 +110,21 @@ Updated Return Value Description:
 {
     NTSTATUS            status = STATUS_SUCCESS;
 
-    ToasterDebugPrint(TRACE, "Entered DriverEntry of "_DRIVER_NAME_" version built on "
+    ToasterDebugPrint(TRACE, "Entered DriverEntry() of "_DRIVER_NAME_", version built on "
                                                           __DATE__" at "__TIME__ "\n");
 
-    //
     // Create a copy of the registry path string and store it in the Globals
     // variable. The Globals variable datatype is defined in Toaster.h.
     //
     // Determine the number of bytes to allocate for the string. RegistryPath is
     // a counted UNICODE_STRING.
     //
-    Globals.RegistryPath.MaximumLength = RegistryPath->Length +
-                                          sizeof(UNICODE_NULL);
+    Globals.RegistryPath.MaximumLength = RegistryPath->Length + sizeof(UNICODE_NULL);
     Globals.RegistryPath.Length = RegistryPath->Length;
+	/* Sample( RegistryPath->Length=110 ):
+		\REGISTRY\MACHINE\SYSTEM\ControlSet001\services\toaster
+	*/
 
-    //
     // Allocate memory to store a copy of the registry path string. The memory
     // allocated to hold the string is tagged with TOASTER_POOL_TAG. This
     // technique specifies a 4-byte value when memory is allocated. A debugger can
@@ -144,7 +143,6 @@ Updated Return Value Description:
         ToasterDebugPrint(ERROR,
                 "Couldn't allocate pool for registry path.");
 
-        //
         // If DriverEntry returns a failure, then the system unloads the driver
         // image from memory and the action specified in the ErrorControl directive
         // in the INF file used to install the driver is taken.
@@ -155,7 +153,6 @@ Updated Return Value Description:
     RtlCopyUnicodeString(&Globals.RegistryPath, RegistryPath);
 
     DriverObject->DriverExtension->AddDevice           = ToasterAddDevice;
-
     DriverObject->DriverUnload                         = ToasterUnload;
 
     DriverObject->MajorFunction[IRP_MJ_PNP]            = ToasterDispatchPnp;
@@ -172,14 +169,12 @@ Updated Return Value Description:
 }
 
 
-
 NTSTATUS
 ToasterAddDevice(
     __in PDRIVER_OBJECT DriverObject,
     __in PDEVICE_OBJECT PhysicalDeviceObject
     )
 /*++
-
 Updated Routine Description:
     ToasterAddDevice assigns a tag to the functional device object's (FDO's)
     device extension. A debugger can then search memory for the tag to identify
@@ -187,14 +182,12 @@ Updated Routine Description:
 
     ToasterAddDevice also initialized the hardware instance's power state in the
     device extension.
-
 --*/
 {
     NTSTATUS                status = STATUS_SUCCESS;
     PDEVICE_OBJECT          deviceObject = NULL;
     PFDO_DATA               fdoData;
     POWER_STATE             powerState;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "AddDevice PDO (0x%p)\n", PhysicalDeviceObject);
@@ -205,7 +198,7 @@ Updated Routine Description:
                              FILE_DEVICE_UNKNOWN,
                              FILE_DEVICE_SECURE_OPEN,
                              FALSE,
-                             &deviceObject);
+                             &deviceObject); // featured1.c
 
     if (!NT_SUCCESS (status))
     {
@@ -242,7 +235,6 @@ Updated Routine Description:
 
     fdoData->OutstandingIO = 1;
 
-    //
     // Initialize DontDisplayInUI to FALSE. ToasterDispatchIoctl sets DontDisplayInUI
     // to TRUE when it processes IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE. This causes
     // ToasterDispatchPnP to hide the hardware instance when it processes
@@ -253,7 +245,6 @@ Updated Routine Description:
     deviceObject->Flags |= DO_POWER_PAGABLE;
     deviceObject->Flags |= DO_BUFFERED_IO;
 
-    //
     // Initialize DevicePowerState to PowerDeviceD3. PowerDeviceD3 is the lowest
     // power state for hardware. ToasterAddDevice initializes DevicePowerState to
     // the lowest power state instead of the working power state because the
@@ -262,7 +253,6 @@ Updated Routine Description:
     //
     fdoData->DevicePowerState = PowerDeviceD3;
 
-    //
     // Initialize SystemPowerState to PowerSystemWorking. PowerSystemWorking is the
     // highest power state for the system. ToasterAddDevice initializes
     // SystemPowerState to the highest power state because the system only executes
@@ -270,7 +260,6 @@ Updated Routine Description:
     //
     fdoData->SystemPowerState = PowerSystemWorking;
 
-    //
     // Notify the power manager of the initial power state of the hardware instance.
     //
     powerState.DeviceState = PowerDeviceD3;
@@ -300,7 +289,6 @@ Updated Routine Description:
     }
 
     deviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
-
     return status;
 }
 
@@ -310,32 +298,24 @@ ToasterUnload(
     __in PDRIVER_OBJECT DriverObject
     )
 /*++
-
 Updated Routine Description:
     ToasterUnload releases the memory that was allocated earlier in DriverEntry to
     hold a copy of the registry path string.
-
 --*/
 {
     PAGED_CODE();
-
     ASSERT(DriverObject->DeviceObject == NULL);
 
-    ToasterDebugPrint(TRACE, "unload\n");
+    ToasterDebugPrint(TRACE, "driver-unload\n");
 
     if (NULL != Globals.RegistryPath.Buffer)
     {
-        //
         // Release the memory allocated earlier in DriverEntry that stored a copy of
         // the registry path string.
-        //
         ExFreePool(Globals.RegistryPath.Buffer);
     }
-
     return;
 }
-
-
 
 
 NTSTATUS
@@ -374,7 +354,6 @@ Updated Routine Description:
     PDEVICE_CAPABILITIES    deviceCapabilities;
     ULONG                   requestCount;
     PPNP_DEVICE_STATE       deviceState;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -389,11 +368,9 @@ Updated Routine Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
         ToasterIoDecrement(fdoData);
-
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -787,11 +764,8 @@ ToasterDispatchPnpComplete (
     PVOID Context
     )
 /*++
-
 Updated Routine Description:
-    ToasterDispatchPnpComplete does not change in this stage of the function
-    driver.
-
+    ToasterDispatchPnpComplete does not change in this stage of the function driver.
 --*/
 {
     PKEVENT             event = (PKEVENT)Context;
@@ -826,7 +800,6 @@ Updated Routine Description:
     PFDO_DATA    fdoData;
     NTSTATUS     status;
     TOASTER_INTERFACE_STANDARD busInterface;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -920,21 +893,16 @@ ToasterClose (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 Updated Routine Description:
     ToasterClose does not change in this stage of the function driver.
-
 --*/
 {
     PFDO_DATA    fdoData;
     NTSTATUS     status;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
-
     ToasterDebugPrint(TRACE, "Close \n");
 
     ToasterIoIncrement (fdoData);
@@ -942,13 +910,11 @@ Updated Routine Description:
     status = STATUS_SUCCESS;
 
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = status;
 
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
     ToasterIoDecrement(fdoData);
-
     return status;
 }
 
@@ -1031,16 +997,13 @@ ToasterDispatchIO(
     PIRP            Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchIO does not change in this stage of the function driver.
-
 --*/
 {
     PIO_STACK_LOCATION      irpStack;
     NTSTATUS                status= STATUS_SUCCESS;
     PFDO_DATA               fdoData;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -1050,11 +1013,9 @@ Updated Routine Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
         ToasterIoDecrement(fdoData);
-
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -1071,28 +1032,22 @@ Updated Routine Description:
 
     case IRP_MJ_WRITE:
         status =  ToasterReadWrite(DeviceObject, Irp);
-
         break;
 
     case IRP_MJ_DEVICE_CONTROL:
         status =  ToasterDispatchIoctl(DeviceObject, Irp);
-
         break;
 
     default:
         ASSERTMSG(FALSE, "ToasterDispatchIO invalid IRP");
-
         status = STATUS_UNSUCCESSFUL;
-
         Irp->IoStatus.Status = status;
 
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         break;
     }
 
     ToasterIoDecrement(fdoData);
-
     return status;
 }
 
@@ -1104,30 +1059,20 @@ ToasterReadWrite (
     __in PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterReadWrite does not change in this stage of the function driver.
-
 --*/
-
 {
     PFDO_DATA   fdoData;
     NTSTATUS    status;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
-
     ToasterDebugPrint(TRACE, "ReadWrite called\n");
-
     status = STATUS_SUCCESS;
-
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = status;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -1138,7 +1083,6 @@ ToasterStartDevice (
     __in PIRP             Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterStartDevice demonstrates how to initialize the hardware instance using
     the hardware resources that the underlying bus driver assigns to the hardware
@@ -1159,7 +1103,6 @@ Updated Routine Description:
     instance. The translated resources are used to map I/O ports, I/O memory
     ranges, and connect to the hardware's interrupt vector, if applicable and
     initialize the hardware.
-
 --*/
 {
     NTSTATUS    status = STATUS_SUCCESS;
@@ -1859,16 +1802,12 @@ ToasterSendIrpSynchronously (
     __in PIRP Irp
     )
 /*++
-
 Updated Routine Description:
-    ToasterSendIrpSynchronously does not change in this stage of the function
-    driver.
-
+    ToasterSendIrpSynchronously does not change in this stage of the function driver.
 --*/
 {
     KEVENT   event;
     NTSTATUS status;
-
     PAGED_CODE();
 
     KeInitializeEvent(&event, NotificationEvent, FALSE);
@@ -2361,18 +2300,16 @@ ToasterDebugPrint    (
     __in PCCHAR  DebugMessage,
     ...
     )
-
 /*++
-
 Updated Routine Description:
     ToasterDebugPrint does not change in this stage of the function driver.
-
  --*/
 {
 #define     TEMP_BUFFER_SIZE        1024
     va_list    list;
     UCHAR      debugMessageBuffer[TEMP_BUFFER_SIZE];
     NTSTATUS status;
+	static int s_seq;
 
     va_start(list, DebugMessage);
 
@@ -2387,11 +2324,10 @@ Updated Routine Description:
         }
         if (DebugPrintLevel <= DebugLevel)
         {
-            KdPrint ((_DRIVER_NAME_": %s", debugMessageBuffer));
+            KdPrint (("[%d]" _DRIVER_NAME_": %s", s_seq++, debugMessageBuffer));
         }
     }
     va_end(list);
-
     return;
 }
 
@@ -2401,10 +2337,8 @@ PnPMinorFunctionString (
     __in UCHAR MinorFunction
 )
 /*++
-
 Updated Routine Description:
     PnPMinorFunctionString does not change in this stage of the function driver.
-
 --*/
 {
     switch (MinorFunction)
@@ -2461,5 +2395,3 @@ Updated Routine Description:
         return "unknown_pnp_irp";
     }
 }
-
-
