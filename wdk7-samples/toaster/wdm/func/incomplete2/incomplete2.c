@@ -485,7 +485,6 @@ Updated Routine Description:
     case IRP_MN_QUERY_STOP_DEVICE:
         SET_NEW_PNP_STATE(fdoData, StopPending);
 
-        //
         // Change the driver-managed IRP queue state to HoldRequests. Any new incoming
         // IRPs dispatched to ToasterDispatchIO will be added to the tail of the
         // driver-managed IRP queue instead of being processed immediately.
@@ -525,7 +524,6 @@ Updated Routine Description:
         return status;
 
    case IRP_MN_CANCEL_STOP_DEVICE:
-        //
         // The underlying bus driver must process IRP_MN_CANCEL_STOP_DEVICE before
         // the function driver can because the bus driver must reallocate the same
         // hardware resources that the toaster instance was using before the function
@@ -543,7 +541,6 @@ Updated Routine Description:
         {
             RESTORE_PREVIOUS_PNP_STATE(fdoData);
 
-            //
             // Change the driver-managed IRP queue state to AllowRequests. Any new
             // incoming IRPs dispatched to ToasterDispatchIO will be processed
             // immediately instead of being added to the tail of the driver-managed
@@ -554,7 +551,6 @@ Updated Routine Description:
             //
             fdoData->QueueState = AllowRequests;
 
-            //
             // Test the assumption that the previous hardware state equaled Started.
             // The previous hardware state should be Started because that should have
             // been the state when ToasterDispatchPnP processed
@@ -562,7 +558,6 @@ Updated Routine Description:
             //
             ASSERT(Started == fdoData->DevicePnPState);
 
-            //
             // Call ToasterProcessQueuedRequests to dispatch again all IRPs in the
             // driver-managed IRP queue. This includes all IRPs already present in
             // the queue before IRP_MN_QUERY_STOP_DEVICE was processed, as well as
@@ -573,7 +568,6 @@ Updated Routine Description:
         }
         else
         {
-            //
             // If ToasterSendIrpSynchronously returns a failure that is because
             // a lower driver in the device stack failed IRP_MN_CANCEL_STOP_DEVICE.
             // That is a fatal error.
@@ -585,16 +579,14 @@ Updated Routine Description:
         break;
 
     case IRP_MN_STOP_DEVICE:
-        //
         // If the function driver is unable to stop the hardware instance without
         // losing any data when it processed an earlier IRP_MN_QUERY_STOP_DEVICE,
         // then the function driver should have failed IRP_MN_QUERY_STOP_DEVICE
         // with STATUS_UNSUCCESSFUL.
-        //
 
         SET_NEW_PNP_STATE(fdoData, Stopped);
 
-        Irp->IoStatus.Status = STATUS_SUCCESS;
+        Irp->IoStatus.Status = STATUS_SUCCESS; // chj: check the rule
 
         IoSkipCurrentIrpStackLocation (Irp);
 
@@ -659,8 +651,7 @@ Updated Routine Description:
         return status;
 
     case IRP_MN_CANCEL_REMOVE_DEVICE:
-        //
-        // The underlying bus driver must process IRP_MN_CANCEL_REMOVE_DEVICE before
+        // The underlying bus driver must process IRP_MN_CANCEL_REMOVE_DEVICE *before*
         // the function driver can because the bus driver must reallocate the same
         // hardware resources that the toaster instance was using before the function
         // driver received and processed IRP_MN_QUERY_REMOVE_DEVICE.
@@ -677,7 +668,6 @@ Updated Routine Description:
         {
             RESTORE_PREVIOUS_PNP_STATE(fdoData);
 
-            //
             // Change the driver-managed IRP queue state to AllowRequests. Any new
             // incoming IRPs dispatched to ToasterDispatchIO will be processed
             // immediately instead of being added to the tail of the driver-managed
@@ -688,7 +678,6 @@ Updated Routine Description:
             //
             fdoData->QueueState = AllowRequests;
 
-            //
             // Call ToasterProcessQueuedRequests to dispatch again all IRPs in the
             // driver-managed IRP queue. This includes all IRPs already present in
             // the queue before IRP_MN_QUERY_REMOVE_DEVICE was processed, as well as
@@ -699,7 +688,6 @@ Updated Routine Description:
         }
         else
         {
-            //
             // If ToasterSendIrpSynchronously returns a failure that is because
             // a lower driver in the device stack failed IRP_MN_CANCEL_STOP_DEVICE.
             // That is a fatal error.

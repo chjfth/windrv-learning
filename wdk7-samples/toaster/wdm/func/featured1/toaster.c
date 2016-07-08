@@ -324,7 +324,6 @@ ToasterDispatchPnp (
     PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchPnP calls ToasterCanStopDevice when it processes
     IRP_MN_QUERY_STOP_DEVICE to determine whether the hardware instance can be
@@ -1643,7 +1642,6 @@ Updated Routine Description:
 
 --*/
 {
-
     KIRQL               oldIrql;
     PIRP                nextIrp, cancelledIrp;
     PLIST_ENTRY         listEntry;
@@ -1651,7 +1649,7 @@ Updated Routine Description:
     PDRIVER_CANCEL      cancelRoutine= NULL;
     NTSTATUS            status;
 
-    ToasterDebugPrint(TRACE, "Process or fail queued Requests\n");
+    ToasterDebugPrint(TRACE, "In ToasterProcessQueuedRequests()\n");
 
     //
     // Initialize a temporary IRP queue. Any IRP in the driver-managed IRP queue
@@ -1919,33 +1917,34 @@ ToasterCanStopDevice    (
     )
 
 /*++
-
 New Routine Description:
     ToasterCanStopDevice determines whether the hardware instance can be stopped
     safely, without losing any data. In the case of an imaginary toaster, the
     hardware can always be stopped without losing any data.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
     incoming Irp parameter. DeviceObject is a FDO created earlier in
     ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp describes the IRP_MN_QUERY_STOP_DEVICE operation associated with the
     hardware instance described by the DeviceObject parameter.
 
 Return Value Description:
     ToasterCanStopDevice returns STATUS_SUCCESS to indicate that the hardware
     instance can be stopped safely, without losing any data. Because the Toaster
-    hardware is imaginary, IRP_MN_QUERY_STOP_DEVICE always succeeds. However, in
-    practice, ToasterCanStopDevice could return many errors to the caller. A
-    driver might return failure if stopping the hardware could result in lost
-    data, or if its hardware does not have a queue for any new I/O requests that
-    might be dispatched to it, or if the driver was notified that it is in the
-    paging path. A driver can determine if it is in the paging path by
-    processing IRP_MN_DEVICE_USAGE_NOTIFICATION sent to its device stack.
-
+    hardware is imaginary, IRP_MN_QUERY_STOP_DEVICE always succeeds. 
+	.
+	However, in practice, ToasterCanStopDevice could return many errors to the caller. 
+	A driver might return failure 
+	- if stopping the hardware could result in lost data,
+    - or if its hardware does not have a queue for any new I/O requests that
+         might be dispatched to it, 
+    - or if the driver was notified that it is in the paging path. 
+	  A driver can determine if it is in the paging path by
+      processing IRP_MN_DEVICE_USAGE_NOTIFICATION sent to its device stack.
 --*/
 {
     UNREFERENCED_PARAMETER(DeviceObject);
@@ -1960,40 +1959,29 @@ ToasterCanRemoveDevice    (
     __in PDEVICE_OBJECT DeviceObject,
     __in PIRP           Irp
     )
-
 /*++
-
 New Routine Description:
     ToasterCanRemoveDevice determines whether the hardware instance can be safely
     removed, without losing any data. In the case of an imaginary toaster, the
     hardware can always be removed without losing any data.
 
-Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is a FDO created earlier in
-    ToasterAddDevice.
-
-    Irp
-    Irp describes the IRP_MN_QUERY_REMOVE_DEVICE operation associated with the
-    hardware instance described by the DeviceObject parameter.
+Parameters Description: (similar to ToasterCanStopDevice)
 
 Return Value Description:
     ToasterCanRemoveDevice returns STATUS_SUCCESS to indicate that the hardware
     instance can be removed safely, without losing any data. Because the Toaster
     hardware is imaginary, IRP_MN_QUERY_REMOVE_DEVICE always succeeds. However, in
-    practice, ToasterCanRemoveDevice could return many errors to the caller. A
-    driver should return failure if there are any open handles to its hardware, or
-    if removal of the device could result in lost data, or the hardware does not
-    have a queue for the I/O requests that might be dispatched to it, or if the
-    driver was notified that it is in the paging path. A driver can determine
-    if it is in the paging path by processing IRP_MN_DEVICE_USAGE_NOTIFICATION
-    sent to its device stack.
+    practice, ToasterCanRemoveDevice could return many errors to the caller. 
+	- A driver should return failure if there are *any open handles* to its hardware, 
+	- or if removal of the device could result in lost data, 
+	- or the hardware does not have a queue for the I/O requests that might be dispatched to it, 
+	- or if the driver was notified that it is in the paging path. 
+	  A driver can determine if it is in the paging path by processing 
+	  IRP_MN_DEVICE_USAGE_NOTIFICATION sent to its device stack.
 
     The PnP manager on Windows 2000 and later fails any attempt to remove hardware
     if there any open handles to it. However on Win9x, the driver must keep count of
     open handles and fail IRP_MN_QUERY_REMOVE_DEVICE if there are any open handles.
-
 --*/
 {
     UNREFERENCED_PARAMETER(DeviceObject);
