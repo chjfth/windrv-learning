@@ -27,6 +27,8 @@ Revision History:
 #if !defined(_TOASTER_H_)
 #define _TOASTER_H_
 
+#include <VisualDDKHelpers.h>
+
 //
 // Include the main DDK header, ntddk.h. Ntddk.h defines the data types required by
 // drivers.

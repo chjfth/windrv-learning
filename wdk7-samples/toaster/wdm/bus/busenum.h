@@ -24,6 +24,7 @@ Revision History:
 
 
 --*/
+#include <VisualDDKHelpers.h>
 #include <ntddk.h>
 #include <wmilib.h> // required for WMILIB_CONTEXT
 #include <initguid.h> // required for GUID definitions

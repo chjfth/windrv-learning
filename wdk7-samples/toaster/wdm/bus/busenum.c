@@ -271,7 +271,7 @@ Return Value:
             status= Bus_EjectDevice((PBUSENUM_EJECT_HARDWARE)buffer, fdoData);
         }
         break;
-
+		
     default:
         break; // default status is STATUS_INVALID_PARAMETER
 	}}

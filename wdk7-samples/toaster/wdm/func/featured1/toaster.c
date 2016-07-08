@@ -1102,8 +1102,8 @@ Updated Routine Description:
     PIO_STACK_LOCATION stack;
     POWER_STATE powerState;
     ULONG i;
+	PAGED_CODE();
 
-    //
     // Get the parameters of the IRP from the function driver's location in the IRP's
     // I/O stack. The results of the function driver's processing of the IRP, if any,
     // are then stored back in the same I/O stack location.
@@ -1112,8 +1112,6 @@ Updated Routine Description:
     // stored in the IRP's Parameters.StartDevice member.
     //
     stack = IoGetCurrentIrpStackLocation (Irp);
-
-    PAGED_CODE();
 
     //
     // Initialize the hardware instance. Perform any tasks required to start the

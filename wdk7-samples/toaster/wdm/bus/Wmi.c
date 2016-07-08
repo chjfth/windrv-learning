@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -8,20 +7,13 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
     PURPOSE.
 
 Module Name:
-
     WMI.C
 
 Abstract:
-
     This module handles all the WMI Irps.
 
-
 Environment:
-
     Kernel mode
-
-Revision History:
-
 --*/
 
 #include "busenum.h"
@@ -60,14 +52,10 @@ Bus_WmiRegistration(
 )
 /*++
 Routine Description
-
-    Registers with WMI as a data provider for this
-    instance of the device
-
+    Registers with WMI as a data provider for this instance of the device
 --*/
 {
     NTSTATUS status;
-
     PAGED_CODE();
 
     FdoData->WmiLibInfo.GuidCount = sizeof (ToasterBusWmiGuidList) /
@@ -84,7 +72,6 @@ Routine Description
     //
     // Register with WMI
     //
-
     status = IoWMIRegistrationControl(FdoData->Self,
                              WMIREG_ACTION_REGISTER
                              );
@@ -92,7 +79,6 @@ Routine Description
     //
     // Initialize the Std device data structure
     //
-
     FdoData->StdToasterBusData.ErrorCount = 0;
     FdoData->StdToasterBusData.DebugPrintLevel = BusEnumDebugLevel;
 
@@ -113,13 +99,11 @@ Routine Description
 
 --*/
 {
-
     PAGED_CODE();
 
     return IoWMIRegistrationControl(FdoData->Self,
                                  WMIREG_ACTION_DEREGISTER
                                  );
-
 }
 
 NTSTATUS
@@ -134,7 +118,6 @@ Routine Description
 
     Assume that this is a WMI IRP and
     call into the WMI system library and let it handle this IRP for us.
-
 --*/
 {
     PFDO_DEVICE_DATA               fdoData;
