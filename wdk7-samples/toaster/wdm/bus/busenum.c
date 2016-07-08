@@ -21,7 +21,6 @@ Revision History:
 
 #include "busenum.h"
 
-
 //
 // Global Debug Level
 //
@@ -112,7 +111,6 @@ Routine Description:
 Arguments:
 
    DeviceObject - pointer to a device object.
-
    Irp - pointer to an I/O Request Packet.
 
 Return Value:
@@ -149,7 +147,6 @@ Return Value:
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
         return status;
     }
-
 
     irpStack = IoGetCurrentIrpStackLocation (Irp);
 
@@ -295,11 +292,8 @@ Bus_DriverUnload (
 /*++
 Routine Description:
     Clean up everything we did in driver entry.
-
 Arguments:
    DriverObject - pointer to this driverObject.
-
-Return Value:
 --*/
 {
     UNREFERENCED_PARAMETER(DriverObject);
@@ -323,32 +317,24 @@ VOID
 Bus_IncIoCount (
     __in  PFDO_DEVICE_DATA   FdoData
     )
-
 /*++
 Routine Description:
     This routine increments the number of requests the device receives
-
 Arguments:
     FdoData - pointer to the FDO device extension.
-
-Return Value:
-    VOID
 --*/
 {
     LONG            result;
     result = InterlockedIncrement((LONG *)&FdoData->OutstandingIO);
-
     ASSERT(result > 0);
 
 	// Need to clear StopEvent (when OutstandingIO bumps from 1 to 2)
     //
     if (result == 2) {
-        //
         // We need to clear the event
         //
         KeClearEvent(&FdoData->StopEvent);
     }
-
     return;
 }
 
@@ -356,25 +342,18 @@ VOID
 Bus_DecIoCount(
     __in  PFDO_DEVICE_DATA  FdoData
     )
-
 /*++
 Routine Description:
     This routine decrements as it complete the request it receives
-
 Arguments:
     FdoData - pointer to the FDO device extension.
-
-Return Value:
-    VOID
 --*/
 {
     LONG            result;
     result = InterlockedDecrement((LONG *)&FdoData->OutstandingIO);
-
     ASSERT(result >= 0);
 
     if (result == 1) {
-        //
         // Set the stop event. Note that when this happens
         // (i.e. a transition from 2 to 1), the type of requests we
         // want to be processed are already held instead of being
@@ -386,7 +365,6 @@ Return Value:
     }
 
     if (result == 0) {
-
         // The count is 1-biased, so it can be zero only if an
         // extra decrement is done when a remove Irp is received
         //
@@ -395,7 +373,6 @@ Return Value:
         // Set the remove event, so the device object can be deleted
         //
         KeSetEvent (&FdoData->RemoveEvent, IO_NO_INCREMENT, FALSE);
-
     }
 
     return;
