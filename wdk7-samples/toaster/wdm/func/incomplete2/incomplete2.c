@@ -1969,7 +1969,7 @@ Return Value Description:
 (1) 假设当前线程为 A，此间隙假想暂停。
 (2) B 线程抢入执行 ToasterDispatchIO -> ToasterIoIncrement -> KeClearEvent ,
 (3) 线程 B KeClearEvent 执行完时假想暂停，此时 OutstandingIO==2 。
-(4) 此时切回 A ，A 执行 KeSetEvent 让 StopEvent 有信号（把(4)的KeClearEvent效果冲没了!）
+(4) 此时切回 A ，A 执行 KeSetEvent 让 StopEvent 有信号（把(2)的KeClearEvent效果冲没了!）
 (5) A 再次假想暂停，B 线程活过来继续处理 IRP, B 将 IRP 发给 PDO .
 (6) B 在执行 PDO 里头的代码中途假想暂停， C 线程开始处理 query-remove，结果 C 将面对 
 	StopEvent 有信号的情况，然而此时 PDO 却并非 idle 状态（因为 OutStandingIO==2）。
