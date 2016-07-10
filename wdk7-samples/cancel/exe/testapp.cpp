@@ -231,11 +231,18 @@ VOID CALLBACK CompletionRoutine(
     LPOVERLAPPED ov
     )
 {
-    UNREFERENCED_PARAMETER(errorcode);
     UNREFERENCED_PARAMETER(ov);
 
-    fprintf(stdout, "Thread %d read: %d bytes\n",
-           GetCurrentThreadId(), bytesTransfered);
+	if(!errorcode)
+	{
+		fprintf(stdout, "Thread %d read: %d bytes\n",
+			GetCurrentThreadId(), bytesTransfered);
+	}
+	else
+	{
+		fprintf(stdout, "Thread %d CompletionRoutine got error: winerr=%d\n",
+			GetCurrentThreadId(), errorcode);
+	}
     return;
 }
 
