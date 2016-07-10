@@ -136,7 +136,7 @@ Return Value:
         return status;
     }
 
-    devExtension = deviceObject->DeviceExtension;
+    devExtension = (DEVICE_EXTENSION*)deviceObject->DeviceExtension;
 
     DriverObject->MajorFunction[IRP_MJ_CREATE]=
     DriverObject->MajorFunction[IRP_MJ_CLOSE] = CsampCreateClose;
@@ -219,7 +219,7 @@ Return Value:
                             THREAD_ALL_ACCESS,
                             NULL,
                             KernelMode,
-                            &devExtension->ThreadObject,
+                            (void**)&devExtension->ThreadObject,
                             NULL );
 
     ZwClose(threadHandle);
@@ -282,7 +282,7 @@ Return Value:
             // layering itself over a this driver. A driver is
             // required to supply a dispatch routine for IRP_MJ_CREATE.
             //
-            fileContext = ExAllocatePoolWithQuotaTag(NonPagedPool, 
+            fileContext = (FILE_CONTEXT*)ExAllocatePoolWithQuotaTag(NonPagedPool, 
                                               sizeof(FILE_CONTEXT),
                                               TAG);
 
@@ -313,7 +313,7 @@ Return Value:
             // all file object handles have been closed and the reference count
             // of the file object is down to 0.
             //
-            fileContext = irpStack->FileObject->FsContext;
+            fileContext = (FILE_CONTEXT*)irpStack->FileObject->FsContext;
             
             ExFreePoolWithTag(fileContext, TAG);
 
@@ -373,13 +373,13 @@ CsampRead(
 
     CSAMP_KDPRINT(("CsampRead Enter:0x%p\n", Irp));
 
-    devExtension = DeviceObject->DeviceExtension;
+    devExtension = (DEVICE_EXTENSION*)DeviceObject->DeviceExtension;
     inCriticalRegion = FALSE;
 
     irpStack = IoGetCurrentIrpStackLocation(Irp);
     ASSERT(irpStack->FileObject != NULL);
 
-    fileContext = irpStack->FileObject->FsContext;    
+    fileContext = (FILE_CONTEXT*)irpStack->FileObject->FsContext;
 
     status = IoAcquireRemoveLock(&fileContext->FileRundownLock, Irp);
     if (!NT_SUCCESS(status)) {
@@ -478,8 +478,8 @@ Arguments:
 
 --*/
 {
-    PDEVICE_OBJECT DeviceObject = Context;
-    PDEVICE_EXTENSION DevExtension =  DeviceObject->DeviceExtension;
+    PDEVICE_OBJECT DeviceObject = (DEVICE_OBJECT*)Context;
+    PDEVICE_EXTENSION DevExtension =  (DEVICE_EXTENSION*)DeviceObject->DeviceExtension;
     PIRP Irp;
     NTSTATUS    Status;
 
@@ -670,12 +670,12 @@ Return Value:
 
     CSAMP_KDPRINT(("CsampCleanupIrp enter\n"));
 
-    devExtension = DeviceObject->DeviceExtension;
+    devExtension = (DEVICE_EXTENSION*)DeviceObject->DeviceExtension;
 
     irpStack = IoGetCurrentIrpStackLocation(Irp);
     ASSERT(irpStack->FileObject != NULL);    
 
-    fileContext = irpStack->FileObject->FsContext;    
+    fileContext = (FILE_CONTEXT*)irpStack->FileObject->FsContext;    
 
     //
     // This acquire cannot fail because you cannot get more than one
@@ -741,7 +741,7 @@ Return Value:
 {
     PDEVICE_OBJECT      deviceObject = DriverObject->DeviceObject;
     UNICODE_STRING      uniWin32NameString;
-    PDEVICE_EXTENSION   devExtension = deviceObject->DeviceExtension;
+    PDEVICE_EXTENSION   devExtension = (DEVICE_EXTENSION*)deviceObject->DeviceExtension;
 
     PAGED_CODE();
 

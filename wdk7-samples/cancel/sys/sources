@@ -6,6 +6,6 @@ TARGETLIBS= \
  $(DDK_LIB_PATH)\csq.lib
 	
    
-SOURCES=cancel.c cancel.rc
+SOURCES=cancel.cpp cancel.rc
 
 MSC_WARNING_LEVEL=/W4 /WX

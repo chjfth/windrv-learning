@@ -48,6 +48,11 @@ DEFINE_GUID (GUID_DEVCLASS_CANCEL_SAMPLE,
 #ifndef __CANCEL_H
 #define __CANCEL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //
 // GUID definition are required to be outside of header inclusion pragma to
 // avoid error during precompiled headers.
@@ -177,6 +182,11 @@ CsampCompleteCanceledIrp(
     __in  PIO_CSQ             pCsq,
     __in  PIRP                Irp
     );
+
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif
 
 #endif
 
