@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sys-cancel", "sys\sys_cancel_vs2010.vcxproj", "{8DFA3AFC-7522-4FEA-B604-44CEB4AEA350}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe_cancel", "exe\exe_cancel.vcxproj", "{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe-cancel", "exe\exe_cancel.vcxproj", "{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,7 +23,8 @@ Global
 		{8DFA3AFC-7522-4FEA-B604-44CEB4AEA350}.Release|x64.Build.0 = Release|x64
 		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Debug|Win32.Build.0 = Debug|Win32
-		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Debug|x64.ActiveCfg = Debug|Win32
+		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Debug|x64.ActiveCfg = Debug|x64
+		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Debug|x64.Build.0 = Debug|x64
 		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Release|Win32.ActiveCfg = Release|Win32
 		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Release|Win32.Build.0 = Release|Win32
 		{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}.Release|x64.ActiveCfg = Release|Win32

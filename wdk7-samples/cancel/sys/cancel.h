@@ -22,6 +22,8 @@ Revision History:
 
 --*/
 
+#include <VisualDDKHelpers.h>
+
 #include <initguid.h>
 
 //
