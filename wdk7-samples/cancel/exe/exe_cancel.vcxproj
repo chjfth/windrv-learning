@@ -21,6 +21,7 @@
     <ProjectGuid>{A33FD2BA-B4AE-4C44-A512-FCF87D0F9976}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>enum</RootNamespace>
+    <ProjectName>exe-cancel</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

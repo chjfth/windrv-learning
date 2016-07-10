@@ -52,24 +52,18 @@ DriverEntry(
 	__in PUNICODE_STRING RegistryPath
 	)
 /*++
-
 Routine Description:
-
 	Installable driver initialization entry point.
 	This entry point is called directly by the I/O system.
 
 Arguments:
-
 	DriverObject - pointer to the driver object
-
 	registryPath - pointer to a unicode string representing the path,
 				   to driver-specific key in the registry.
 
 Return Value:
-
 	STATUS_SUCCESS if successful,
 	STATUS_UNSUCCESSFUL otherwise
-
 --*/
 {
 	NTSTATUS            status = STATUS_SUCCESS;
@@ -239,21 +233,15 @@ CsampCreateClose(
 	__in PIRP Irp
 	)
 /*++
-
 Routine Description:
-
    Process the Create and close IRPs sent to this device.
 
 Arguments:
-
    DeviceObject - pointer to a device object.
-
    Irp - pointer to an I/O Request Packet.
 
 Return Value:
-
 	  NT Status code
-
 --*/
 {
 	PIO_STACK_LOCATION  irpStack;
@@ -346,19 +334,15 @@ CsampRead(
 	__in PIRP Irp
  )
  /*++
-	 Routine Description:
+Routine Description:
+	Read disptach routine
 
-		   Read disptach routine
+Arguments:
+	DeviceObject - pointer to a device object.
+			Irp             - pointer to current Irp
 
-	 Arguments:
-
-		 DeviceObject - pointer to a device object.
-				 Irp             - pointer to current Irp
-
-	 Return Value:
-
-		 NT status code.
-
+Return Value:
+	NT status code.
 --*/
 {
 	NTSTATUS            status;
