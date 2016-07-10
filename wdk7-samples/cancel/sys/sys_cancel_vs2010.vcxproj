@@ -96,7 +96,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ntoskrnl.lib;hal.lib;int64.lib;ntstrsafe.lib;exsup.lib;wmilib.lib;wdmsec.lib;ksecdd.lib;BufferOverflowK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>csq.lib;ntoskrnl.lib;hal.lib;int64.lib;ntstrsafe.lib;exsup.lib;wmilib.lib;wdmsec.lib;ksecdd.lib;BufferOverflowK.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WDKPATH)\lib\WIN7\i386;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
@@ -134,7 +134,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ntoskrnl.lib;hal.lib;int64.lib;ntstrsafe.lib;exsup.libwmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>csq.lib;ntoskrnl.lib;hal.lib;int64.lib;ntstrsafe.lib;exsup.libwmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WDKPATH)\lib\WIN7\i386;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
@@ -168,7 +168,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ntoskrnl.lib;hal.lib;wmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>csq.lib;ntoskrnl.lib;hal.lib;wmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WDKPATH)\lib\WIN7\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
@@ -206,7 +206,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>ntoskrnl.lib;hal.lib;ntstrsafe.libwmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>csq.lib;ntoskrnl.lib;hal.lib;ntstrsafe.libwmilib.lib;wdmsec.lib;ntstrsafe.lib;ksecdd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WDKPATH)\lib\WIN7\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
