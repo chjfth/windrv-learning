@@ -16,7 +16,7 @@ CFLAGS=$(CFLAGS) /MTd
 
 USE_MSVCRT=1
 
-SOURCES=testapp.c install.c
+SOURCES=testapp.cpp install.cpp
 
 UMTYPE=console
 UMBASE=0x0400000

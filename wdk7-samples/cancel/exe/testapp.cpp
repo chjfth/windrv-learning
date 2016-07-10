@@ -16,7 +16,6 @@ Abstract:
 Environment:
 
     User mode Win32 console application
-
 --*/
 
 //
@@ -97,7 +96,6 @@ main(
     // Try to connect to driver.  If this fails, try to load the driver
     // dynamically.
     //
-
     if ((hDevice = CreateFile("\\\\.\\CancelSamp",
                                  GENERIC_READ,
                                  0,
@@ -105,42 +103,33 @@ main(
                                  OPEN_EXISTING,
                                  FILE_FLAG_OVERLAPPED,
                                  NULL
-                                 )) == INVALID_HANDLE_VALUE) {
-
+                                 )) == INVALID_HANDLE_VALUE) 
+	{
         errNum = GetLastError();
 
         if (errNum != ERROR_FILE_NOT_FOUND) {
-
             printf("CreateFile failed!  Error = %d\n", errNum);
-
             return ;
         }
 
-        //
         // Setup full path to driver name.
-        //
-
         if (!SetupDriverName(driverLocation, sizeof(driverLocation))) {
-
             return ;
         }
-
 
         //
         // Install driver.
         //
-
         if (!ManageDriver(DRIVER_NAME,
                           driverLocation,
                           DRIVER_FUNC_INSTALL
-                          )) {
-
+                          )) 
+		{
             printf("Unable to install driver. \n");
 
             //
             // Error - remove driver.
             //
-
             ManageDriver(DRIVER_NAME,
                          driverLocation,
                          DRIVER_FUNC_REMOVE
@@ -148,10 +137,10 @@ main(
 
             return;
         }
-        //
+
+		//
         // Try to open the newly installed driver.
         //
-
         hDevice = CreateFile( "\\\\.\\CancelSamp",
                 GENERIC_READ,
                 0,
@@ -160,14 +149,14 @@ main(
                 FILE_FLAG_OVERLAPPED,
                 NULL);
 
-        if ( hDevice == INVALID_HANDLE_VALUE ){
-            printf ( "Error: CreatFile Failed : %d\n", GetLastError());
+        if ( hDevice == INVALID_HANDLE_VALUE )
+		{
+            printf ( "Error: CreatFile Failed(2nd-try) : %d\n", GetLastError());
             return;
         }
     }
 
     printf("Number of threads : %d\n", NumberOfThreads);
-
 
     printf("Enter 'q' to exit gracefully:");
 
@@ -184,9 +173,7 @@ main(
             printf( " Error CreateThread[%d] Failed: %d\n", i, GetLastError());
             ExitProcess ( 1 );
         }
-
     }
-
 
     if (getchar() == 'q')
     {
@@ -196,7 +183,6 @@ main(
 
         for(i=0; i < NumberOfThreads; i++)
             CloseHandle(hThreads[i]);
-
     }
 
     CloseHandle(hDevice);
@@ -204,14 +190,12 @@ main(
     //
     // Unload the driver.  Ignore any errors.
     //
-
     ManageDriver(DRIVER_NAME,
                  driverLocation,
                  DRIVER_FUNC_REMOVE
                  );
 
     ExitProcess(1);
-
 }
 
 
@@ -230,7 +214,7 @@ DWORD WINAPI Reader(PVOID dummy )
 
         if (!ReadFileEx(hDevice, (PVOID)&data, sizeof(ULONG),  &ov, CompletionRoutine))
         {
-            printf ( "Error: Read Failed: %d\n", GetLastError());
+            printf ( "Unexpected Error: ReadFileEx Failed: %d\n", GetLastError());
             ExitProcess ( 1 );
         }
         SleepEx(INFINITE, TRUE);
@@ -247,7 +231,6 @@ VOID CALLBACK CompletionRoutine(
     LPOVERLAPPED ov
     )
 {
-
     UNREFERENCED_PARAMETER(errorcode);
     UNREFERENCED_PARAMETER(ov);
 
@@ -266,24 +249,16 @@ SetupDriverName(
     HANDLE fileHandle;
     DWORD driverLocLen = 0;
 
-    //
     // Get the current directory.
-    //
-
     driverLocLen = GetCurrentDirectory(BufferLength,
                                        DriverLocation
                                        );
-
     if (driverLocLen == 0) {
-
         printf("GetCurrentDirectory failed!  Error = %d \n", GetLastError());
-
         return FALSE;
     }
 
-    //
     // Setup path name to driver file.
-    //
     if (FAILED( StringCbCat(DriverLocation, BufferLength, "\\"DRIVER_NAME".sys") )) {
         return FALSE;
     }
@@ -291,7 +266,6 @@ SetupDriverName(
     //
     // Insure driver file is in the specified directory.
     //
-
     if ((fileHandle = CreateFile(DriverLocation,
                                  GENERIC_READ,
                                  0,
@@ -299,34 +273,18 @@ SetupDriverName(
                                  OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL,
                                  NULL
-                                 )) == INVALID_HANDLE_VALUE) {
-
-
+                                 )) == INVALID_HANDLE_VALUE) 
+	{
         printf("%s.sys is not loaded.\n", DRIVER_NAME);
-
-        //
-        // Indicate failure.
-        //
-
         return FALSE;
     }
 
-    //
     // Close open file handle.
-    //
-
     if (fileHandle) {
-
         CloseHandle(fileHandle);
     }
 
-    //
-    // Indicate success.
-    //
-
     return TRUE;
-
-
 }   // SetupDriverName
 
 
