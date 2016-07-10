@@ -21,10 +21,10 @@ Abstract:
      This routine is named ToasterCancelQueued. The logic to cancel an IRP while
      it is in the driver-managed IRP queue is complex and located in several other
      places in the function driver, including:
-     --ToasterCleanup
-     --ToasterQueueRequest
-     --ToasterProcessQueuedRequests
-     --ToasterCancelQueued
+     --ToasterCleanup                   
+     --ToasterQueueRequest              // 更好的起名: ToasterEnqueueIrp
+     --ToasterProcessQueuedRequests     // 更好的起名: ToasterDequeueIrp
+     --ToasterCancelQueued              // 更好的起名: ToasterCancelIrp
 
     -Code to prevent adding an IRP to the driver-managed IRP queue if the system
      has canceled it. This code is related to, but in addition to
@@ -1081,7 +1081,7 @@ Updated Routine Description:
 
     ToasterDispatchPnP calls ToasterStartDevice after the underlying bus driver
     has processed IRP_MN_START_DEVICE. The bus driver must process
-    IRP_MN_START_DEVICE before the function driver can because until the bus
+    IRP_MN_START_DEVICE *before* the function driver can -- because until the bus
     driver has processed IRP_MN_START_DEVICE, the IRP does not contain the
     hardware resources required by the function driver to program the hardware
     instance.
@@ -1113,30 +1113,25 @@ Updated Routine Description:
     //
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    //
     // Initialize the hardware instance. Perform any tasks required to start the
-    // device hardware, such as updating the Registry and gathering information
-    // from it.
+    // device hardware, such as updating the Registry and gathering information from it.
     //
 
     if ((NULL != stack->Parameters.StartDevice.AllocatedResources) &&
         (NULL != stack->Parameters.StartDevice.AllocatedResourcesTranslated))
     {
-        //
         // Get the pointer to the raw list of hardware resources. ToasterStartDevice
         // uses these resources to program the hardware instance.
         //
         partialResourceList =
         &stack->Parameters.StartDevice.AllocatedResources->List[0].PartialResourceList;
 
-        //
         // Get the pointer to the first raw hardware resource in the list. As this
         // routine processes the list of raw hardware resources, a for loop iterates
         // this pointer until entire list has been processed.
         //
         resource = &partialResourceList->PartialDescriptors[0];
 
-        //
         // Get the pointer to the translated list of hardware resources.
         // ToasterStartDevice uses these resources to map I/O ports and I/O memory
         // ranges, and connect to the hardware's interrupt vector, if applicable.
@@ -1144,7 +1139,6 @@ Updated Routine Description:
         partialResourceListTranslated =
         &stack->Parameters.StartDevice.AllocatedResourcesTranslated->List[0].PartialResourceList;
 
-        //
         // Get the pointer to the first translated hardware resource in the list. As
         // this routine processes the list of translated hardware resources, a for
         // loop iterates this pointer until entire list has been processed.
@@ -1155,14 +1149,13 @@ Updated Routine Description:
              i < partialResourceList->Count;
              i++, resource++, resourceTrans++)
         {
-            //
             // Enter a loop to process all the entries in the raw hardware resource
             // list. The loop exits after all the hardware resources in the list have
             // been processed.
             //
 
             switch (resource->Type)
-            {
+            {{
             case CmResourceTypePort:
                 ToasterDebugPrint(INFO, "Resource RAW Port: (%x) Length: (%d)\n",
                     resource->u.Port.Start.LowPart, resource->u.Port.Length);
@@ -1182,7 +1175,6 @@ Updated Routine Description:
                         "Resource Translated Memory: (%x) Length: (%d)\n",
                         resourceTrans->u.Memory.Start.LowPart,
                         resourceTrans->u.Memory.Length);
-
                     //
                     // Map any I/O memory here. Because all the toaster hardware is
                     // imaginary (the device hardware, as well as the bus hardware),
@@ -1190,7 +1182,6 @@ Updated Routine Description:
                     // shipped with the DDK demonstrates this concept.
                     // memory.
                     //
-
                     break;
 
                 default:
@@ -1206,14 +1197,12 @@ Updated Routine Description:
 
                 ToasterDebugPrint(INFO, "Resource Translated Memory: (%x) Length: (%d)\n",
                     resourceTrans->u.Memory.Start.LowPart, resourceTrans->u.Memory.Length);
-
                 //
                 // Map any I/O memory here. Because all the toaster hardware is
                 // imaginary (the device hardware, as well as the bus hardware),
                 // there is no code to execute here. The PCIDRV sample that is
                 // shipped with the DDK demonstrates this concept.
                 //
-
                 break;
 
             case CmResourceTypeInterrupt:
@@ -1221,23 +1210,20 @@ Updated Routine Description:
 
             default:
                 ToasterDebugPrint(ERROR, "Unhandled resource type (0x%x)\n", resource->Type);
-
                 break;
-            }
+			}}
         }
     }
 
-    //
     // When the system dispatches IRP_MN_START_DEVICE to the function driver, that
     // represents an implicit power-up operation. After the hardware instance has
     // been programmed (in the switch-cases earlier) the hardware instance should
     // now be in the PowerDeviceDO power state.
     //
     FdoData->DevicePowerState = PowerDeviceD0;
-
+	//
     powerState.DeviceState = PowerDeviceD0;
 
-    //
     // Notify the power manager of the new device power state.
     //
     PoSetPowerState ( FdoData->Self, DevicePowerState, powerState );
@@ -1290,20 +1276,20 @@ ToasterCleanup (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 New Routine Description:
     The system dispatches IRP_MJ_CLEANUP IRPs to ToasterCleanup. ToasterCleanup
     cancels all IRPs from the driver-managed IRP queue whose file object matches
-    the file object of the incoming IRP.
+    the file object of the [incoming IRP(=current IRP_MJ_CLEANUP IRP)].
 
     IRP_MJ_CLEANUP and IRP_MJ_CLOSE are related but not identical, and are often
     confused. The system sends IRP_MJ_CLOSE to the function driver to close a
-    handle returned earlier by the function driver's IRP_MJ_CREATE dispatch
-    routine. ToasterCreate is the function drivers IRP_MJ_CREATE dispatch routine.
-    However, ToasterClose only closes the file object handle. It does not cancel
+    handle returned earlier by the function driver's IRP_MJ_CREATE dispatch routine.
+    ToasterCreate is the function driver's IRP_MJ_CREATE dispatch routine.
+	.
+    However, ToasterClose only closes the file object handle. It *does not* cancel
     any IRPs in the driver-managed IRP queue that are associated with the handle.
+	.
     Thus, the system sends IRP_MJ_CLEANUP to the function driver, so that the
     driver can remove any IRPs in the driver-managed IRP queue that belonged to
     the handle that is now closed.
@@ -1311,27 +1297,31 @@ New Routine Description:
     ToasterCleanup processes each queued IRP in the driver-managed IRP queue and,
     if the queued IRP's file object matches that of the cleanup IRP, then the
     queued IRP is removed from the driver-managed IRP queue and added to a
-    temporary IRP queue.
+    "temporary IRP queue".
 
     After every IRP in the driver-managed IRP queue has been processed, the
     temporary IRP queue is processed. Each IRP in the temporary IRP queue is
     removed and completed with STATUS_CANCELLED.
+	//
+	// Chj Q: 为什么要先挪到临时队列中再应答 STATUS_CANCELLED? 遍历原始队列时就应答不行吗？
+	// A: "应答 STATUS_CANCELLED" 意味着要调用 IoCompleteRequest, 而 IoCompleteRequest
+	// 里头要调用本层驱动未知的 completion-routines, 相当于 IoCompleteRequest 内部是个黑洞.
+	// 另一方面我们知道. 访问 queued IRP 的代码应该被保护在 spinlock 中, spinlock 中干的
+	// 活应该精简, 黑洞代码不应该被包在 spinlock 中.
 
     Note that ToasterCleanup does not call the PAGED_CODE macro because the routine
     uses a spin lock.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is an FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the cleanup operation associated with DeviceObject.
 
 Return Value Description:
     ToasterCleanup returns STATUS_SUCCESS.
-
 --*/
 {
     PFDO_DATA              fdoData;
@@ -1347,7 +1337,6 @@ Return Value Description:
 
     ToasterIoIncrement (fdoData);
 
-    //
     // Get the parameters of the IRP from the function driver's location in the IRP's
     // I/O stack. The results of the function driver's processing of the IRP, if any,
     // are then stored back in the same I/O stack location.
@@ -1358,7 +1347,6 @@ Return Value Description:
     //
     irpStack = IoGetCurrentIrpStackLocation(Irp);
 
-    //
     // Initialize a temporary IRP queue. Any IRP in the driver-managed IRP queue
     // whose file object matches that of the cleanup IRP is added to the temporary
     // IRP queue to be canceled at the end of ToasterCleanup.
@@ -1367,7 +1355,6 @@ Return Value Description:
 
     KeAcquireSpinLock(&fdoData->QueueLock, &oldIrql);
 
-    //
     // Process every IRP in the driver-managed IRP queue and remove it from the
     // queue if its file object matches that of the incoming IRP.
     //
@@ -1384,16 +1371,14 @@ Return Value Description:
 
         pendingIrpStack = IoGetCurrentIrpStackLocation(pendingIrp);
 
-        if (irpStack->FileObject == pendingIrpStack->FileObject)
+        if (irpStack->FileObject == pendingIrpStack->FileObject) // new
         {
-            //
             // If the file object of the IRP in the driver-managed IRP queue
             // matches the file object of the incoming IRP, then remove the
             // IRP from the driver-managed IRP queue.
             //
             RemoveEntryList(thisEntry);
 
-            //
             // Clear the IRP's cancel routine to NULL. Then determine if the system
             // has already called the IRP's cancel routine. If IoSetCancelRoutine
             // returns NULL, then the system has already called ToasterCancelQueued.
@@ -1403,11 +1388,10 @@ Return Value Description:
             //
             if (NULL == IoSetCancelRoutine (pendingIrp, NULL))
             {
-                //
-                // The system has already called ToasterCancelQueued. However,
-                // ToasterCancelQueued must be waiting to acquire QueueLock because
-                // QueueLock was acquired before the for-loop began to process the
-                // driver-managed IRP queue.
+                // The system has already called ToasterCancelQueued. However, (we're sure that)
+                // ToasterCancelQueued must be waiting to acquire QueueLock, because,  // 回顾
+                // QueueLock was acquired(by ToasterCancelQueued?) before the for-loop(in this function?) began to 
+                // process the driver-managed IRP queue.
                 //
                 // The thread that executes ToasterCancelQueued will resume when
                 // QueueLock is released outside of the for loop. ToasterCancelQueued
@@ -1417,7 +1401,7 @@ Return Value Description:
                 // end of ToasterCleanup the same IRP would be completed twice,
                 // causing a system crash because an IRP must only be completed once.
                 //
-                // Initialize NewRequestsQueue's list head to prevent
+                // Initialize NewRequestsQueue's(Chj: 这注释有错吧!) list head to prevent
                 // ToasterCancelQueued from causing a system crash when it attempts
                 // to remove the IRP which has already been removed from the
                 // driver-managed IRP queue earlier.
@@ -1426,7 +1410,6 @@ Return Value Description:
             }
             else
             {
-                //
                 // The system has not already called ToasterCancelQueued, nor
                 // will it call ToasterCancelQueued because the IRP's cancel
                 // routine has been cleared to NULL.
@@ -1443,36 +1426,29 @@ Return Value Description:
 
     while(!IsListEmpty(&cleanupList))
     {
-        //
         // Process every IRP in the temporary IRP queue. Remove one IRP at a
         // time and complete it with STATUS_CANCELLED until the queue is empty.
-        //
+
         thisEntry = RemoveHeadList(&cleanupList);
 
         pendingIrp = CONTAINING_RECORD(thisEntry, IRP,
                                 Tail.Overlay.ListEntry);
 
         pendingIrp->IoStatus.Information = 0;
-
         pendingIrp->IoStatus.Status = STATUS_CANCELLED;
-
         IoCompleteRequest(pendingIrp, IO_NO_INCREMENT);
     }
 
-    //
     // Set the cleanup IRP's IoStatus.Information member with the number of bytes
     // transferred during the cleanup operation. Because it is not necessary to
     // access the toaster instance's hardware to process the cleanup request, the
     // number of bytes transferred is 0.
     //
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = STATUS_SUCCESS;
-
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
     ToasterIoDecrement (fdoData);
-
     return STATUS_SUCCESS;
 }
 
@@ -1481,20 +1457,20 @@ ToasterQueueRequest(
     __in PFDO_DATA FdoData,
     __in PIRP Irp
     )
-
 /*++
-
 Updated Routine Description:
-    ToasterQueueRequest sets the IRP's cancel routine to be called by the system
-    if the incoming IRP is canceled.
+    ToasterQueueRequest sets the IRP's [cancel routine to be called by the system
+    if the incoming IRP is canceled]. 注意 if 的修饰对象!
 
-    In addition, ToasterQueueRequests also tests if the incoming IRP not been
-    canceled between the time it was created and the time it is processed by
-    ToasterQueueRequest before adding it to the tail of the driver-managed IRP
-    queue. If the application that originated the IRP has been closed, then the
+    In addition, ToasterQueueRequests also tests [if the incoming IRP (+has) not been
+    canceled between the time [it was created] and [the time it is processed by      
+    ToasterQueueRequest]] before adding it to the tail of the driver-managed IRP queue.
+	// Chj: 注意断句! 意即:如果从在[该Irp生成 到 此函数拿到该Irp]这个时间窗口内
+	// 恰巧被另一个线程给 cancel 了, 那么就不用将该 Irp 加入等候队列了.
+	.    
+	If the application that originated the IRP has been closed, then the
     IRP can be failed with STATUS_CANCELLED instead of being added to the
     driver-managed IRP queue.
-
 --*/
 {
     KIRQL               oldIrql;
@@ -1502,9 +1478,10 @@ Updated Routine Description:
 
     ToasterDebugPrint(TRACE, "Queuing Requests\n");
 
+	// (*A)
+
     ASSERT(HoldRequests == FdoData->QueueState);
 
-    //
     // Mark the incoming IRP as pending. The incoming IRP must be marked pending
     // before setting the cancel routine so that the IRP can be completed in a
     // different thread context.
@@ -1513,14 +1490,13 @@ Updated Routine Description:
 
     KeAcquireSpinLock(&FdoData->QueueLock, &oldIrql);
 
+    // Set the system to call the function driver's I/O cancel routine, ToasterCancelQueued.
+    // ToasterCancelQueued will be called if the IRP is canceled after it(the IRP) 
+    // has been added to the driver-managed IRP queue.
     //
-    // Set the system to call the function driver's I/O cancel routine,
-    // ToasterCancelQueued, if the IRP is canceled after it has been added to the
-    // driver-managed IRP queue.
+    // The cancel routine can only be set *after* the IRP is marked pending. // Chj: MSDN 没这么要求啊.
     //
-    // The cancel routine can only be set after the IRP is marked pending.
-    //
-    IoSetCancelRoutine (Irp, ToasterCancelQueued);
+    IoSetCancelRoutine (Irp, ToasterCancelQueued); // new
 
     //
     // Before adding the incoming IRP to the driver-managed IRP queue, determine if
@@ -1530,14 +1506,15 @@ Updated Routine Description:
     //
     // The incoming IRP might have been canceled if, for example, the application
     // that originated the IRP was closed before the system sent the IRP to the
-    // driver to be processed.
+    // driver to be processed. // 你干脆讲 before the system sent this IRP here(ToasterQueueRequest 此处的代码)好了.
+	//
+	// -- Chj: 意即, 本线程执行到 (*A) 点时被假想暂停, 另一个线程抢入执行了 cancel-irp 动作 ??
     //
-    // Checking the IRP's Cancel member must occur after the IRP's cancel routine
-    // Is set.
+    // [Checking the IRP's Cancel member] must occur(=be run) after the IRP's cancel routine
+    // is set. // Chj Q: Why? 跟 IoSetCancelRoutine 里头针对 Irp->Cancel 的 test-and-set 原子操作有关?
     //
     if (TRUE == Irp->Cancel)
     {
-        //
         // Clear the IRP's cancel routine to NULL. Then determine if the system
         // has already called the IRP's cancel routine. If IoSetCancelRoutine
         // returns NULL, then the system has already called ToasterCancelQueued.
@@ -1548,7 +1525,6 @@ Updated Routine Description:
         ret = IoSetCancelRoutine (Irp, NULL);
         if (NULL != ret)
         {
-            //
             // The system has not called ToasterCancelQueued, nor will it call
             // ToasterCancelQueued because the IRP's cancel routine has been cleared
             // to NULL.
@@ -1556,22 +1532,18 @@ Updated Routine Description:
             // Complete the incoming IRP with STATUS_CANCELLED. Note that QueueLock
             // must be released before completing the IRP, otherwise a system
             // deadlock could result.
-            //
 
             KeReleaseSpinLock(&FdoData->QueueLock, oldIrql);
 
             Irp->IoStatus.Status = STATUS_CANCELLED;
-
             Irp->IoStatus.Information = 0;
-
             IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
             ToasterIoDecrement(FdoData);
 
-            //
             // ToasterQueueRequest must return STATUS_PENDING to the caller even
             // though the IRP has been completed with STATUS_CANCELLED because
-            // ToasterQueueRequest called IoMarkIrpPending earlier.
+            // ToasterQueueRequest called IoMarkIrpPending earlier.            // Chj: 这又是什么鬼规则?
             //
             return STATUS_PENDING;
         }
@@ -1609,19 +1581,13 @@ Updated Routine Description:
 }
 
 
-
-
-
-
 VOID
 ToasterProcessQueuedRequests (
     __in PFDO_DATA FdoData
     )
-
 /*++
-
 Updated Routine Description:
-    ToasterProcessQueuedRequests determines if a de-queued IRP should
+    ToasterProcessQueuedRequests determines if(=whether) a de-queued IRP should
     be processed or canceled.
 
     ToasterProcessQueuedRequests de-queues one IRP at a time from the driver-managed
@@ -1637,7 +1603,6 @@ Updated Routine Description:
     If the de-queued IRP has not been canceled by the system then it is re-dispatched
     to be processed by the function driver. However, if the hardware instance has
     been removed, then that IRP is completed with STATUS_NO_SUCH_DEVICE.
-
 --*/
 {
     KIRQL               oldIrql;
@@ -1651,8 +1616,8 @@ Updated Routine Description:
 
     //
     // Initialize a temporary IRP queue. Any IRP in the driver-managed IRP queue
-    // that is, or should be canceled, but whose cancel routine has not yet been
-    // called by the system is added to the temporary IRP queue to be canceled at the
+    // [that is, or should be canceled, but whose cancel routine has not yet been
+    // called by the system] is added to the temporary IRP queue to be canceled at the
     // end of ToasterProcessQueuedRequests.
     //
     InitializeListHead(&cancelledIrpList);
@@ -1664,7 +1629,6 @@ Updated Routine Description:
         if (IsListEmpty(&FdoData->NewRequestsQueue))
         {
             KeReleaseSpinLock(&FdoData->QueueLock, oldIrql);
-
             break;
         }
 
@@ -1672,13 +1636,14 @@ Updated Routine Description:
 
         nextIrp = CONTAINING_RECORD(listEntry, IRP, Tail.Overlay.ListEntry);
 
-        //
+		// Chj: 从这行开始, 得配合 PWDM2 p230 的 IoCancelIrp 参考实现来解读, 
+		// 否则根本看不懂这套逻辑背后的意思!!!
+
         // Clear the IRP's cancel routine to NULL. This prevents the system from
         // calling ToasterCancelQueued if the system has not already called it.
         //
         cancelRoutine = IoSetCancelRoutine (nextIrp, NULL);
 
-        //
         // Before processing the IRP, determine if the IRP is, or should be canceled.
         // If the IRP is, or should be canceled, then the Cancel member of the IRP
         // equals TRUE, and the IRP should be added to the temporary IRP queue to be
@@ -1690,16 +1655,14 @@ Updated Routine Description:
         //
         if (TRUE == nextIrp->Cancel)
         {
-            //
             // Determine if the system has already called the IRP's cancel routine.
             // If IoSetCancelRoutine returns NULL, then the system has already called
             // ToasterCancelQueued. If IoSetCancelRoutine does not return NULL, then
             // the system will not call ToasterCancelQueued because
             // IoSetCancelRoutine clears the IRP's cancel routine to NULL.
             //
-            if (NULL != cancelRoutine)
+            if (NULL != cancelRoutine) // 前两条语句执行的 IoSetCancelRoutine() 抢先于 IoCancelIrp() 内部的 IoSetCancelRoutine().
             {
-                //
                 // The system has not called ToasterCancelQueued, nor will it call
                 // ToasterCancelQueued because the IRP's cancel routine has been
                 // cleared to NULL.
@@ -1711,7 +1674,6 @@ Updated Routine Description:
             }
             else
             {
-                //
                 // The system has already called ToasterCancelQueued. However,
                 // ToasterCancelQueued must be waiting to acquire QueueLock because
                 // QueueLock was acquired before the for-loop began to process the
@@ -1731,7 +1693,7 @@ Updated Routine Description:
 
             KeReleaseSpinLock(&FdoData->QueueLock, oldIrql);
         }
-        else
+        else // not nextIrp->Cancel
         {
             //
             // It is very important to release the spin lock that protects the queue
@@ -1743,38 +1705,34 @@ Updated Routine Description:
             if (FailRequests == FdoData->QueueState)
             {
                 nextIrp->IoStatus.Information = 0;
-
                 nextIrp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
                 IoCompleteRequest (nextIrp, IO_NO_INCREMENT);
             }
             else
             {
-                status = ToasterDispatchIO(FdoData->Self, nextIrp);
+                status = ToasterDispatchIO(FdoData->Self, nextIrp); 
+					// Chj: may be carrying nextIrp->Cancel=TRUE flag, in case of another thread preemption
 
                 if (STATUS_PENDING == status)
                 {
-                    break;
+                    break; // see incomplete2.c comment
                 }
             }
         }
-    }
+    } // for each IRP in NewRequestsQueue
 
-    while(!IsListEmpty(&cancelledIrpList))
+    while(!IsListEmpty(&cancelledIrpList)) // new
     {
-        //
         // Process every IRP in the temporary IRP queue. Remove one IRP at a time and
         // complete it with STATUS_CANCELLED until the queue is empty.
-        //
+
         PLIST_ENTRY cancelledListEntry = RemoveHeadList(&cancelledIrpList);
 
         cancelledIrp = CONTAINING_RECORD(cancelledListEntry, IRP,
                                 Tail.Overlay.ListEntry);
 
         cancelledIrp->IoStatus.Information = 0;
-
         cancelledIrp->IoStatus.Status = STATUS_CANCELLED;
-
         IoCompleteRequest(cancelledIrp, IO_NO_INCREMENT);
     }
 
@@ -1829,45 +1787,42 @@ VOID
 ToasterCancelQueued (
     PDEVICE_OBJECT   DeviceObject,
     PIRP             Irp
-    )
-
+    )	// Chj: 这个函数名取得不好, 应该叫 ToasterCancelQueuedIrp 或直接叫 ToasterCancelIrp .
+		// 已经 queued 过的 IRP 才有 cancel 一说, 因此名字中用 queued 是多余的.
 /*++
-
 New Routine Description:
     The system calls ToasterCancelQueued to remove the incoming IRP from the
     driver-managed IRP queue because the IRP has been canceled.
 
     When the system dispatches a new IRP to ToasterDispatchIO and QueueState
     equals HoldRequests, then ToasterDispatchIO calls ToasterQueueRequest.
-    ToasterQueueRequest sets the system to call ToasterCancelQueued if the system
-    cancels the IRP.
+    ToasterQueueRequest sets the system to [call ToasterCancelQueued if the system
+    cancels the IRP].
 
     The IRP might need to be canceled if the application that originated the IRP
     has been closed, but the IRP remains in the driver-managed IRP queue. The
-    system then calls ToasterCancelQueued to remove the IRP from the
+    system then calls ToasterCancelQueued which will remove the IRP from the //(chj better comment)
     driver-managed IRP queue.
 
-    A driver that implements its own driver-managed IRP queue must supply a cancel
+    A driver that implements its own driver-managed IRP queue *must* supply a cancel
     routine to the system when the IRP is added to the driver-managed IRP queue
     because only the driver can correctly remove the IRP from its own
-    driver-managed IRP queue.
+    driver-managed IRP queue. // Chj: 只有驱动作者自己才知道如何给那个 IRP 送终.
 
     Note that the system-wide cancel spin lock is already acquired when the system
-    calls ToasterCancelQueued, and this routine must release it.
+    calls ToasterCancelQueued, and this routine *must* release it.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is an FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the queued I/O request that must be canceled and removed from
     the driver-managed IRP queue.
 
 Return Value Description:
     ToasterCancelQueued does not return a value.
-
 --*/
 {
     PFDO_DATA fdoData = DeviceObject->DeviceExtension;
@@ -1875,7 +1830,6 @@ Return Value Description:
 
     ToasterDebugPrint(TRACE, "Canceling Requests\n");
 
-    //
     // Release the system-wide cancel spin lock. Releasing this spin lock immediately
     // upon entering ToasterCancelQueued improves overall system performance because
     // the function driver does not need to use the system provided cancel spin lock.
@@ -1884,28 +1838,23 @@ Return Value Description:
 
     KeAcquireSpinLock(&fdoData->QueueLock, &oldIrql);
 
-    //
     // Remove the canceled IRP from the driver-managed IRP queue while holding
     // QueueLock.
     //
-    RemoveEntryList(&Irp->Tail.Overlay.ListEntry);
+    RemoveEntryList(&Irp->Tail.Overlay.ListEntry); // enqueue @ ToasterQueueRequest()
 
     KeReleaseSpinLock(&fdoData->QueueLock, oldIrql);
 
     Irp->IoStatus.Status = STATUS_CANCELLED;
-
-    //
+	//
     // Set the canceled IRP's IoStatus.Information member with the number of bytes
     // transferred to 0 to indicate that the I/O manager does not need to copy any
     // data from the IRP back into the caller's memory space.
     //
     Irp->IoStatus.Information = 0;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
     return;
 }
-
 
 
 NTSTATUS
@@ -1913,7 +1862,6 @@ ToasterCanStopDevice    (
     __in PDEVICE_OBJECT DeviceObject,
     __in PIRP           Irp
     )
-
 /*++
 New Routine Description:
     ToasterCanStopDevice determines whether the hardware instance can be stopped
@@ -2203,28 +2151,21 @@ LONG
 ToasterIoIncrement    (
     __in  PFDO_DATA   FdoData
     )
-
 /*++
-
 Updated Routine Description:
     ToasterIoIncrement does not change in this stage of the function driver.
-
 --*/
 
 {
     LONG            result;
-
     result = InterlockedIncrement(&FdoData->OutstandingIO);
 
     //ToasterDebugPrint(TRACE, "ToasterIoIncrement %d\n", result);
-
     ASSERT(result > 0);
-
     if (2 == result)
     {
         KeClearEvent(&FdoData->StopEvent);
     }
-
     return result;
 }
 
@@ -2233,29 +2174,23 @@ LONG
 ToasterIoDecrement    (
     __in  PFDO_DATA  FdoData
     )
-
 /*++
-
 Updated Routine Description:
     ToasterIoDecrement does not change in this stage of the function driver.
-
 --*/
 {
     LONG            result;
-
     result = InterlockedDecrement(&FdoData->OutstandingIO);
 
     //ToasterDebugPrint(TRACE, "ToasterIoDecrement %d\n", result);
 
     ASSERT(result >= 0);
-
     if (1 == result)
     {
         KeSetEvent (&FdoData->StopEvent,
                     IO_NO_INCREMENT,
                     FALSE);
     }
-
     if (0 == result)
     {
         ASSERT(Deleted == FdoData->DevicePnPState);
@@ -2264,7 +2199,6 @@ Updated Routine Description:
                     IO_NO_INCREMENT,
                     FALSE);
     }
-
     return result;
 }
 

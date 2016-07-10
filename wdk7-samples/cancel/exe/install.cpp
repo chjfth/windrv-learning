@@ -54,7 +54,7 @@ BOOLEAN
 	);
 
 BOOLEAN
-	InstallDriver(
+InstallDriver(
 	__in SC_HANDLE  SchSCManager,
 	__in LPCTSTR    DriverName,
 	__in LPCTSTR    ServiceExe
@@ -113,7 +113,7 @@ BOOLEAN
 }   // InstallDriver
 
 BOOLEAN
-	ManageDriver(
+ManageDriver(
 	__in LPCTSTR  DriverName,
 	__in LPCTSTR  ServiceName,
 	__in USHORT   Function
@@ -187,7 +187,7 @@ BOOLEAN
 
 
 BOOLEAN
-	RemoveDriver(
+RemoveDriver(
 	__in SC_HANDLE    SchSCManager,
 	__in LPCTSTR      DriverName
 	)
@@ -225,7 +225,7 @@ BOOLEAN
 
 
 BOOLEAN
-	StartDriver(
+StartDriver(
 	__in SC_HANDLE    SchSCManager,
 	__in LPCTSTR      DriverName
 	)
@@ -276,7 +276,7 @@ BOOLEAN
 
 
 BOOLEAN
-	StopDriver(
+StopDriver(
 	__in SC_HANDLE    SchSCManager,
 	__in LPCTSTR      DriverName
 	)
@@ -316,7 +316,4 @@ BOOLEAN
 
 	return rCode;
 }   //  StopDriver
-
-
-
 

@@ -78,7 +78,6 @@ main(
     DWORD errNum = 0;
     TCHAR driverLocation[MAX_PATH] = {'\0'};
 
-
     if (argc >= 2  && (argv[1][0] == '-' || isalpha((unsigned char)argv[1][0])))
     {
         puts("Usage:testapp <NumberOfThreads>\n");
@@ -86,10 +85,8 @@ main(
     }
     else if (argc >= 2 && ((NumberOfThreads = atoi(argv[1])) > MAXTHREADS))
     {
-        printf("Invalid option:Only a maximun of %d threads allowed.\n",
-                    MAXTHREADS);
+        printf("Invalid option:Only a maximun of %d threads allowed.\n", MAXTHREADS);
         return;
-
     }
 
     //
@@ -127,14 +124,11 @@ main(
 		{
             printf("Unable to install driver. \n");
 
-            //
             // Error - remove driver.
-            //
             ManageDriver(DRIVER_NAME,
                          driverLocation,
                          DRIVER_FUNC_REMOVE
                          );
-
             return;
         }
 
@@ -164,7 +158,7 @@ main(
     {
         hThreads[i] = CreateThread( NULL,      // security attributes
                                     0,         // initial stack size
-                                    Reader,    // Main() function
+                                    Reader,    // thread function
                                     NULL,      // arg to Reader thread
                                     0,         // creation flags
                                     (LPDWORD)&Id); // returned thread id
@@ -175,27 +169,32 @@ main(
         }
     }
 
-    if (getchar() == 'q')
+	int quitchar = getchar();
+
+    if(quitchar == 'q') // do graceful thread-exit
     {
         ExitFlag = TRUE;
-
         WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
-
-        for(i=0; i < NumberOfThreads; i++)
-            CloseHandle(hThreads[i]);
+		CloseHandle(hDevice);
     }
+	else // do force-exit
+	{
+		CloseHandle(hDevice); // close device handle while it is still in use
+		WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
+	}
 
-    CloseHandle(hDevice);
+	for(i=0; i < NumberOfThreads; i++)
+		CloseHandle(hThreads[i]);
 
     //
     // Unload the driver.  Ignore any errors.
     //
-    ManageDriver(DRIVER_NAME,
+    BOOLEAN b = ManageDriver(DRIVER_NAME,
                  driverLocation,
                  DRIVER_FUNC_REMOVE
                  );
 
-    ExitProcess(1);
+    ExitProcess(b ? 0 : 1);
 }
 
 
@@ -203,6 +202,7 @@ DWORD WINAPI Reader(PVOID dummy )
 {
     ULONG data;
     OVERLAPPED ov;
+	DWORD tid = GetCurrentThreadId();
 
     UNREFERENCED_PARAMETER(dummy);
 
@@ -214,13 +214,13 @@ DWORD WINAPI Reader(PVOID dummy )
 
         if (!ReadFileEx(hDevice, (PVOID)&data, sizeof(ULONG),  &ov, CompletionRoutine))
         {
-            printf ( "Unexpected Error: ReadFileEx Failed: %d\n", GetLastError());
-            ExitProcess ( 1 );
+            printf ( "(tid %d)ReadFileEx failed, winerr=%d\n", tid, GetLastError());
+            break; //ExitProcess(1);
         }
         SleepEx(INFINITE, TRUE);
     }
 
-    printf("Exiting thread %d \n", GetCurrentThreadId());
+    printf("(tid %d)Exiting thread.\n", tid);
     ExitThread(0);
 }
 
@@ -286,6 +286,4 @@ SetupDriverName(
 
     return TRUE;
 }   // SetupDriverName
-
-
 

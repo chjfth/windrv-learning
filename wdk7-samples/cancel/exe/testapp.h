@@ -3,7 +3,7 @@
 #define DRIVER_FUNC_REMOVE      0x02
 
 #define MAXTHREADS 10
-#define DRIVER_NAME       "cancel"
+#define DRIVER_NAME       "wdk_cancel"
 
 BOOLEAN
 ManageDriver(

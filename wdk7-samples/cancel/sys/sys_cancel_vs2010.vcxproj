@@ -54,7 +54,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>wdk7cancel</TargetName>
+    <TargetName>wdk_cancel</TargetName>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -65,7 +65,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>wdk7cancel</TargetName>
+    <TargetName>wdk_cancel</TargetName>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
