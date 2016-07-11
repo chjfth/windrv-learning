@@ -1312,6 +1312,3 @@ GetDeviceCapabilitiesExit:
 
 }
 
-
-
-

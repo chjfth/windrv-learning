@@ -34,7 +34,6 @@ Abstract:   Demonstrates the use of new Cancel-Safe queue
 Environment:
 
 	Kernel mode
-
 --*/
 
 #include "cancel.h"
