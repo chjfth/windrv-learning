@@ -25,6 +25,7 @@ __user_code
 #include <windows.h>
 #include <winioctl.h>
 #include <tchar.h>
+#include <conio.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -40,6 +41,7 @@ HANDLE hDevice;
 BOOLEAN ExitFlag = FALSE;
 bool g_CallCancelIo = false;
 HANDLE hThreads[MAXTHREADS];
+int g_quitchar;
 
 //
 // function prototypes
@@ -111,6 +113,13 @@ void timeprint(const TCHAR *fmt, ...)
 
 	printf("%s", buf);
 }
+
+DWORD WINAPI KeyboardThread(PVOID dummy)
+{
+	g_quitchar = _kbhit();
+	return 0;
+}
+
 
 //
 // Main function
@@ -226,11 +235,23 @@ main(
 		}
 	}
 
-	int quitchar = getchar();
+	// Create a dedicate read keyboard thread, so that we can check thread-done periodically.
+	HANDLE hThreadKeyboard = CreateThread(NULL, 0, KeyboardThread, NULL, 0, &Id);
+	CloseHandle(hThreadKeyboard);
 
-	if(quitchar=='q' || quitchar=='c') // do graceful thread-exit
+	for(; ;)
 	{
-		if(quitchar=='c')
+		if(g_quitchar)
+			break;
+		
+		DWORD waitre = WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, 100);
+		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+NumberOfThreads)
+			break;
+	}
+
+	if(g_quitchar=='q' || g_quitchar=='c') // do graceful thread-exit
+	{
+		if(g_quitchar=='c')
 			g_CallCancelIo = true;
 			
 		ExitFlag = TRUE;
