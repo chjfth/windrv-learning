@@ -82,7 +82,7 @@ extern "C" {
 
 #define CSAMP_DEVICE_NAME_U     L"\\Device\\CANCELSAMP"
 #define CSAMP_DOS_DEVICE_NAME_U L"\\DosDevices\\CancelSamp"
-#define CSAMP_RETRY_INTERVAL    500*1000 //500 ms
+#define CSAMP_RETRY_INTERVAL    500*1000 //500 millisec
 #define TAG (ULONG)'MASC'
 
 typedef struct _INPUT_DATA{

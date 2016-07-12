@@ -319,7 +319,7 @@ Return Value:
 	PIO_STACK_LOCATION  irpStack;
 	LARGE_INTEGER       currentTime;
 	PFILE_CONTEXT       fileContext;
-	PVOID               readBuffer;
+	ULONG               *readBuffer;
 	BOOLEAN             inCriticalRegion;
 	PAGED_CODE();
 
@@ -372,9 +372,9 @@ Return Value:
 
 	KeQuerySystemTime(&currentTime);
 
-	readBuffer = Irp->AssociatedIrp.SystemBuffer;
+	readBuffer = (ULONG*)(Irp->AssociatedIrp.SystemBuffer);
 	
-	*((PULONG)readBuffer) = ((currentTime.LowPart/13)%2);
+	*readBuffer = ((currentTime.LowPart/13)%2);
 
 	// To avoid the thread from being suspended [after it has queued the IRP and
 	// before it signaled the semaphore], we will enter critical region.
