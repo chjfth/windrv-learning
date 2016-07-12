@@ -24,6 +24,7 @@ __user_code
 
 #include <windows.h>
 #include <winioctl.h>
+#include <assert.h>
 #include <tchar.h>
 #include <conio.h>
 #include <stdio.h>
@@ -47,22 +48,12 @@ int g_quitchar;
 // function prototypes
 //
 
-VOID CALLBACK CompletionRoutine(
-	DWORD errorcode,
-	DWORD bytesTransfered,
-	LPOVERLAPPED ov
-	);
+VOID CALLBACK CompletionRoutine(DWORD errorcode, DWORD bytesTransfered, LPOVERLAPPED ov);
 
-DWORD
-WINAPI Reader(
-	PVOID
-	);
+DWORD WINAPI Reader(PVOID);
 
-BOOLEAN
-SetupDriverName(
-	__inout_bcount_full(BufferLength) PCHAR DriverLocation,
-	__in ULONG BufferLength
-	);
+BOOLEAN SetupDriverName(__inout_bcount_full(BufferLength) PCHAR DriverLocation,
+	__in ULONG BufferLength);
 
 
 #define COUNT(ar) (sizeof(ar)/sizeof(ar[0]))
@@ -116,7 +107,14 @@ void timeprint(const TCHAR *fmt, ...)
 
 DWORD WINAPI KeyboardThread(PVOID dummy)
 {
-	g_quitchar = _kbhit();
+	for(;;)
+	{
+		int quitchar = _getch();
+		if(quitchar=='q' || quitchar=='c' || quitchar=='x') {
+			g_quitchar = quitchar;
+			break;
+		}
+	}
 	return 0;
 }
 
@@ -209,13 +207,15 @@ main(
 		}
 	}
 
-	printf("============================================================\n");
-	printf("Chj Note: Each worker thread will do ReadFileEx() only once.\n");
-	printf("============================================================\n");
+	printf("==============================================================\n");
+	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
+	printf("You can wait silently for IO completion, or,\n");
+	printf("  'q' to let worker thread quit before IO completion\n");
+	printf("  'c' to let worker thread call CancelIo before IO completion\n");
+	printf("  'x' to let surprise close device handle before IO completion\n");
+	printf("==============================================================\n");
 
 	printf("Number of threads : %d\n", NumberOfThreads);
-
-	printf("<Enter 'q' or 'c', then Enter to exit gracefully>\n");
 
 	for(i=0; i < NumberOfThreads; i++)
 	{
@@ -235,53 +235,62 @@ main(
 		}
 	}
 
-	// Create a dedicate read keyboard thread, so that we can check thread-done periodically.
+	// Create a dedicate read keyboard thread, so that we can detect worker thread exit.
 	HANDLE hThreadKeyboard = CreateThread(NULL, 0, KeyboardThread, NULL, 0, &Id);
 	CloseHandle(hThreadKeyboard);
 
 	for(; ;)
 	{
-		if(g_quitchar)
+		if(g_quitchar) {
+			printf("Got keyboard input: %c\n", g_quitchar);
 			break;
+		}
 		
 		DWORD waitre = WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, 100);
 		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+NumberOfThreads)
 			break;
 	}
 
-	if(g_quitchar=='q' || g_quitchar=='c') // do graceful thread-exit
+	if(g_quitchar)
 	{
-		if(g_quitchar=='c')
-			g_CallCancelIo = true;
-			
-		ExitFlag = TRUE;
-		WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
-		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
-		
-		timeprint("Closing device handle.\n");
-		CloseHandle(hDevice);
-	}
-	else // do force-exit
-	{
-		timeprint("Closing device handle(crude).\n");
-		b = CloseHandle(hDevice); // close device handle while it is still in use
-		if(b)
-			timeprint("CloseHandle() returns success.\n");
-		else
-			timeprint("CloseHandle() returns error, winerr=%d.\n", GetLastError);
+		if(g_quitchar=='q' || g_quitchar=='c') 
+		{
+			ExitFlag = TRUE; // tell worker thread to quit
 
-		WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
-		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
+			if(g_quitchar=='c')
+				g_CallCancelIo = true;
+
+			WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
+			timeprint("WaitForMultipleObjects returns for all worker threads.\n");
+
+			timeprint("Closing device handle.\n");
+			CloseHandle(hDevice);
+		}
+		else if(g_quitchar=='x') // surprise close device handle
+		{
+			timeprint("Closing device handle(surprise).\n");
+			b = CloseHandle(hDevice); 
+			if(b)
+				timeprint("CloseHandle() returns success.\n");
+			else
+				timeprint("CloseHandle() returns error, winerr=%d.\n", GetLastError);
+
+			WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
+			timeprint("WaitForMultipleObjects returns for all worker threads.\n");
+		}
+		else
+			assert(0);
+	}
+	else
+	{
+		timeprint("Worker threads end with normal flow.\n");
 	}
 
 	for(i=0; i < NumberOfThreads; i++)
 		CloseHandle(hThreads[i]);
 
-	//
-	// Unload the driver.  Ignore any errors.
-	//
 	b = TRUE;
-//	BOOL b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE);
+//	BOOL b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE); // Unload the driver.  
 	timeprint("Done. Not removing %s driver.\n", DRIVER_NAME);
 
 	ExitProcess(b ? 0 : 1);
