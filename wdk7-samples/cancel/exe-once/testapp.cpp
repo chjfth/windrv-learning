@@ -42,7 +42,6 @@ HANDLE hDevice;
 BOOLEAN ExitFlag = FALSE;
 bool g_CallCancelIo = false;
 HANDLE hThreads[MAXTHREADS];
-int g_quitchar;
 
 //
 // function prototypes
@@ -104,20 +103,6 @@ void timeprint(const TCHAR *fmt, ...)
 
 	printf("%s", buf);
 }
-
-DWORD WINAPI KeyboardThread(PVOID dummy)
-{
-	for(;;)
-	{
-		int quitchar = _getch();
-		if(quitchar=='q' || quitchar=='c' || quitchar=='x') {
-			g_quitchar = quitchar;
-			break;
-		}
-	}
-	return 0;
-}
-
 
 //
 // Main function
@@ -209,7 +194,7 @@ main(
 
 	printf("==============================================================\n");
 	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
-	printf("You can wait silently for IO completion, or,\n");
+	printf("You can wait silently for IO completion, or ,\n");
 	printf("  'q' to let worker thread quit before IO completion\n");
 	printf("  'c' to let worker thread call CancelIo before IO completion\n");
 	printf("  'x' to let surprise close device handle before IO completion\n");
@@ -235,29 +220,32 @@ main(
 		}
 	}
 
-	// Create a dedicate read keyboard thread, so that we can detect worker thread exit.
-	HANDLE hThreadKeyboard = CreateThread(NULL, 0, KeyboardThread, NULL, 0, &Id);
-	CloseHandle(hThreadKeyboard);
-
-	for(; ;)
+	int quitchar = 0;
+	for(;;)
 	{
-		if(g_quitchar) {
-			printf("Got keyboard input: %c\n", g_quitchar);
-			break;
+		if(_kbhit()) 
+		{
+			quitchar = _getch();
+			if(quitchar=='q' || quitchar=='c' || quitchar=='x') {
+				printf("Got keyboard input: %c\n", quitchar);
+				break;
+			}
 		}
 		
 		DWORD waitre = WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, 100);
-		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+NumberOfThreads)
+		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+NumberOfThreads) {
+			quitchar = 0;
 			break;
+		}
 	}
 
-	if(g_quitchar)
+	if(quitchar)
 	{
-		if(g_quitchar=='q' || g_quitchar=='c') 
+		if(quitchar=='q' || quitchar=='c') 
 		{
 			ExitFlag = TRUE; // tell worker thread to quit
 
-			if(g_quitchar=='c')
+			if(quitchar=='c')
 				g_CallCancelIo = true;
 
 			WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
@@ -266,7 +254,7 @@ main(
 			timeprint("Closing device handle.\n");
 			CloseHandle(hDevice);
 		}
-		else if(g_quitchar=='x') // surprise close device handle
+		else if(quitchar=='x') // surprise close device handle
 		{
 			timeprint("Closing device handle(surprise).\n");
 			b = CloseHandle(hDevice); 
