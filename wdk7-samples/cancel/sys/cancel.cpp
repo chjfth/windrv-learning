@@ -9,7 +9,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
 Module Name:
 
-	cancel.c
+	cancel.c // Chj renames it to cancel.cpp
 
 Abstract:   Demonstrates the use of new Cancel-Safe queue
 			APIs to perform queuing of IRPs without worrying about
@@ -45,6 +45,8 @@ Environment:
 #pragma alloc_text( PAGE, CsampRead)
 #endif // ALLOC_PRAGMA
 
+int g_seq;
+
 NTSTATUS
 DriverEntry(
 	__in PDRIVER_OBJECT  DriverObject,
@@ -77,12 +79,10 @@ Return Value:
 
 	CSAMP_KDPRINT(("DriverEntry Enter \n"));
 
-
 	(void) RtlInitUnicodeString(&unicodeDeviceName, CSAMP_DEVICE_NAME_U);
 
 	(void) RtlInitUnicodeString( &sddlString, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)");
 
-	//
 	// We will create a secure deviceobject so that only processes running
 	// in admin and local system account can access the device. Refer
 	// "Security Descriptor String Format" section in the platform
@@ -91,7 +91,6 @@ Return Value:
 	// involved in installing the driver. For PNP drivers, security descriptor
 	// is typically specified for the FDO in the INF file.
 	//
-
 	status = IoCreateDeviceSecure(
 				DriverObject,
 				sizeof(DEVICE_EXTENSION),
@@ -108,16 +107,12 @@ Return Value:
 		return status;
 	}
 
-	DbgPrint("DeviceObject %p\n", deviceObject);
+	CSAMP_KDPRINT(("DeviceObject %p\n", deviceObject));
 
-	//
 	// Allocate and initialize a Unicode String containing the Win32 name
 	// for our device.
-	//
-
 	(void)RtlInitUnicodeString( &unicodeDosDeviceName, CSAMP_DOS_DEVICE_NAME_U );
-
-
+	//
 	status = IoCreateSymbolicLink(
 				(PUNICODE_STRING) &unicodeDosDeviceName,
 				(PUNICODE_STRING) &unicodeDeviceName
@@ -138,29 +133,22 @@ Return Value:
 
 	DriverObject->DriverUnload = CsampUnload;
 
-	//
 	// Set the flag signifying that we will do buffered I/O. This causes NT
 	// to allocate a buffer on a ReadFile operation which will then be copied
 	// back to the calling application by the I/O subsystem
 	//
-
 	deviceObject->Flags |= DO_BUFFERED_IO;
 
+	// This is used to serialize access to the queue.
 	//
-	// This is used to serailize access to the queue.
-	//
-
 	KeInitializeSpinLock(&devExtension->QueueLock);
 
 	KeInitializeSemaphore(&devExtension->IrpQueueSemaphore, 0, MAXLONG );
 
+	// Initialize the "pending Irp device queue"
 	//
-	// Initialize the pending Irp devicequeue
-	//
-
 	InitializeListHead( &devExtension->PendingIrpQueue );
 
-	//
 	// Initialize the cancel safe queue
 	//
 	IoCsqInitialize( &devExtension->CancelSafeQueue,
@@ -170,22 +158,17 @@ Return Value:
 					 CsampAcquireLock,
 					 CsampReleaseLock,
 					 CsampCompleteCanceledIrp );
-	//
+
 	// 10 is multiplied because system time is specified in 100ns units
 	//
+	devExtension->PollingInterval.QuadPart = Int32x32To64(CSAMP_RETRY_INTERVAL, -10);
 
-	devExtension->PollingInterval.QuadPart = Int32x32To64(
-								CSAMP_RETRY_INTERVAL, -10);
-	//
 	// Note down system time
 	//
-
 	KeQuerySystemTime (&devExtension->LastPollTime);
 
-	//
 	// Start the polling thread.
 	//
-
 	devExtension->ThreadShouldStop = FALSE;
 
 	status = PsCreateSystemThread(&threadHandle,
@@ -203,27 +186,21 @@ Return Value:
 		return status;
 	}
 
-	//
 	// Convert the Thread object handle into a pointer to the Thread object
 	// itself. Then close the handle.
 	//
-
 	ObReferenceObjectByHandle(threadHandle,
 							THREAD_ALL_ACCESS,
 							NULL,
 							KernelMode,
 							(void**)&devExtension->ThreadObject,
 							NULL );
-
 	ZwClose(threadHandle);
 
 	CSAMP_KDPRINT(("DriverEntry Exit = %x\n", status));
-
 	ASSERT(NT_SUCCESS(status));
-
 	return status;
 }
-
 
 
 NTSTATUS
@@ -246,9 +223,7 @@ Return Value:
 	PIO_STACK_LOCATION  irpStack;
 	NTSTATUS            status = STATUS_SUCCESS;
 	PFILE_CONTEXT       fileContext;
-
 	UNREFERENCED_PARAMETER(DeviceObject);
-
 	PAGED_CODE ();
 
 	CSAMP_KDPRINT(("CsampCreateClose Enter\n"));
@@ -260,7 +235,6 @@ Return Value:
 	switch(irpStack->MajorFunction)
 	{
 		case IRP_MJ_CREATE:
-
 			//
 			// The dispatch routine for IRP_MJ_CREATE is called when a
 			// file object associated with the device is created.
@@ -280,12 +254,9 @@ Return Value:
 
 			IoInitializeRemoveLock(&fileContext->FileRundownLock, TAG, 0, 0);
 
-			//
 			// Make sure nobody is using the FsContext scratch area.
-			//
 			ASSERT(irpStack->FileObject->FsContext == NULL);    
 
-			//
 			// Store the context in the FileObject's scratch area.
 			//
 			irpStack->FileObject->FsContext = (PVOID) fileContext;
@@ -326,7 +297,6 @@ Return Value:
 }
 
 
-
 NTSTATUS
 CsampRead(
 	__in PDEVICE_OBJECT DeviceObject,
@@ -334,7 +304,7 @@ CsampRead(
  )
  /*++
 Routine Description:
-	Read disptach routine
+	Read dispatch routine
 
 Arguments:
 	DeviceObject - pointer to a device object.
@@ -351,10 +321,15 @@ Return Value:
 	PFILE_CONTEXT       fileContext;
 	PVOID               readBuffer;
 	BOOLEAN             inCriticalRegion;
-
 	PAGED_CODE();
 
+#if 0
+	static LONG s_count = 0;
+	InterlockedIncrement(&s_count);
+	CSAMP_KDPRINT(("CsampRead Enter(%d):0x%p\n", s_count, Irp));
+#else
 	CSAMP_KDPRINT(("CsampRead Enter:0x%p\n", Irp));
+#endif
 
 	devExtension = (DEVICE_EXTENSION*)DeviceObject->DeviceExtension;
 	inCriticalRegion = FALSE;
@@ -401,17 +376,14 @@ Return Value:
 	
 	*((PULONG)readBuffer) = ((currentTime.LowPart/13)%2);
 
-	//
-	// To avoid the thread from being suspended after it has queued the IRP and
-	// before it signalled the semaphore, we will enter critical region.
+	// To avoid the thread from being suspended [after it has queued the IRP and
+	// before it signaled the semaphore], we will enter critical region.
 	//
 	ASSERT(KeGetCurrentIrql() <= APC_LEVEL);
 	KeEnterCriticalRegion();
 	inCriticalRegion = TRUE;
 
-	//
-	// Queue the IRP and return STATUS_PENDING after signalling the
-	// polling thread.
+	// Queue the IRP and [return STATUS_PENDING after signaling the polling thread].
 	// Note: IoCsqInsertIrp marks the IRP pending.
 	//
 	IoCsqInsertIrp(&devExtension->CancelSafeQueue, Irp, NULL);
@@ -421,17 +393,16 @@ Return Value:
 	// could remove the IRP and complete it before this one gets to run.
 	//
 
-	//
-	// A semaphore remains signaled as long as its count is greater than
-	// zero, and non-signaled when the count is zero. Following function
+	// A semaphore remains signaled as long as its count is greater than zero,
+	// and non-signaled when the count is zero. Following function
 	// increments the semaphore count by 1.
 	//
-
 	KeReleaseSemaphore(&devExtension->IrpQueueSemaphore,
 						0,// No priority boost
 						1,// Increment semaphore by 1
 						FALSE );// No WaitForXxx after this call
-	if (inCriticalRegion == TRUE) {
+
+	if (inCriticalRegion == TRUE) { // inCriticalRegion 怎么看起来是多余的？
 		KeLeaveCriticalRegion();
 	}
 	//
@@ -449,16 +420,10 @@ CsampPollingThread(
 	__in PVOID Context
 	)
 /*++
-
 Routine Description:
-
-	This is the main thread that removes IRP from the queue
-	and peforms I/O on it. 
-	
+	This is the main thread that removes IRP from the queue and performs I/O on it. 
 Arguments:
-
 	Context     -- pointer to the device object
-
 --*/
 {
 	PDEVICE_OBJECT DeviceObject = (DEVICE_OBJECT*)Context;
@@ -473,7 +438,6 @@ Arguments:
 	//
 	for(;;)
 	{
-		//
 		// Wait indefinitely for an IRP to appear in the work queue or for
 		// the Unload routine to stop the thread. Every successful return
 		// from the wait decrements the semaphore count by 1.
@@ -484,15 +448,12 @@ Arguments:
 							FALSE,
 							NULL );
 
-		//
 		// See if thread was awakened because driver is unloading itself...
 		//
-
 		if ( DevExtension->ThreadShouldStop ) {
 			PsTerminateSystemThread( STATUS_SUCCESS );
 		}
 
-		//
 		// Remove a pending IRP from the queue.
 		//
 		Irp = IoCsqRemoveNextIrp(&DevExtension->CancelSafeQueue, NULL);
@@ -508,76 +469,54 @@ Arguments:
 			//
 			Status = CsampPollDevice(DeviceObject, Irp);
 			if (Status == STATUS_PENDING) {
-
-				//
 				// Device is not ready, so sleep for a while and try again.
-				//
-				KeDelayExecutionThread(KernelMode, FALSE,
-										&DevExtension->PollingInterval);
-
+				KeDelayExecutionThread(KernelMode, FALSE, &DevExtension->PollingInterval);
 			} else {
-
-				//
 				// I/O is successful, so complete the Irp.
-				//
 				Irp->IoStatus.Status = Status;
 				IoCompleteRequest (Irp, IO_NO_INCREMENT);
 				break;
 			}
-
 		}
-		//
+
 		// Go back to the top of the loop to see if there's another request waiting.
-		//
-	} // end of while-loop
+
+	} // fetch IRP loop
 }
 
 NTSTATUS
 CsampPollDevice(
 	__in PDEVICE_OBJECT DeviceObject,
 	__in PIRP    Irp
-	)
-
+	) // 假想该函数是从硬件获取数据，随机地有可能无法立即读到，得让上层 pending。
 /*++
-
 Routine Description:
-
    Polls for data
 
 Arguments:
-
-	DeviceObject     -- pointer to the device object
-	Irp             -- pointer to the requesing Irp
-
+	DeviceObject    -- pointer to the device object
+	Irp             -- pointer to the requesting Irp
 
 Return Value:
-
 	STATUS_SUCCESS   -- if the poll succeeded,
 	STATUS_TIMEOUT   -- if the poll failed (timeout),
 						or the checksum was incorrect
 	STATUS_PENDING   -- if polled too soon
-
 --*/
 {
-	PINPUT_DATA         pInput;
-
 	UNREFERENCED_PARAMETER( DeviceObject );
-
-	pInput  = (PINPUT_DATA)Irp->AssociatedIrp.SystemBuffer;
+	PINPUT_DATA pInput  = (PINPUT_DATA)Irp->AssociatedIrp.SystemBuffer;
 
 #ifdef REAL
 
 	RtlZeroMemory( pInput, sizeof(INPUT_DATA) );
 
-	//
 	// If currenttime is less than the lasttime polled plus
 	// minimum time required for the device to settle
 	// then don't poll  and return STATUS_PENDING
 	//
-
 	KeQuerySystemTime(&currentTime);
-	if (currentTime->QuadPart < (TimeBetweenPolls +
-				devExtension->LastPollTime.QuadPart))
+	if (currentTime->QuadPart < (TimeBetweenPolls+devExtension->LastPollTime.QuadPart))
 	{
 		return  STATUS_PENDING;
 	}
@@ -593,16 +532,13 @@ Return Value:
 
 	KeQuerySystemTime(&devExtension->LastPollTime);
 
-
 	return STATUS_SUCCESS;
 #else
-
 	//
 	// With this conditional statement
 	// you can control the number of times the
 	// i/o should be retried before completing.
 	//
-
 	if (pInput->Data-- <= 0)
 	{
 		Irp->IoStatus.Information = sizeof(INPUT_DATA);
@@ -610,8 +546,7 @@ Return Value:
 	}
 	return STATUS_PENDING;
 
- #endif
-
+#endif
 }
 
 NTSTATUS
@@ -620,31 +555,30 @@ CsampCleanup(
 	__in PIRP Irp
 )
 /*++
-
 Routine Description:
 	This dispatch routine is called when the last handle (in
 	the whole system) to a file object is closed. In other words, the open
 	handle count for the file object goes to 0. A driver that holds pending
-	IRPs internally must implement a routine for IRP_MJ_CLEANUP. When the
-	routine is called, the driver should cancel all the pending IRPs that
-	belong to the file object identified by the IRP_MJ_CLEANUP call. In other
+	IRPs internally must implement a routine for IRP_MJ_CLEANUP. 
+	.
+	When the routine is called, the driver should cancel all the pending IRPs 
+	that belong to the file object identified by the IRP_MJ_CLEANUP call. In other
 	words, it should cancel all the IRPs that have the same file-object pointer
 	as the one supplied in the current I/O stack location of the IRP for the
-	IRP_MJ_CLEANUP call. Of course, IRPs belonging to other file objects should
-	not be canceled. Also, if an outstanding IRP is completed immediately, the
+	IRP_MJ_CLEANUP call. 
+	.
+	Of course, IRPs belonging to other file objects should not be canceled. 
+	Also, if an outstanding IRP is completed immediately, the
 	driver does not have to cancel it.
 
 Arguments:
-
-	DeviceObject     -- pointer to the device object
-	Irp             -- pointer to the requesing Irp
+	DeviceObject    -- pointer to the device object
+	Irp             -- pointer to the requesting Irp
 
 Return Value:
-
 	STATUS_SUCCESS   -- if the poll succeeded,
 --*/
 {
-
 	PDEVICE_EXTENSION   devExtension;
 	PIRP                pendingIrp;
 	PIO_STACK_LOCATION  irpStack;
@@ -700,7 +634,6 @@ Return Value:
 	CSAMP_KDPRINT(("CsampCleanupIrp exit\n"));
 
 	return STATUS_SUCCESS;
-
 }
 
 VOID
@@ -708,42 +641,30 @@ CsampUnload(
 	__in PDRIVER_OBJECT DriverObject
 	)
 /*++
-
 Routine Description:
-
 	Free all the allocated resources, etc.
-
 Arguments:
-
 	DriverObject - pointer to a driver object.
-
-Return Value:
-
-	VOID
 --*/
 {
 	PDEVICE_OBJECT      deviceObject = DriverObject->DeviceObject;
 	UNICODE_STRING      uniWin32NameString;
 	PDEVICE_EXTENSION   devExtension = (DEVICE_EXTENSION*)deviceObject->DeviceExtension;
-
 	PAGED_CODE();
 
 	CSAMP_KDPRINT(("CsampUnload Enter\n"));
 
-	//
-	// Set the Stop flag
+	// Set the Stop flag (set quit-flag)
 	//
 	devExtension->ThreadShouldStop = TRUE;
 
-	//
-	// Make sure the thread wakes up
+	// Make sure the thread wakes up (force the thread to wake up)
 	//
 	KeReleaseSemaphore(&devExtension->IrpQueueSemaphore,
 						0,  // No priority boost
 						1,  // Increment semaphore by 1
 						TRUE );// WaitForXxx after this call
 
-	//
 	// Wait for the thread to terminate
 	//
 	KeWaitForSingleObject(devExtension->ThreadObject,
@@ -754,10 +675,8 @@ Return Value:
 
 	ObDereferenceObject(devExtension->ThreadObject);
 
-	//
 	// Create counted string version of our Win32 device name.
 	//
-
 	RtlInitUnicodeString( &uniWin32NameString, CSAMP_DOS_DEVICE_NAME_U );
 
 	IoDeleteSymbolicLink( &uniWin32NameString );
@@ -770,15 +689,14 @@ Return Value:
 	return;
 }
 
+
 VOID CsampInsertIrp (
 	__in PIO_CSQ   Csq,
 	__in PIRP      Irp
 	)
 {
 	PDEVICE_EXTENSION   devExtension;
-
-	devExtension = CONTAINING_RECORD(Csq,
-								 DEVICE_EXTENSION, CancelSafeQueue);
+	devExtension = CONTAINING_RECORD(Csq, DEVICE_EXTENSION, CancelSafeQueue);
 
 	InsertTailList(&devExtension->PendingIrpQueue,
 						 &Irp->Tail.Overlay.ListEntry);
@@ -790,10 +708,8 @@ VOID CsampRemoveIrp(
 	)
 {
 	UNREFERENCED_PARAMETER(Csq);
-
 	RemoveEntryList(&Irp->Tail.Overlay.ListEntry);
 }
-
 
 PIRP CsampPeekNextIrp(
 	__in  PIO_CSQ Csq,
@@ -807,14 +723,13 @@ PIRP CsampPeekNextIrp(
 	PLIST_ENTRY             listHead;
 	PIO_STACK_LOCATION     irpStack;
 
-	devExtension = CONTAINING_RECORD(Csq,
-							 DEVICE_EXTENSION, CancelSafeQueue);
+	devExtension = CONTAINING_RECORD(Csq, DEVICE_EXTENSION, CancelSafeQueue);
 
 	listHead = &devExtension->PendingIrpQueue;
 
 	//
-	// If the IRP is NULL, we will start peeking from the listhead, else
-	// we will start from that IRP onwards. This is done under the
+	// If input Irp==NULL, we will start peeking from the listhead, 
+	// else we will start from that IRP onwards. This is done under the
 	// assumption that new IRPs are always inserted at the tail.
 	//
 
@@ -830,11 +745,9 @@ PIRP CsampPeekNextIrp(
 
 		irpStack = IoGetCurrentIrpStackLocation(nextIrp);
 
-		//
 		// If context is present, continue until you find a matching one.
 		// Else you break out as you got next one.
 		//
-
 		if (PeekContext) {
 			if (irpStack->FileObject == (PFILE_OBJECT) PeekContext) {
 				break;
@@ -847,7 +760,6 @@ PIRP CsampPeekNextIrp(
 	}
 
 	return nextIrp;
-
 }
 
 //
@@ -858,9 +770,8 @@ PIRP CsampPeekNextIrp(
 // time.  KeAcqurieSpinLock also requires us to be running at no higher than
 // Dispatch level when it is called.
 //
-// The annotations reflect these changes and requirments.
+// The annotations reflect these changes and requirements.
 //
-
 __drv_raisesIRQL(DISPATCH_LEVEL)
 __drv_maxIRQL(DISPATCH_LEVEL)
 VOID CsampAcquireLock(
@@ -870,9 +781,8 @@ VOID CsampAcquireLock(
 {
 	PDEVICE_EXTENSION   devExtension;
 
-	devExtension = CONTAINING_RECORD(Csq,
-								 DEVICE_EXTENSION, CancelSafeQueue);
-	//
+	devExtension = CONTAINING_RECORD(Csq, DEVICE_EXTENSION, CancelSafeQueue);
+
 	// Suppressing because the address below csq is valid since it's
 	// part of DEVICE_EXTENSION structure.
 	//
@@ -890,7 +800,6 @@ VOID CsampAcquireLock(
 //
 // The annotations reflect these changes and requirments.
 //
-
 __drv_requiresIRQL(DISPATCH_LEVEL)
 VOID CsampReleaseLock(
 	__in                                PIO_CSQ Csq,
@@ -899,9 +808,8 @@ VOID CsampReleaseLock(
 {
 	PDEVICE_EXTENSION   devExtension;
 
-	devExtension = CONTAINING_RECORD(Csq,
-								 DEVICE_EXTENSION, CancelSafeQueue);
-	//
+	devExtension = CONTAINING_RECORD(Csq, DEVICE_EXTENSION, CancelSafeQueue);
+
 	// Suppressing because the address below csq is valid since it's
 	// part of DEVICE_EXTENSION structure.
 	//
@@ -914,7 +822,6 @@ VOID CsampCompleteCanceledIrp(
 	__in  PIRP                Irp
 	)
 {
-
 	UNREFERENCED_PARAMETER(pCsq);
 
 	Irp->IoStatus.Status = STATUS_CANCELLED;

@@ -72,7 +72,7 @@ extern "C" {
 
 #if DBG
 #define CSAMP_KDPRINT(_x_) \
-                DbgPrint("CANCEL.SYS: ");\
+                DbgPrint("[%d]CANCEL.SYS: ", g_seq++);\
                 DbgPrint _x_;
 #else
 
@@ -109,7 +109,7 @@ typedef struct _DEVICE_EXTENSION{
     // Polling interval (retry interval)
     LARGE_INTEGER PollingInterval;
 
-    KSEMAPHORE IrpQueueSemaphore;
+    KSEMAPHORE IrpQueueSemaphore; // chj: tells how many IRPs are in the pending queue
 
     PETHREAD ThreadObject;
 }  DEVICE_EXTENSION, *PDEVICE_EXTENSION;
