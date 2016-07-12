@@ -375,6 +375,7 @@ Return Value:
 	readBuffer = (ULONG*)(Irp->AssociatedIrp.SystemBuffer);
 	
 	*readBuffer = ((currentTime.LowPart/13)%2);
+	*readBuffer += 10; // chj test, lengthen pending time
 
 	// To avoid the thread from being suspended [after it has queued the IRP and
 	// before it signaled the semaphore], we will enter critical region.
@@ -799,7 +800,7 @@ VOID CsampAcquireLock(
 // previous call to KeAcquireSpinLock to return the thread back to it's original
 // execution level.
 //
-// The annotations reflect these changes and requirments.
+// The annotations reflect these changes and requirements.
 //
 __drv_requiresIRQL(DISPATCH_LEVEL)
 VOID CsampReleaseLock(
