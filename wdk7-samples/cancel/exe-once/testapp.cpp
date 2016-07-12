@@ -1,15 +1,12 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
 	THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
 	KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 	IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
 	PURPOSE.
 
 Module Name:
-
-	testapp.c
+	testapp.cpp (chj updated)
 
 Abstract:
 
@@ -27,6 +24,7 @@ __user_code
 
 #include <windows.h>
 #include <winioctl.h>
+#include <tchar.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -63,6 +61,56 @@ SetupDriverName(
 	__inout_bcount_full(BufferLength) PCHAR DriverLocation,
 	__in ULONG BufferLength
 	);
+
+
+#define COUNT(ar) (sizeof(ar)/sizeof(ar[0]))
+
+TCHAR* now_timestr(TCHAR buf[], int bufchars, bool ymd=false)
+{
+	SYSTEMTIME st = {0};
+	GetLocalTime(&st);
+	buf[0]=_T('['); buf[1]=_T('\0'); buf[bufchars-1] = _T('\0');
+	if(ymd) {
+#if _MSC_VER >= 1400 // VS2005+
+		_sntprintf_s(buf, bufchars-1, _TRUNCATE, _T("%s%04d-%02d-%02d "), buf, 
+			st.wYear, st.wMonth, st.wDay);
+#else
+		_sntprintf(buf, bufchars-1, _T("%s%04d-%02d-%02d "), buf, 
+			st.wYear, st.wMonth, st.wDay);
+#endif
+	}
+#if _MSC_VER >= 1400 // VS2005+
+	_sntprintf_s(buf, bufchars-1, _TRUNCATE, _T("%s%02d:%02d:%02d]"), buf,
+		st.wHour, st.wMinute, st.wSecond);
+#else
+	_sntprintf(buf, bufchars-1, _T("%s%02d:%02d:%02d]"), buf,
+		st.wHour, st.wMinute, st.wSecond);
+#endif
+	return buf;
+}
+
+void timeprint(const TCHAR *fmt, ...)
+{
+	TCHAR buf[1000] = {0};
+	now_timestr(buf, COUNT(buf));
+
+	int prefixlen = (int)_tcslen(buf);
+
+	va_list args;
+	va_start(args, fmt);
+#if _MSC_VER >= 1400 // VS2005+
+	_vsntprintf_s(buf+prefixlen, COUNT(buf)-3-prefixlen, _TRUNCATE, fmt, args);
+	prefixlen = (int)_tcslen(buf);
+	_tcsncpy_s(buf+prefixlen, 2, TEXT("\r\n"), _TRUNCATE); // add trailing \r\n
+#else
+	_vsntprintf(buf+prefixlen, COUNT(buf)-3-prefixlen, fmt, args);
+	prefixlen = _tcslen(buf);
+	_tcsncpy(buf+prefixlen, TEXT("\r\n"), 2); // add trailing \r\n
+#endif
+	va_end(args);
+
+	printf("%s", buf);
+}
 
 //
 // Main function
@@ -169,11 +217,11 @@ main(
 									(LPDWORD)&Id); // returned thread id
 
 		if ( NULL == hThreads[i] ) {
-			printf( " Error CreateThread[%d] Failed: %d\n", i, GetLastError());
+			timeprint(" Error CreateThread[%d] Failed: %d\n", i, GetLastError());
 			ExitProcess ( 1 );
 		}
 		else {
-			printf("(tid=%d)Thread created.\n", Id);
+			timeprint("(tid=%d)Thread created.\n", Id);
 		}
 	}
 
@@ -186,8 +234,7 @@ main(
 			
 		ExitFlag = TRUE;
 		WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
-		
-		printf("WaitForMultipleObjects has returned for all worker threads.\n");
+		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
 		
 		CloseHandle(hDevice);
 	}
@@ -195,6 +242,7 @@ main(
 	{
 		CloseHandle(hDevice); // close device handle while it is still in use
 		WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
+		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
 	}
 
 	for(i=0; i < NumberOfThreads; i++)
@@ -205,7 +253,7 @@ main(
 	//
 	BOOLEAN b = TRUE;
 //	BOOLEAN b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE);
-	printf("Done. Not removing %s driver.\n", DRIVER_NAME);
+	timeprint("Done. Not removing %s driver.\n", DRIVER_NAME);
 
 	ExitProcess(b ? 0 : 1);
 }
@@ -225,17 +273,17 @@ DWORD WINAPI Reader(PVOID dummy )
 
 	if (!ReadFileEx(hDevice, (PVOID)&data, sizeof(ULONG),  &ov, CompletionRoutine))
 	{
-		printf ( "(tid=%d)ReadFileEx failed, winerr=%d\n", tid, GetLastError());
+		timeprint("(tid=%d)ReadFileEx failed, winerr=%d\n", tid, GetLastError());
 		ExitThread(0);
 	}
 	
 	bool io_complete = false;
-	while(!ExitFlag)
+	while(!ExitFlag) // busy sleep and check ExitFlag
 	{
 		DWORD re = SleepEx(100, TRUE);
 		if(re==WAIT_IO_COMPLETION)
 		{
-			printf("(tid=%d)SleepEx() returned with WAIT_IO_COMPLETION. Work done.\n", tid);
+			timeprint("(tid=%d)SleepEx() returns with WAIT_IO_COMPLETION.\n", tid);
 			io_complete = true;
 			break;
 		}
@@ -243,17 +291,17 @@ DWORD WINAPI Reader(PVOID dummy )
 	
 	if(g_CallCancelIo)
 	{
-		printf("(tid=%d)Calling CancelIo()...\n", tid);
+		timeprint("(tid=%d)Calling CancelIo()...\n", tid);
 		BOOL b = CancelIo(hDevice);
 		if(b)
-			printf("(tid=%d)Called  CancelIo(). Success(cancel will take effect).\n", tid);
+			timeprint("(tid=%d)CancelIo() returns success(cancel will take effect).\n", tid);
 		else {
 			DWORD winerr = GetLastError();
-			printf("(tid=%d)Called  CancelIo(). Fail with winerr=%d(cancel in vain).\n", tid, winerr);
+			timeprint("(tid=%d)CancelIo() returns with winerr=%d(cancel in vain).\n", tid, winerr);
 		}
 	}
 
-	printf("(tid=%d)Calling ExitThread(0). %s\n", tid, io_complete?"":"(without IO completion)");
+	timeprint("(tid=%d)Calling ExitThread(0). %s\n", tid, io_complete?"":"(without IO completion)");
 	ExitThread(0);
 }
 
@@ -266,15 +314,14 @@ VOID CALLBACK CompletionRoutine(
 {
 	UNREFERENCED_PARAMETER(ov);
 
+	DWORD tid = GetCurrentThreadId();
 	if(!errorcode)
 	{
-		fprintf(stdout, "Thread %d read: %d bytes\n",
-			GetCurrentThreadId(), bytesTransfered);
+		timeprint("(tid=%d)CompletionRoutine read: %d bytes\n", tid, bytesTransfered);
 	}
 	else
 	{
-		fprintf(stdout, "Thread %d CompletionRoutine got error: winerr=%d\n",
-			GetCurrentThreadId(), errorcode);
+		timeprint("(tid=%d)CompletionRoutine got error: winerr=%d\n", tid, errorcode);
 	}
 	return;
 }
