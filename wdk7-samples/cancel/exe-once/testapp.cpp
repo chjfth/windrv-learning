@@ -172,6 +172,9 @@ main(
 			printf( " Error CreateThread[%d] Failed: %d\n", i, GetLastError());
 			ExitProcess ( 1 );
 		}
+		else {
+			printf("(tid=%d)Thread created.\n", Id);
+		}
 	}
 
 	int quitchar = getchar();
@@ -200,10 +203,9 @@ main(
 	//
 	// Unload the driver.  Ignore any errors.
 	//
-	BOOLEAN b = ManageDriver(DRIVER_NAME,
-				 driverLocation,
-				 DRIVER_FUNC_REMOVE
-				 );
+	BOOLEAN b = TRUE;
+//	BOOLEAN b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE);
+	printf("Done. Not removing %s driver.\n", DRIVER_NAME);
 
 	ExitProcess(b ? 0 : 1);
 }
@@ -244,10 +246,10 @@ DWORD WINAPI Reader(PVOID dummy )
 		printf("(tid=%d)Calling CancelIo()...\n", tid);
 		BOOL b = CancelIo(hDevice);
 		if(b)
-			printf("(tid=%d)Called CancelIo(). Success(cancel will take effect).\n", tid);
+			printf("(tid=%d)Called  CancelIo(). Success(cancel will take effect).\n", tid);
 		else {
 			DWORD winerr = GetLastError();
-			printf("(tid=%d)Called CancelIo(). Fail with winerr=%d(cancel in vain).\n", tid, winerr);
+			printf("(tid=%d)Called  CancelIo(). Fail with winerr=%d(cancel in vain).\n", tid, winerr);
 		}
 	}
 
