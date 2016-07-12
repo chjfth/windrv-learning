@@ -126,6 +126,7 @@ main(
 	ULONG   NumberOfThreads = 1;
 	DWORD errNum = 0;
 	TCHAR driverLocation[MAX_PATH] = {'\0'};
+	BOOL b = FALSE;
 
 	if (argc >= 2  && (argv[1][0] == '-' || isalpha((unsigned char)argv[1][0])))
 	{
@@ -236,11 +237,18 @@ main(
 		WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
 		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
 		
+		timeprint("Closing device handle.\n");
 		CloseHandle(hDevice);
 	}
 	else // do force-exit
 	{
-		CloseHandle(hDevice); // close device handle while it is still in use
+		timeprint("Closing device handle(crude).\n");
+		b = CloseHandle(hDevice); // close device handle while it is still in use
+		if(b)
+			timeprint("CloseHandle() returns success.\n");
+		else
+			timeprint("CloseHandle() returns error, winerr=%d.\n", GetLastError);
+
 		WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
 		timeprint("WaitForMultipleObjects returns for all worker threads.\n");
 	}
@@ -251,8 +259,8 @@ main(
 	//
 	// Unload the driver.  Ignore any errors.
 	//
-	BOOLEAN b = TRUE;
-//	BOOLEAN b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE);
+	b = TRUE;
+//	BOOL b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE);
 	timeprint("Done. Not removing %s driver.\n", DRIVER_NAME);
 
 	ExitProcess(b ? 0 : 1);
