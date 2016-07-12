@@ -40,6 +40,7 @@ __user_code
 
 HANDLE hDevice;
 BOOLEAN ExitFlag = FALSE;
+bool g_CallCancelIo = false;
 HANDLE hThreads[MAXTHREADS];
 
 //
@@ -150,13 +151,13 @@ main(
 		}
 	}
 
-	printf("========================================================\n");
-	printf("Chj Note: Each thread will do ReadFileEx() only once.\n");
-	printf("========================================================\n");
+	printf("============================================================\n");
+	printf("Chj Note: Each worker thread will do ReadFileEx() only once.\n");
+	printf("============================================================\n");
 
 	printf("Number of threads : %d\n", NumberOfThreads);
 
-	printf("Enter 'q' to exit gracefully:");
+	printf("<Enter 'q' or 'c', then Enter to exit gracefully>");
 
 	for(i=0; i < NumberOfThreads; i++)
 	{
@@ -175,10 +176,16 @@ main(
 
 	int quitchar = getchar();
 
-	if(quitchar == 'q') // do graceful thread-exit
+	if(quitchar=='q' || quitchar=='c') // do graceful thread-exit
 	{
+		if(quitchar=='c')
+			g_CallCancelIo = true;
+			
 		ExitFlag = TRUE;
-		WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
+		WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
+		
+		printf("WaitForMultipleObjects has returned for all worker threads.\n");
+		
 		CloseHandle(hDevice);
 	}
 	else // do force-exit
@@ -229,6 +236,18 @@ DWORD WINAPI Reader(PVOID dummy )
 			printf("(tid=%d)SleepEx() returned with WAIT_IO_COMPLETION. Work done.\n", tid);
 			io_complete = true;
 			break;
+		}
+	}
+	
+	if(g_CallCancelIo)
+	{
+		printf("(tid=%d)Calling CancelIo()...\n", tid);
+		BOOL b = CancelIo(hDevice);
+		if(b)
+			printf("(tid=%d)Called CancelIo(). Success(cancel will take effect).\n", tid);
+		else {
+			DWORD winerr = GetLastError();
+			printf("(tid=%d)Called CancelIo(). Fail with winerr=%d(cancel in vain).\n", tid, winerr);
 		}
 	}
 
