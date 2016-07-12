@@ -308,7 +308,7 @@ Routine Description:
 
 Arguments:
 	DeviceObject - pointer to a device object.
-			Irp             - pointer to current Irp
+	Irp          - pointer to current Irp
 
 Return Value:
 	NT status code.
@@ -431,7 +431,8 @@ Arguments:
 	PIRP Irp;
 	NTSTATUS    Status;
 
-	KeSetPriorityThread(KeGetCurrentThread(), LOW_REALTIME_PRIORITY );
+	PKTHREAD pkthread = KeGetCurrentThread();
+	KeSetPriorityThread(pkthread, LOW_REALTIME_PRIORITY);
 
 	//
 	// Now enter the main IRP-processing loop
@@ -507,7 +508,7 @@ Return Value:
 	UNREFERENCED_PARAMETER( DeviceObject );
 	PINPUT_DATA pInput  = (PINPUT_DATA)Irp->AssociatedIrp.SystemBuffer;
 
-#ifdef REAL
+#ifdef REAL // REAL is not defined by default
 
 	RtlZeroMemory( pInput, sizeof(INPUT_DATA) );
 
