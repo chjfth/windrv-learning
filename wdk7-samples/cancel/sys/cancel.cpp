@@ -6,7 +6,6 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 	IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
 	PURPOSE.
 
-
 Module Name:
 
 	cancel.c // Chj renames it to cancel.cpp
@@ -32,7 +31,6 @@ Abstract:   Demonstrates the use of new Cancel-Safe queue
 			sample (KB Q188276) available in MSDN.
 
 Environment:
-
 	Kernel mode
 --*/
 
@@ -609,21 +607,20 @@ Return Value:
 	//
 	IoReleaseRemoveLockAndWait(&fileContext->FileRundownLock, Irp);
 
-	pendingIrp = IoCsqRemoveNextIrp(&devExtension->CancelSafeQueue,
-									irpStack->FileObject);
-
-	while(pendingIrp) 
+	while(1) 
 	{
-		//
+		pendingIrp = IoCsqRemoveNextIrp(&devExtension->CancelSafeQueue,
+			irpStack->FileObject);
+
+		if(!pendingIrp)
+			break;
+
 		// Cancel the IRP
 		//
 		pendingIrp->IoStatus.Information = 0;
 		pendingIrp->IoStatus.Status = STATUS_CANCELLED;
 		CSAMP_KDPRINT(("Cleanup cancelled irp\n"));
 		IoCompleteRequest(pendingIrp, IO_NO_INCREMENT);
-
-		pendingIrp = IoCsqRemoveNextIrp(&devExtension->CancelSafeQueue,
-										irpStack->FileObject);
 	}
 
 	//
