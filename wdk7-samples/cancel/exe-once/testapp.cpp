@@ -157,7 +157,7 @@ main(
 
 	printf("Number of threads : %d\n", NumberOfThreads);
 
-	printf("<Enter 'q' or 'c', then Enter to exit gracefully>");
+	printf("<Enter 'q' or 'c', then Enter to exit gracefully>\n");
 
 	for(i=0; i < NumberOfThreads; i++)
 	{
