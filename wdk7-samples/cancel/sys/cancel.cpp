@@ -280,7 +280,7 @@ Return Value:
 			break;
 
 		default:
-			CSAMP_KDPRINT((" Invalid CreateClose Parameter\n"));
+			CSAMP_KDPRINT(("  Invalid CreateClose Parameter\n"));
 			status = STATUS_INVALID_PARAMETER;
 			break;
 	}
@@ -292,7 +292,7 @@ Return Value:
 	Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
-	CSAMP_KDPRINT((" CsampCreateClose Exit = %x\n", status));
+	CSAMP_KDPRINT(("CsampCreateClose Exit = %x\n", status));
 
 	return status;
 }
@@ -649,7 +649,7 @@ Return Value:
 		//
 		pendingIrp->IoStatus.Information = 0;
 		pendingIrp->IoStatus.Status = STATUS_CANCELLED;
-		CSAMP_KDPRINT(("Cleanup cancelled irp\n"));
+		CSAMP_KDPRINT(("Cleanup cancelled irp:0x%p\n", pendingIrp));
 		IoCompleteRequest(pendingIrp, IO_NO_INCREMENT);
 	}
 

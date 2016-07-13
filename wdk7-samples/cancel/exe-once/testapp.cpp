@@ -284,9 +284,9 @@ main(
 	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
 	printf("Each ReadFileEx will be delayed %d seconds by the driver.\n", extra_delay_seconds);
 	printf("You can wait silently for IO completion, or ,\n");
-	printf("  'q' to let worker thread quit before IO completion\n");
-	printf("  'c' to let worker thread call CancelIo before IO completion\n");
-	printf("  'x' to let surprise close device handle before IO completion\n");
+	printf("  'q' - let worker thread quit before IO completion\n");
+	printf("  'c' - let worker thread call CancelIo before IO completion\n");
+	printf("  'x' - let surprise close device handle before IO completion\n");
 	printf("==============================================================\n");
 
 	printf("Number of threads : %d\n", NumberOfThreads);
