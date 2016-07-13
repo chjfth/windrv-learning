@@ -25,6 +25,7 @@ __user_code
 #include <windows.h>
 #include <winioctl.h>
 #include <assert.h>
+#include <process.h>
 #include <malloc.h>
 #include <tchar.h>
 #include <conio.h>
@@ -34,6 +35,12 @@ __user_code
 #include <strsafe.h>
 
 #include "testapp.h"
+
+#ifdef USE_CreateThread
+	typedef DWORD THREADFUNC_RET_TYPE;
+#else
+	typedef unsigned int THREADFUNC_RET_TYPE;
+#endif
 
 //
 // Globals
@@ -51,7 +58,7 @@ DWORD thread_ids[MAXTHREADS];
 
 VOID CALLBACK CompletionRoutine(DWORD errorcode, DWORD bytesTransfered, LPOVERLAPPED ov);
 
-DWORD WINAPI Reader(PVOID);
+THREADFUNC_RET_TYPE WINAPI Reader(PVOID);
 
 BOOLEAN SetupDriverName(__inout_bcount_full(BufferLength) PCHAR DriverLocation,
 	__in ULONG BufferLength);
@@ -268,13 +275,23 @@ main(
 
 	for(i=0; i < NumberOfThreads; i++)
 	{
+#ifdef USE_CreateThread // This is not defined.
+		// Don't use CreateThread(), because you use printf in the thread.
 		hThreads[i] = CreateThread( NULL,      // security attributes
 									0,         // initial stack size
 									Reader,    // thread function
 									NULL,      // arg to Reader thread
 									0,         // creation flags
 									&thread_ids[i]); // returned thread id
-
+#else
+		// Use _beginthreadex instead
+		hThreads[i] = (HANDLE)_beginthreadex(NULL, // security attributes
+			0,         // initial stack size
+			Reader,    // thread function
+			NULL,      // arg to Reader thread
+			0,         // creation flags
+			(unsigned int*)&thread_ids[i]); // returned thread id
+#endif
 		if ( NULL == hThreads[i] ) {
 			timeprint(" Error CreateThread[%d] Failed: %d\n", i, GetLastError());
 			ExitProcess ( 1 );
@@ -350,8 +367,7 @@ main(
 	ExitProcess(b ? 0 : 1);
 }
 
-
-DWORD WINAPI Reader(PVOID dummy )
+THREADFUNC_RET_TYPE WINAPI Reader(PVOID dummy )
 {
 	ULONG data = 0x11223344;
 	OVERLAPPED ov;
