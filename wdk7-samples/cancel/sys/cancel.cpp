@@ -127,6 +127,7 @@ Return Value:
 	DriverObject->MajorFunction[IRP_MJ_CREATE]=
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = CsampCreateClose;
 	DriverObject->MajorFunction[IRP_MJ_READ] = CsampRead;
+	DriverObject->MajorFunction[IRP_MJ_WRITE] = CsampWrite;
 	DriverObject->MajorFunction[IRP_MJ_CLEANUP] = CsampCleanup;
 
 	DriverObject->DriverUnload = CsampUnload;
@@ -194,6 +195,8 @@ Return Value:
 							(void**)&devExtension->ThreadObject,
 							NULL );
 	ZwClose(threadHandle);
+
+	devExtension->ExtraDelaySeconds = 0;
 
 	CSAMP_KDPRINT(("DriverEntry Exit = %x\n", status));
 	ASSERT(NT_SUCCESS(status));
@@ -294,6 +297,33 @@ Return Value:
 	return status;
 }
 
+NTSTATUS CsampWrite(DEVICE_OBJECT *DeviceObject, IRP *Irp) // Chj extra.
+{
+	// Device user use IRP_MJ_WRITE to control extra delay inside CsampRead.
+	// The first byte in IRP_MJ_WRITE data buffer tell how many extra seconds to delay.
+
+	CSAMP_KDPRINT(("CsampWrite Enter:0x%p\n", Irp));
+
+	NTSTATUS            status = STATUS_UNSUCCESSFUL;
+	PDEVICE_EXTENSION   pdx = (DEVICE_EXTENSION*)DeviceObject->DeviceExtension;
+	PIO_STACK_LOCATION  irpStack = IoGetCurrentIrpStackLocation(Irp);
+	ASSERT(irpStack->FileObject != NULL);
+
+	unsigned char *input = (unsigned char*)Irp->AssociatedIrp.SystemBuffer;
+	int iwrlen = irpStack->Parameters.Write.Length; // input-buffer length
+	if(iwrlen!=1) {
+		status = Irp->IoStatus.Status = STATUS_INVALID_PARAMETER;
+		IoCompleteRequest(Irp, IO_NO_INCREMENT);
+		return status;
+	}
+
+	pdx->ExtraDelaySeconds = input[0];
+
+	status = Irp->IoStatus.Status = STATUS_SUCCESS;
+	Irp->IoStatus.Information = 1; // one byte written
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	return status;
+}
 
 NTSTATUS
 CsampRead(
@@ -373,7 +403,7 @@ Return Value:
 	readBuffer = (ULONG*)(Irp->AssociatedIrp.SystemBuffer);
 	
 	*readBuffer = ((currentTime.LowPart/13)%2);
-	*readBuffer += 10; // chj test, lengthen pending time
+	*readBuffer += devExtension->ExtraDelaySeconds*1000 / CSAMP_RETRY_INTERVAL_MILLISEC ; // chj added
 
 	// To avoid the thread from being suspended [after it has queued the IRP and
 	// before it signaled the semaphore], we will enter critical region.
@@ -470,7 +500,7 @@ Arguments:
 			Status = CsampPollDevice(DeviceObject, Irp);
 			if (Status == STATUS_PENDING) {
 				// Device is not ready, so sleep for a while and try again.
-				KeDelayExecutionThread(KernelMode, FALSE, &DevExtension->PollingInterval);
+				KeDelayExecutionThread(KernelMode, FALSE, &DevExtension->PollingInterval); // 500ms
 			} else {
 				// I/O is successful, so complete the Irp.
 				Irp->IoStatus.Status = Status;

@@ -189,6 +189,7 @@ main(
 	ULONG   NumberOfThreads = 1;
 	DWORD errNum = 0;
 	TCHAR driverLocation[MAX_PATH] = {'\0'};
+	unsigned char extra_delay_seconds = 5;
 	BOOL b = FALSE;
 
 	if (argc >= 2  && (argv[1][0] == '-' || isalpha((unsigned char)argv[1][0])))
@@ -202,12 +203,17 @@ main(
 		return;
 	}
 
+	if(argc==3)
+	{
+		extra_delay_seconds = (unsigned char)atoi(argv[2]);
+	}
+
 	//
 	// Try to connect to driver.  If this fails, try to load the driver
 	// dynamically.
 	//
 	if ((hDevice = CreateFile("\\\\.\\CancelSamp",
-								 GENERIC_READ,
+								 GENERIC_READ|GENERIC_WRITE,
 								 0,
 								 NULL,
 								 OPEN_EXISTING,
@@ -249,7 +255,7 @@ main(
 		// Try to open the newly installed driver.
 		//
 		hDevice = CreateFile( "\\\\.\\CancelSamp",
-				GENERIC_READ,
+				GENERIC_READ|GENERIC_WRITE,
 				0,
 				NULL,
 				OPEN_EXISTING,
@@ -263,8 +269,20 @@ main(
 		}
 	}
 
+	// Tell driver our extra_delay_seconds:
+	DWORD nbWritten = 0;
+	OVERLAPPED ovlp = {0};
+	ovlp.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	b = WriteFile(hDevice, &extra_delay_seconds, 1, &nbWritten, &ovlp);
+	if(!b || nbWritten!=1) {
+		printf("Error! Underlying driver does not support setting extra-delay-seconds.\n");
+		ExitProcess(2);
+	}
+	CloseHandle(ovlp.hEvent);
+
 	printf("==============================================================\n");
 	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
+	printf("Each ReadFileEx will be delayed %d seconds by the driver.\n", extra_delay_seconds);
 	printf("You can wait silently for IO completion, or ,\n");
 	printf("  'q' to let worker thread quit before IO completion\n");
 	printf("  'c' to let worker thread call CancelIo before IO completion\n");
@@ -299,7 +317,7 @@ main(
 		else {
 			timeprint("(tid=%d)Thread created.\n", thread_ids[i]);
 		}
-		Sleep(50);
+		Sleep(10);
 	}
 
 	int quitchar = 0;

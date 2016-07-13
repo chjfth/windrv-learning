@@ -82,7 +82,8 @@ extern "C" {
 
 #define CSAMP_DEVICE_NAME_U     L"\\Device\\CANCELSAMP"
 #define CSAMP_DOS_DEVICE_NAME_U L"\\DosDevices\\CancelSamp"
-#define CSAMP_RETRY_INTERVAL    500*1000 //500 millisec
+#define CSAMP_RETRY_INTERVAL_MILLISEC 500
+#define CSAMP_RETRY_INTERVAL    (CSAMP_RETRY_INTERVAL_MILLISEC*1000) //500 millisec
 #define TAG (ULONG)'MASC'
 
 typedef struct _INPUT_DATA{
@@ -112,6 +113,9 @@ typedef struct _DEVICE_EXTENSION{
     KSEMAPHORE IrpQueueSemaphore; // chj: tells how many IRPs are in the pending queue
 
     PETHREAD ThreadObject;
+
+	int ExtraDelaySeconds;
+
 }  DEVICE_EXTENSION, *PDEVICE_EXTENSION;
 
 typedef struct _FILE_CONTEXT{
@@ -133,6 +137,9 @@ DRIVER_DISPATCH CsampCleanup;
 
 __drv_dispatchType(IRP_MJ_READ)
 DRIVER_DISPATCH CsampRead;
+
+__drv_dispatchType(IRP_MJ_WRITE)
+DRIVER_DISPATCH CsampWrite;
 
 DRIVER_DISPATCH CsampPollDevice;
 
