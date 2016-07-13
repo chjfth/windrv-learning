@@ -81,8 +81,8 @@ TCHAR* now_timestr(TCHAR buf[], int bufchars, bool ymd=false)
 #endif
 	}
 #if _MSC_VER >= 1400 // VS2005+
-	_sntprintf_s(buf, bufchars-1, _TRUNCATE, _T("%s%02d:%02d:%02d]"), buf,
-		st.wHour, st.wMinute, st.wSecond);
+	_sntprintf_s(buf, bufchars-1, _TRUNCATE, _T("%s%02d:%02d:%02d.%03d]"), buf,
+		st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #else
 	_sntprintf(buf, bufchars-1, _T("%s%02d:%02d:%02d]"), buf,
 		st.wHour, st.wMinute, st.wSecond);
@@ -309,7 +309,7 @@ main(
 		{
 			quitchar = _getch();
 			if(quitchar=='q' || quitchar=='c' || quitchar=='x') {
-				printf("Got keyboard input: %c\n", quitchar);
+				timeprint("Got keyboard input: %c\n", quitchar);
 				break;
 			}
 		}
