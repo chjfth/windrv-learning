@@ -165,7 +165,7 @@ bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThread
 int print_thread_done(HANDLE hThreadEnd, int array_idx, void *context)
 {
 	DWORD *ar_threadid = (DWORD*)context;
-	timeprint("(tid=%d)Thread finished by system.");
+	timeprint("(tid=%d)WaitForSingleObject returns success for this thread.", ar_threadid[array_idx]);
 	return 0;
 }
 
@@ -280,7 +280,7 @@ main(
 			ExitProcess ( 1 );
 		}
 		else {
-			timeprint("(tid=%d)Thread created.\n", &thread_ids[i]);
+			timeprint("(tid=%d)Thread created.\n", thread_ids[i]);
 		}
 		Sleep(50);
 	}
