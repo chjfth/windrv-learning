@@ -25,6 +25,7 @@ __user_code
 #include <windows.h>
 #include <winioctl.h>
 #include <assert.h>
+#include <malloc.h>
 #include <tchar.h>
 #include <conio.h>
 #include <stdio.h>
@@ -41,8 +42,9 @@ __user_code
 HANDLE hDevice;
 BOOLEAN ExitFlag = FALSE;
 bool g_CallCancelIo = false;
-HANDLE hThreads[MAXTHREADS];
 
+HANDLE hThreads[MAXTHREADS], hThreadsDone[MAXTHREADS];
+DWORD thread_ids[MAXTHREADS];
 //
 // function prototypes
 //
@@ -104,17 +106,79 @@ void timeprint(const TCHAR *fmt, ...)
 	printf("%s", buf);
 }
 
+
+typedef int (*PROC_thread_done)(HANDLE hThreadEnd, int array_idx, void *context);
+
+bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThreadsDone[], 
+	bool wait_all, int timeout_millisec,
+	PROC_thread_done proc_thread_end=0, void *context=0)
+{
+	// arhThreadsInput[] allows NULL element, so you can call this function in a cycle
+	// without shuffling arhThreadsInput's elements.
+	DWORD millisec_start = GetTickCount();
+	int i, valid_threads = 0, new_done = 0;
+
+	// check for non-null input hThreads(valid_threads)
+	for(i=0; i<array_size; i++)
+	{
+		if(arhThreadsInput[i])
+			valid_threads++;
+	}
+
+	for(; new_done<valid_threads;)
+	{
+		for(i=0; i<array_size; i++)
+		{
+			if(arhThreadsInput[i]==NULL)
+				continue;
+			DWORD waitre = WaitForSingleObject(arhThreadsInput[i], 0); // 0=no wait
+			if(waitre==WAIT_OBJECT_0)
+			{
+				arhThreadsDone[i] = arhThreadsInput[i]; // arhThreadsEnd[] tells which threads are done
+				arhThreadsInput[i] = NULL;
+				new_done++;
+
+				proc_thread_end(arhThreadsDone[i], i, context);
+			}
+		}
+
+		if(!wait_all && new_done>0)
+			break;
+
+		// check timeout
+		if(timeout_millisec<0)
+			continue; // wait forever
+		if(timeout_millisec==0)
+			break; // no wait
+		if(GetTickCount()-millisec_start >= (DWORD)timeout_millisec)
+			break; // time out
+
+		Sleep(100);
+	}
+
+	if(new_done==valid_threads)
+		return true; // all input threads done
+	else
+		return false;
+}
+
+int print_thread_done(HANDLE hThreadEnd, int array_idx, void *context)
+{
+	DWORD *ar_threadid = (DWORD*)context;
+	timeprint("(tid=%d)Thread finished by system.");
+	return 0;
+}
+
 //
 // Main function
 //
-
 VOID __cdecl
 main(
 	__in ULONG argc,
 	__in_ecount(argc) PCHAR argv[]
 	)
 {
-	ULONG i, Id;
+	ULONG i; //, Id;
 	ULONG   NumberOfThreads = 1;
 	DWORD errNum = 0;
 	TCHAR driverLocation[MAX_PATH] = {'\0'};
@@ -127,7 +191,7 @@ main(
 	}
 	else if (argc >= 2 && ((NumberOfThreads = atoi(argv[1])) > MAXTHREADS))
 	{
-		printf("Invalid option:Only a maximun of %d threads allowed.\n", MAXTHREADS);
+		printf("Invalid option:Only a maximum of %d threads allowed.\n", MAXTHREADS);
 		return;
 	}
 
@@ -209,15 +273,16 @@ main(
 									Reader,    // thread function
 									NULL,      // arg to Reader thread
 									0,         // creation flags
-									(LPDWORD)&Id); // returned thread id
+									&thread_ids[i]); // returned thread id
 
 		if ( NULL == hThreads[i] ) {
 			timeprint(" Error CreateThread[%d] Failed: %d\n", i, GetLastError());
 			ExitProcess ( 1 );
 		}
 		else {
-			timeprint("(tid=%d)Thread created.\n", Id);
+			timeprint("(tid=%d)Thread created.\n", &thread_ids[i]);
 		}
+		Sleep(50);
 	}
 
 	int quitchar = 0;
@@ -232,8 +297,9 @@ main(
 			}
 		}
 		
-		DWORD waitre = WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, 100);
-		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+NumberOfThreads) {
+		bool all_done = Wait_ThreadsDone(NumberOfThreads, hThreads, hThreadsDone, 
+			true, 100, print_thread_done, thread_ids);
+		if(all_done) {
 			quitchar = 0;
 			break;
 		}
@@ -248,8 +314,8 @@ main(
 			if(quitchar=='c')
 				g_CallCancelIo = true;
 
-			WaitForMultipleObjects(NumberOfThreads, hThreads, TRUE, INFINITE);
-			timeprint("WaitForMultipleObjects returns for all worker threads.\n");
+			Wait_ThreadsDone(NumberOfThreads, hThreads, hThreadsDone, 
+				true, -1, print_thread_done, thread_ids);
 
 			timeprint("Closing device handle.\n");
 			CloseHandle(hDevice);
@@ -263,8 +329,8 @@ main(
 			else
 				timeprint("CloseHandle() returns error, winerr=%d.\n", GetLastError);
 
-			WaitForMultipleObjects( NumberOfThreads, hThreads, TRUE, INFINITE);
-			timeprint("WaitForMultipleObjects returns for all worker threads.\n");
+			Wait_ThreadsDone(NumberOfThreads, hThreads, hThreadsDone, 
+				true, -1, print_thread_done, thread_ids);
 		}
 		else
 			assert(0);
@@ -275,7 +341,7 @@ main(
 	}
 
 	for(i=0; i < NumberOfThreads; i++)
-		CloseHandle(hThreads[i]);
+		CloseHandle(hThreadsDone[i]);
 
 	b = TRUE;
 //	BOOL b = ManageDriver(DRIVER_NAME, driverLocation, DRIVER_FUNC_REMOVE); // Unload the driver.  
