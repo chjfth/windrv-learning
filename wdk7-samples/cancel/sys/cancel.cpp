@@ -649,7 +649,7 @@ Return Value:
 		//
 		pendingIrp->IoStatus.Information = 0;
 		pendingIrp->IoStatus.Status = STATUS_CANCELLED;
-		CSAMP_KDPRINT(("Cleanup cancelled irp:0x%p\n", pendingIrp));
+		CSAMP_KDPRINT(("MJ_CLEANUP cancelled an irp:0x%p\n", pendingIrp));
 		IoCompleteRequest(pendingIrp, IO_NO_INCREMENT);
 	}
 
@@ -855,7 +855,7 @@ VOID CsampCompleteCanceledIrp(
 
 	Irp->IoStatus.Status = STATUS_CANCELLED;
 	Irp->IoStatus.Information = 0;
-	CSAMP_KDPRINT(("cancelled irp\n"));
+	CSAMP_KDPRINT(("Cancel-routine cancelled an irp:0x%p\n", Irp));
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 }
 
