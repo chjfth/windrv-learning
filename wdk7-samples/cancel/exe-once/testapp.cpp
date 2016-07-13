@@ -172,7 +172,7 @@ bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThread
 int print_thread_done(HANDLE hThreadEnd, int array_idx, void *context)
 {
 	DWORD *ar_threadid = (DWORD*)context;
-	timeprint("(tid=%d)WaitForSingleObject returns success for this thread.", ar_threadid[array_idx]);
+	timeprint("(tid=%d)WaitForSingleObject returns success for this thread.\n", ar_threadid[array_idx]);
 	return 0;
 }
 
