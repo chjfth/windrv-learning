@@ -592,10 +592,10 @@ Routine Description:
 	IRPs internally must implement a routine for IRP_MJ_CLEANUP. 
 	.
 	When the routine is called, the driver should cancel all the pending IRPs 
-	that belong to the file object identified by the IRP_MJ_CLEANUP call. In other
-	words, it should cancel all the IRPs that have the same file-object pointer
-	as the one supplied in the current I/O stack location of the IRP for the
-	IRP_MJ_CLEANUP call. 
+	[that belong to the *file object* identified by the IRP_MJ_CLEANUP call]. 
+	In other words, it should cancel all the IRPs [that have the same 
+	file-object pointer as the one supplied in the current I/O stack location 
+	of the IRP for the IRP_MJ_CLEANUP call]. 
 	.
 	Of course, IRPs belonging to other file objects should not be canceled. 
 	Also, if an outstanding IRP is completed immediately, the
