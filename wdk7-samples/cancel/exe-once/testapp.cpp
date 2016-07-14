@@ -176,6 +176,13 @@ bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThread
 //		Sleep(100);
 	}
 
+	// restore NULL pointers in arhThreadsInput,
+	// otherwise, ``cancel-once.exe 2 2``, press no key, exe will block dead in WaitForMultipleObjects.
+	for(i=0; i<array_size; i++)
+	{
+		if(arhThreadsInput[i]==hDumbEvent)
+			arhThreadsInput[i]=NULL;
+	}
 	CloseHandle(hDumbEvent);
 
 	if(new_done==valid_threads)
@@ -431,7 +438,7 @@ THREADFUNC_RET_TYPE WINAPI Reader(PVOID dummy )
 		}
 	}
 	
-	if(g_CallCancelIo)
+	if(!io_complete && g_CallCancelIo)
 	{
 		timeprint("(tid=%d)Calling CancelIo()...\n", tid);
 		BOOL b = CancelIo(hDevice);
