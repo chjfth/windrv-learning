@@ -402,8 +402,14 @@ Return Value:
 
 	readBuffer = (ULONG*)(Irp->AssociatedIrp.SystemBuffer);
 	
-	*readBuffer = ((currentTime.LowPart/13)%2);
-	*readBuffer += devExtension->ExtraDelaySeconds*1000 / CSAMP_RETRY_INTERVAL_MILLISEC ; // chj added
+	if(devExtension->ExtraDelaySeconds==0)
+	{	// Use the vanilla(original) behavior: delay 0ms or 500ms randomly
+		*readBuffer = ((currentTime.LowPart/13)%2);
+	}
+	else // chj added: use the accurate delay behavior
+	{
+		*readBuffer = devExtension->ExtraDelaySeconds*1000 / CSAMP_RETRY_INTERVAL_MILLISEC ; 
+	}
 
 	// To avoid the thread from being suspended [after it has queued the IRP and
 	// before it signaled the semaphore], we will enter critical region.

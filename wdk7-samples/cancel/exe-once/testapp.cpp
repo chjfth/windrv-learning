@@ -125,29 +125,34 @@ bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThread
 	DWORD millisec_start = GetTickCount();
 	int i, valid_threads = 0, new_done = 0;
 
+	HANDLE hDumbEvent = CreateEvent(NULL, TRUE, FALSE, NULL); // a dumb unsignaled event
+
 	// check for non-null input hThreads(valid_threads)
 	for(i=0; i<array_size; i++)
 	{
 		if(arhThreadsInput[i])
 			valid_threads++;
+		else
+			arhThreadsInput[i] = hDumbEvent; // to please WaitForMultipleObjects
 	}
 
 	for(; new_done<valid_threads;)
 	{
-		for(i=0; i<array_size; i++)
+		DWORD win_millisec = timeout_millisec>=0 ? timeout_millisec : INFINITE;
+		DWORD waitre = WaitForMultipleObjects(array_size, arhThreadsInput, FALSE, win_millisec);
+		if(waitre>=WAIT_OBJECT_0 && waitre<WAIT_OBJECT_0+array_size)
 		{
-			if(arhThreadsInput[i]==NULL)
-				continue;
-			DWORD waitre = WaitForSingleObject(arhThreadsInput[i], 0); // 0=no wait
-			if(waitre==WAIT_OBJECT_0)
-			{
-				arhThreadsDone[i] = arhThreadsInput[i]; // arhThreadsEnd[] tells which threads are done
-				arhThreadsInput[i] = NULL;
-				new_done++;
+			i = waitre - WAIT_OBJECT_0;
+			arhThreadsDone[i] = arhThreadsInput[i];
+			arhThreadsInput[i] = hDumbEvent;
+			new_done++;
 
-				proc_thread_end(arhThreadsDone[i], i, context);
-			}
+			proc_thread_end(arhThreadsDone[i], i, context);
 		}
+		else if(waitre==WAIT_TIMEOUT)
+			break;
+		else
+			assert(0);
 
 		if(!wait_all && new_done>0)
 			break;
@@ -160,8 +165,10 @@ bool Wait_ThreadsDone(int array_size, HANDLE arhThreadsInput[], HANDLE arhThread
 		if(GetTickCount()-millisec_start >= (DWORD)timeout_millisec)
 			break; // time out
 
-		Sleep(100);
+//		Sleep(100);
 	}
+
+	CloseHandle(hDumbEvent);
 
 	if(new_done==valid_threads)
 		return true; // all input threads done
@@ -281,6 +288,7 @@ main(
 	CloseHandle(ovlp.hEvent);
 
 	printf("==============================================================\n");
+	printf("WDK cancel-once demo, compiled on: %s %s\n", __DATE__, __TIME__);
 	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
 	printf("Each ReadFileEx will be delayed %d seconds by the driver.\n", extra_delay_seconds);
 	printf("You can wait silently for IO completion, or ,\n");
