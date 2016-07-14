@@ -305,7 +305,7 @@ main(
 	printf("==============================================================\n");
 	printf("WDK cancel-once demo, compiled on: %s %s\n", __DATE__, __TIME__);
 	printf("Chj note: Each worker thread will do ReadFileEx() only once.\n");
-	printf("Each ReadFileEx will be delayed %d seconds by the driver.\n", extra_delay_seconds);
+	printf("Each ReadFileEx() will be delayed %d seconds by the driver.\n", extra_delay_seconds);
 	printf("You can wait silently for IO completion, or ,\n");
 	printf("  'q' - let worker thread quit before IO completion\n");
 	printf("  'c' - let worker thread call CancelIo before IO completion\n");
@@ -432,7 +432,7 @@ THREADFUNC_RET_TYPE WINAPI Reader(PVOID dummy )
 		DWORD re = SleepEx(100, TRUE);
 		if(re==WAIT_IO_COMPLETION)
 		{
-			timeprint("(tid=%d)SleepEx() returns with WAIT_IO_COMPLETION.\n", tid);
+			timeprint("(tid=%d)SleepEx() returns WAIT_IO_COMPLETION.\n", tid);
 			io_complete = true;
 			break;
 		}
@@ -442,15 +442,25 @@ THREADFUNC_RET_TYPE WINAPI Reader(PVOID dummy )
 	{
 		timeprint("(tid=%d)Calling CancelIo()...\n", tid);
 		BOOL b = CancelIo(hDevice);
-		if(b)
+		if(b) {
 			timeprint("(tid=%d)CancelIo() returns success(cancel will take effect).\n", tid);
+		}
 		else {
 			DWORD winerr = GetLastError();
 			timeprint("(tid=%d)CancelIo() returns with winerr=%d(cancel in vain).\n", tid, winerr);
+			// Chj: TODO: Maybe I should SleepEx() again to get IO result.
 		}
+
+		// Waiting for IO completion so that we can know when we can retire our read-buffer.
+		DWORD re = SleepEx(INFINITE, TRUE);
+		if(re==WAIT_IO_COMPLETION)
+			timeprint("(tid=%d)SleepEx() returns WAIT_IO_COMPLETION. Async IO concluded.\n", tid);
+		else
+			timeprint("(tid=%d)SleepEx() returns(retval=%d). Why???\n", tid, re);
 	}
 
-	timeprint("(tid=%d)Calling ExitThread(0). %s\n", tid, io_complete?"":"(without IO completion)");
+//	timeprint("(tid=%d)Calling ExitThread(0). %s\n", tid, io_complete?"":"(without IO completion)");
+	timeprint("(tid=%d)Calling ExitThread(0)\n", tid);
 	ExitThread(0);
 }
 
@@ -470,7 +480,10 @@ VOID CALLBACK CompletionRoutine(
 	}
 	else
 	{
-		timeprint("(tid=%d)CompletionRoutine got error: winerr=%d\n", tid, errorcode);
+		if(ERROR_OPERATION_ABORTED==errorcode)
+			timeprint("(tid=%d)CompletionRoutine got ERROR_OPERATION_ABORTED.\n", tid );
+		else
+			timeprint("(tid=%d)CompletionRoutine got error: winerr=%d, Why??\n", tid, errorcode);
 	}
 	return;
 }
