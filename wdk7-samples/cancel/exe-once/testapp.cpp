@@ -198,6 +198,22 @@ int print_thread_done(HANDLE hThreadEnd, int array_idx, void *context)
 	return 0;
 }
 
+void Waitfor_new_second()
+{
+	SYSTEMTIME st_was = {0}, st_now = {0};
+	GetLocalTime(&st_was);
+	if(st_was.wMilliseconds<100)
+		return;
+
+	for(;;)
+	{
+		GetLocalTime(&st_now);
+		if(st_now.wMilliseconds<st_was.wMilliseconds) // a new second
+			return;
+		st_was = st_now;
+	}
+};
+
 //
 // Main function
 //
@@ -311,6 +327,8 @@ main(
 	printf("  'c' - let worker thread call CancelIo before IO completion\n");
 	printf("  'x' - let surprise close device handle before IO completion\n");
 	printf("==============================================================\n");
+
+	Waitfor_new_second(); // aux
 
 	printf("Number of threads : %d\n", NumberOfThreads);
 
