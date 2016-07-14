@@ -92,6 +92,14 @@ TCHAR* now_timestr(TCHAR buf[], int bufchars, bool ymd=false)
 
 void timeprint(const TCHAR *fmt, ...)
 {
+	static DWORD s_millisec_was = GetTickCount();
+	
+	DWORD millisec_now = GetTickCount();
+	if(millisec_now-s_millisec_was>=1000) {
+		printf(".\n"); // an extra line to indicate 1+ seconds has ellapsed
+	}
+	s_millisec_was = millisec_now;
+	
 	TCHAR buf[1000] = {0};
 	now_timestr(buf, COUNT(buf));
 
