@@ -509,6 +509,7 @@ Arguments:
 				KeDelayExecutionThread(KernelMode, FALSE, &DevExtension->PollingInterval); // 500ms
 			} else {
 				// I/O is successful, so complete the Irp.
+				ASSERT(STATUS_SUCCESS==Status);
 				Irp->IoStatus.Status = Status;
 				IoCompleteRequest (Irp, IO_NO_INCREMENT);
 				break;
