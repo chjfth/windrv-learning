@@ -461,7 +461,7 @@ THREADFUNC_RET_TYPE WINAPI Reader(PVOID dummy )
 		timeprint("(tid=%d)Calling CancelIo()...\n", tid);
 		BOOL b = CancelIo(hDevice);
 		if(b) {
-			timeprint("(tid=%d)CancelIo() returns success(cancel will take effect).\n", tid);
+			timeprint("(tid=%d)CancelIo() returns success(cancel may take effect).\n", tid);
 		}
 		else {
 			DWORD winerr = GetLastError();
