@@ -11,7 +11,7 @@ MSC_WARNING_LEVEL= /W4 /WX
 
 SOURCES= toaster.rc \
          toaster.c  \
-         power.c \
+         POwer.c \
          wmi.c \
 	 wake.c 
 
