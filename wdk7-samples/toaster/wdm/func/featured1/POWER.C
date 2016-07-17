@@ -1,14 +1,11 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Power.c
 
 Abstract:
@@ -19,21 +16,25 @@ Abstract:
     can assume this role. The Toaster sample function driver is the power policy
     owner for Toaster class hardware
 
-    The Toaster sample function driver implements a simple power policy: A
-    hardware instance enters the device power state D0 (working; fully powered and
-    ready to process I/O operations) when the system enters the system power state
-    S0 (working; fully powered and operational). A hardware instance enters the
-    lowest-powered device state, D3 (sleeping), for all the other system power
-    states (S1-S5). Refer to the DDK documentation for a thorough explanation of
+    The Toaster sample function driver implements a simple power policy: 
+	* A hardware instance enters the device power state D0 
+	  (working; fully powered and ready to process I/O operations) 
+	  when the system enters the system power state S0 
+	  (working; fully powered and operational). 
+	* A hardware instance enters the lowest-powered device state, D3 (sleeping), 
+	  for all the other system power states (S1-S5). 
+	  
+	Refer to the DDK documentation for a thorough explanation of
     the device D* and system S* power states.
 
     Power IRPs are divided into two categories: system power IRPs (S-IRPs) and
     device power IRPs (D-IRPs). S-IRPs represent the system's overall power state,
     whereas D-IRPs represent the hardware instance's device power state.
 
+	[[¹Ø¼üÁ÷³Ì]]
     The system initially sends S-IRPs to the device stack for a hardware instance.
-    When the power policy owner for the hardware instance receives an S-IRP it
-    creates a corresponding D-IRP for the original S-IRP. The power policy owner
+    When the power policy owner for the hardware instance receives an S-IRP,
+    it creates a corresponding D-IRP for the original S-IRP. The power policy owner
     marks the original S-IRP as pending and waits to receive and process the
     corresponding D-IRP that it requested earlier. The power policy owner
     completes the corresponding D-IRP first, copies the status of the D-IRP into
@@ -57,11 +58,9 @@ Abstract:
      ToasterCallbackHandleDeviceSetPower.
 
 Environment:
-
     Kernel mode
 
 Revision History:
-
 --*/
 
 #include "toaster.h"
@@ -2590,5 +2589,4 @@ Return Value Description:
         return "UnKnown Device Power State";
     }
 }
-
 

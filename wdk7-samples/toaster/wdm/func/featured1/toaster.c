@@ -715,19 +715,17 @@ Updated Routine Description:
             {
                 SETMASK((*deviceState), PNP_DEVICE_DONT_DISPLAY_IN_UI);
             }
-            else
+            else // 废话, &(Irp->IoStatus.Information) 怎么可能是 NULL ? 
             {
                 ASSERT(deviceState);
             }
 
             status = STATUS_SUCCESS;
         }
-
         break;
 
     default:
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
         ToasterIoDecrement(fdoData);
