@@ -1,39 +1,28 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     POWER.C
 
 Abstract:
-
     This module handles Power management calls for both FDO and
     child PDOs.
 
 Author:
 
-
 Environment:
-
     Kernel mode only
 
 Notes:
 
-
 Revision History:
-
-
 --*/
 
 #include "busenum.h"
-
-
 
 NTSTATUS
 Bus_Power (
@@ -42,18 +31,14 @@ Bus_Power (
     )
 /*++
     Handles power Irps sent to both FDO and child PDOs.
-    Note: Currently we do not implement full power handling
-          for the FDO.
+    Note: Currently we do not implement full power handling for the FDO.
 
 Arguments:
-
     DeviceObject - Pointer to the device object.
     Irp          - Pointer to the irp.
 
 Return Value:
-
     NT status is returned.
-
 --*/
 {
     PIO_STACK_LOCATION  irpStack;
@@ -86,7 +71,6 @@ Return Value:
             DbgSystemPowerString(commonData->SystemPowerState),
             DbgDevicePowerString(commonData->DevicePowerState)));
 
-
         status = Bus_FDO_Power ((PFDO_DEVICE_DATA)DeviceObject->DeviceExtension,
                                 Irp);
     } else {
@@ -101,7 +85,7 @@ Return Value:
                                 Irp);
     }
 
-    return status;
+	return status;
 }
 
 
@@ -112,23 +96,18 @@ Bus_FDO_Power (
     )
 /*++
     Handles power Irps sent to the FDO.
-    This driver is power policy owner for the bus itself
-    (not the devices on the bus).Power handling for the bus FDO
-    should be implemented similar to the function driver (toaster.sys)
-    power code. We will just print some debug outputs and
-    forward this Irp to the next level.
+    This driver is power policy owner for the bus itself (not the child devices on the bus). 
+	Power handling for the bus FDO
+    should be implemented similar to the function driver(toaster.sys) power code. 
+    We will just print some debug outputs and forward this Irp to the next level.
 
 Arguments:
-
     Data -  Pointer to the FDO device extension.
     Irp  -  Pointer to the irp.
 
 Return Value:
-
     NT status is returned.
-
 --*/
-
 {
     NTSTATUS            status;
     POWER_STATE         powerState;
@@ -151,7 +130,6 @@ Return Value:
         status = PoCallDriver(Data->NextLowerDriver, Irp);
         Bus_DecIoCount (Data);
         return status;
-
     }
 
     if (stack->MinorFunction == IRP_MN_SET_POWER) {
@@ -163,6 +141,7 @@ Return Value:
                         DbgDevicePowerString(powerState.DeviceState))));
     }
 
+	// Chj: Do the following for IRP_MN_WAIT_WAKE, IRP_MN_POWER_SEQUENCE, IRP_MN_QUERY_POWER.
     PoStartNextPowerIrp (Irp);
     IoSkipCurrentIrpStackLocation(Irp);
     status =  PoCallDriver (Data->NextLowerDriver, Irp);
@@ -178,23 +157,20 @@ Bus_PDO_Power (
     )
 /*++
     Handles power Irps sent to the PDOs.
-    Typically a bus driver, that is not a power
-    policy owner for the device, does nothing
+    Typically a bus driver, that is not a power policy owner for the device, does nothing
     more than starting the next power IRP and
     completing this one.
 
 Arguments:
-
     PdoData - Pointer to the PDO device extension.
     Irp     - Pointer to the irp.
 
 Return Value:
-
     NT status is returned.
-
 --*/
-
 {
+	// Chj: 此函数基本没做什么, 就是输出调试信息然后 PoStartNextPowerIrp + 返回值接力给 IoCompleteRequest.
+
     NTSTATUS            status;
     PIO_STACK_LOCATION  stack;
     POWER_STATE         powerState;
@@ -204,7 +180,8 @@ Return Value:
     powerType = stack->Parameters.Power.Type;
     powerState = stack->Parameters.Power.State;
 
-    switch (stack->MinorFunction) {
+    switch (stack->MinorFunction) 
+	{{
     case IRP_MN_SET_POWER:
 
         Bus_KdPrint_Cont(PdoData, BUS_DBG_POWER_TRACE,
@@ -214,7 +191,8 @@ Return Value:
                         DbgSystemPowerString(powerState.SystemState) : \
                         DbgDevicePowerString(powerState.DeviceState))));
 
-        switch (powerType) {
+        switch (powerType) 
+		{
             case DevicePowerState:
                 PoSetPowerState (PdoData->Self, powerType, powerState);
                 PdoData->DevicePowerState = powerState.DeviceState;
@@ -259,7 +237,7 @@ Return Value:
     default:
         status = STATUS_NOT_SUPPORTED;
         break;
-    }
+	}}
 
     if (status != STATUS_NOT_SUPPORTED) {
 
@@ -349,5 +327,3 @@ DbgDevicePowerString(
 }
 
 #endif
-
-
