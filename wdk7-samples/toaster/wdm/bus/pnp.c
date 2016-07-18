@@ -896,7 +896,9 @@ Bus_SendIrpSynchronously (
     __in PDEVICE_OBJECT DeviceObject,
     __in PIRP Irp
     )
-/*++                // Chj: 此函数实现跟 incomplete1.c 的 ToasterSendIrpSynchronously 完全一样.
+/*++                
+	// Chj: 此函数实现跟 incomplete1.c 的 ToasterSendIrpSynchronously 完全一样.
+	// PWDM2 p255 说： WinXP 起 IoForwardIrpSynchronously() 即是实现本函数的功能。
 Routine Description:
     Sends the Irp down to lower driver and waits for it to
     come back by setting a completion routine.
@@ -1479,6 +1481,4 @@ DbgDeviceIDString(
 }
 
 #endif
-
-
 
