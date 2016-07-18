@@ -344,7 +344,6 @@ Updated Routine Description:
 
     ToasterDispatchPnP processes a new PnP IRP, IRP_MN_QUERY_PNP_DEVICE_STATE to
     hide the hardware instance from displaying in the Device Manager.
-
 --*/
 {
     PFDO_DATA               fdoData;
@@ -633,12 +632,11 @@ Updated Routine Description:
         // it and the IRP is being passed back up the device stack.
         //
 
-        deviceCapabilities = stack->Parameters.DeviceCapabilities.Capabilities;
+        deviceCapabilities = stack->Parameters.DeviceCapabilities.Capabilities; // 输出缓冲区的指针
 
         if (1 != deviceCapabilities->Version ||
-            deviceCapabilities->Size < sizeof(DEVICE_CAPABILITIES))
+            deviceCapabilities->Size < sizeof(DEVICE_CAPABILITIES)) // 检查输出缓冲区的合规性(有部分输入成员指示)
         {
-            //
             // Presently, the function driver only supports version 1 of the
             // DEVICE_CAPABILITIES structure. Therefore, if the version does not
             // equal 1, then set the IRP's IoStatus.Status to STATUS_UNSUCCESSFUL
@@ -646,7 +644,6 @@ Updated Routine Description:
             // bus driver.
             //
             status = STATUS_UNSUCCESSFUL;
-
             break;
         }
 
@@ -673,12 +670,10 @@ Updated Routine Description:
         //
         if (NT_SUCCESS (status) )
         {
-            //
             // Get the device capabilities supported by the hardware instance.
             //
             fdoData->DeviceCaps = *deviceCapabilities;
         }
-
         break;
 
     case IRP_MN_QUERY_PNP_DEVICE_STATE:
@@ -2143,8 +2138,6 @@ End:
 }
 
 
-
-
 LONG
 ToasterIoIncrement    (
     __in  PFDO_DATA   FdoData
@@ -2153,7 +2146,6 @@ ToasterIoIncrement    (
 Updated Routine Description:
     ToasterIoIncrement does not change in this stage of the function driver.
 --*/
-
 {
     LONG            result;
     result = InterlockedIncrement(&FdoData->OutstandingIO);
@@ -2166,7 +2158,6 @@ Updated Routine Description:
     }
     return result;
 }
-
 
 LONG
 ToasterIoDecrement    (

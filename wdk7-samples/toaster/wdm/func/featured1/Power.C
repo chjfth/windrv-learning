@@ -1177,7 +1177,8 @@ Return Value Description:
         if (IRP_MN_SET_POWER == sIrpstack->MinorFunction &&
            PowerSystemWorking == stack->Parameters.Power.State.SystemState)
         {
-            //
+            // Chj: 这段注解好像挺重要
+			// 
             // On Windows 2000 and later, the Toaster sample function driver
             // completes S0 IRP_MN_SET_POWER S-IRPs before it begins to process D0
             // IRP_MN_SET_POWER D-IRPs. This enables the user to resume using the
@@ -1336,7 +1337,6 @@ Return Value Description:
             );
     }
 }
-
 
 
 NTSTATUS
@@ -1755,7 +1755,7 @@ Return Value Description:
     // IRP_MN_QUERY_POWER D-IRP.
     //
     // Pass TRUE as the Query parameter to indicate that
-    // ToasterPowerBeginQueueingIrps should check to determine if(=whether) the hardware
+    // ToasterPowerBeginQueuingIrps should check to determine if(=whether) the hardware
     // instance can enter a suspended power state.
     //
     status = ToasterPowerBeginQueuingIrps(
@@ -1770,7 +1770,7 @@ Return Value Description:
     // incoming D-IRP has not yet been passed down the device stack. Thus
     // ToasterFinalizeDevicePowerIrp must pass it down the device stack to be
     // processed by the underlying bus driver. Pass the status value returned by
-    // ToasterPowerBeginQueueingIrps which indicates if the device power state of the
+    // ToasterPowerBeginQueuingIrps which indicates if the device power state of the
     // hardware instance can be reduced.
     //
     ToasterFinalizeDevicePowerIrp(DeviceObject, Irp, Direction, status);
@@ -1918,7 +1918,7 @@ Return Value Description:
     //
     if (Query)
     {
-        // If ToasterCallbackHandleDeviceQueryPower called this routine, then
+        // We get here because of ToasterCallbackHandleDeviceQueryPower , so
         // determine if the hardware instance can enter a suspended power state.
         // Because the toaster hardware is imaginary, ToasterCanSuspendDevice always
         // returns STATUS_SUCCESS.
@@ -1937,7 +1937,7 @@ Return Value Description:
     }
     else
     {
-        // If ToasterCallbackHandleDeviceSetPower called this routine, then the function
+        // We get here because of ToasterCallbackHandleDeviceSetPower , so the function
         // driver is processing a IRP_MN_SET_POWER D-IRP, so indicate the operation is
         // successful.
         //
@@ -1975,39 +1975,34 @@ ToasterCallbackHandleDeviceSetPower(
     __in  IRP_DIRECTION       Direction
     )
 /*++
-
 New Routine Description:
     ToasterCallbackHandleDeviceSetPower processes corresponding power-up or
     power-down D-IRPs that the function driver created in response to
     IRP_MN_SET_POWER S-IRPs when ToasterQueueCorrespondingDeviceIrp calls
     PoRequestPowerIrp.
     ToasterQueuePassiveLevelPowerCallbackWorker calls this routine to process the
-    IRP_MN_SET_POWER D-IRP at IRQL = PASSIVE_LEVEL because the system worker
-    thread can be suspended without causing a system deadlock until every pending
-    IRP completes.
+    IRP_MN_SET_POWER D-IRP at IRQL=PASSIVE_LEVEL because the system worker
+    thread can [be suspended(suspend itself) without causing a system deadlock]
+	until every pending IRP completes.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp represents the IRP_MN_SET_POWER D-IRP operation to perform on the hardware
     instance represented by the DeviceObject parameter.
 
-    Direction
-    Direction indicates whether or not to pass the D-IRP down the device stack. If
-    the hardware instance is powering up then Direction = IRP_ALREADY_FORWARDED
-    because the underlying bus driver has already processed the power-up D-IRP and
-    it is being passed back up the device stack. Otherwise,
-    Direction = IRP_NEEDS_FORWARDING because the D-IRP has not yet been processed
-    by the underlying bus driver and must still passed down the device stack to be
-    processed by the underlying bus driver.
+    [Direction]
+    Direction indicates whether or not to pass the D-IRP down the device stack. 
+	* If the hardware instance is powering up then Direction=IRP_ALREADY_FORWARDED
+      because the underlying bus driver has already processed the power-up D-IRP and
+      it is being passed back up the device stack. 
+	* Otherwise, Direction=IRP_NEEDS_FORWARDING because the D-IRP has not yet been processed
+      by the underlying bus driver and must still passed down the device stack to be
+      processed by the underlying bus driver.
 
 Return Value Description:
     This routine does not return a value.
-
 --*/
 {
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -2016,27 +2011,20 @@ Return Value Description:
     DEVICE_POWER_STATE  newDeviceState, oldDeviceState;
     POWER_STATE         newState;
     NTSTATUS            status = STATUS_SUCCESS;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ToasterCallbackHandleDeviceSetPower\n");
 
-    //
     // Get the device power state from the corresponding power-up or power-down
     // D-IRP.
     //
     newState =  stack->Parameters.Power.State;
     newDeviceState = newState.DeviceState;
 
-    //
     // Save the hardware instance's present power state into a temporary variable.
-    //
     oldDeviceState = fdoData->DevicePowerState;
 
-    //
-    // Update the device extension's device power state to the new device power
-    // state.
-    //
+    // Update the device extension's device power state to the new device power state.
     fdoData->DevicePowerState = newDeviceState;
 
     ToasterDebugPrint(INFO, "\tSetting the device state to %s\n",
@@ -2044,7 +2032,6 @@ Return Value Description:
 
     if (newDeviceState == oldDeviceState)
     {
-        //
         // If the new device power state is the same as the old device power state,
         // then the incoming D-IRP can be completed without manipulating the hardware
         // instance.
@@ -2064,7 +2051,6 @@ Return Value Description:
             ToasterProcessQueuedRequests(fdoData);
         }
 
-        //
         // Finish the power-up or power-down D-IRP. Pass the incoming Direction
         // parameter that indicates whether the underlying bus driver has already
         // processed the power-up or power-down D-IRP. Pass STATUS_SUCCESS to
@@ -2083,18 +2069,17 @@ Return Value Description:
 
     if (PowerDeviceD0 == oldDeviceState)
     {
-        //
         // If the hardware instance's previous device power state was D0, then change
         // the driver-managed IRP queue mechanism to begin queuing any new incoming
         // data I/O IRPs in preparation to change the device power state of the
         // hardware instance.
         //
-        // Pass 2 as the IoIrpCharges parameter. One is for the original pending
-        // IRP_MN_SET_POWER S-IRP, and the other is for the corresponding power-up or
-        // power-down D-IRP.
+        // Pass 2 as the IoIrpCharges parameter. 
+        // One is for the original pending IRP_MN_SET_POWER S-IRP;
+        // the other is for the corresponding power-up or power-down D-IRP.
         //
         // Pass FALSE as the Query parameter to indicate that
-        // ToasterPowerBeginQueueingIrps should not query the hardware instance to
+        // ToasterPowerBeginQueuingIrps should not query the hardware instance to
         // determine if it can be safely suspended because the function driver is
         // processing a power-up or power-down D-IRP.
         //
@@ -2115,7 +2100,6 @@ Return Value Description:
 
     if (newDeviceState > oldDeviceState)
     {
-        //
         // If newDeviceState is greater than oldDeviceState then the hardware
         // instance is entering a lower (deeper) sleep state.
         //
@@ -2172,7 +2156,6 @@ Return Value Description:
 
     if (PowerDeviceD0 == newDeviceState)
     {
-        //
         // If the new device power state is D0, then change the driver-managed IRP
         // queue state to AllowRequests and begin to process any requests queued
         // since the function driver processed an earlier IRP_MN_QUERY_POWER S-IRP.
@@ -2186,7 +2169,6 @@ Return Value Description:
         ToasterProcessQueuedRequests(fdoData);
     }
 
-    //
     // Finish the power-up or power-down D-IRP. Pass the incoming Direction parameter
     // that indicates whether the underlying bus driver has already processed the
     // power-up or power-down D-IRP. Pass the results of the power-up or power-down
@@ -2202,7 +2184,6 @@ Return Value Description:
 }
 
 
-
 NTSTATUS
 ToasterGetPowerPoliciesDeviceState(
     __in  PIRP                SIrp,
@@ -2210,7 +2191,6 @@ ToasterGetPowerPoliciesDeviceState(
     __out DEVICE_POWER_STATE *DevicePowerState
     )
 /*++
-
 New Routine Description:
     ToasterGetPowerPoliciesDeviceState defines the appropriate device power state
     for the incoming system power state. This routine maps a given system power
@@ -2262,7 +2242,6 @@ Return Value Description:
 
     if (PowerSystemWorking == systemState)
     {
-        //
         // If the system is entering a fully-powered (S0) power state then the
         // system is waking-up to a working power state. Set the appropriate
         // device power state to D0 and then return.
@@ -2271,7 +2250,6 @@ Return Value Description:
     }
     else
     {
-        //
         // This stage of the function driver does not demonstrate how to support
         // wait-wake. Therefore, return D3 device power state. The Featured2 stage
         // of the function driver implements wait-wake support.
@@ -2283,17 +2261,14 @@ Return Value Description:
 }
 
 
-
 NTSTATUS
 ToasterCanSuspendDevice(
     __in PDEVICE_OBJECT   DeviceObject
     )
 /*++
-
 New Routine Description:
     ToasterCanSuspendDevice determines whether the hardware instance can be safely
-    suspended. In the case of an imaginary toaster, the hardware can always be
-    suspended.
+    suspended. In the case of an imaginary toaster, the hardware can always be suspended.
 
 Parameters Description:
     DeviceObject
@@ -2307,11 +2282,9 @@ Return Value Description:
     practice, ToasterCanSuspendDevice could fail return failure if its hardware
     instance does not have a queue for the I/O operations that might come in, or
     if the driver was notified that it is in the paging path.
-
 --*/
 {
     PAGED_CODE();
-
     return STATUS_SUCCESS;
 }
 
@@ -2327,7 +2300,6 @@ DbgPowerMinorFunctionString (
     __in UCHAR MinorFunction
     )
 /*++
-
 New Routine Description:
     DbgPowerMinorFunctionString converts the minor function code of a power IRP to
     a text string that is more helpful when tracing the execution of power IRPs.
@@ -2339,7 +2311,6 @@ Parameters Description:
 Return Value Description:
     DbgPowerMinorFunctionString returns a pointer to a string that represents the
     text description of the incoming minor function code.
-
 --*/
 {
     switch (MinorFunction)
@@ -2357,13 +2328,11 @@ Return Value Description:
     }
 }
 
-
 PCHAR
 DbgSystemPowerString(
     __in SYSTEM_POWER_STATE Type
     )
 /*++
-
 New Routine Description:
     DbgSystemPowerString converts the system power state code of a power IRP to a
     text string that is more helpful when tracing the execution of power IRPs.
@@ -2375,7 +2344,6 @@ Parameters Description:
 Return Value Description:
     DbgDevicePowerString returns a pointer to a string that represents the
     text description of the incoming system power state code.
-
 --*/
 {
     switch (Type)
@@ -2401,13 +2369,11 @@ Return Value Description:
     }
  }
 
-
 PCHAR
 DbgDevicePowerString(
     __in DEVICE_POWER_STATE Type
     )
 /*++
-
 New Routine Description:
     DbgDevicePowerString converts the device power state code of a power IRP to a
     text string that is more helpful when tracing the execution of power IRPs.
@@ -2419,7 +2385,6 @@ Parameters Description:
 Return Value Description:
     DbgDevicePowerString returns a pointer to a string that represents the
     text description of the incoming device power state code.
-
 --*/
 {
     switch (Type)
