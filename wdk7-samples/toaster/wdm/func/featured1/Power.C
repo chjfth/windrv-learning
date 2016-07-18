@@ -797,7 +797,7 @@ Parameters Description:
 Return Value Description:
     This routine does not return a value.
 
-// Chj: 此函数名中的 "queue" ，不是 device-busy 时用的 IRP queue 的意思，而是 fdoData->PendingSIrp = SIrp;
+// Chj: 此函数名中的 "queue" ，不是 device-busy 时用的 IRP queue 的意思，而是 ...;
 --*/
 {
     NTSTATUS            status;
@@ -1140,7 +1140,6 @@ ToasterDispatchDeviceSetPower(
     __in PIRP Irp
     )
 /*++
-
 New Routine Description:
     ToasterDispatchDeviceSetPower processes corresponding IRP_MN_SET_POWER D-IRPs.
     The function driver previously requested a corresponding IRP_MN_SET_POWER
@@ -1148,12 +1147,9 @@ New Routine Description:
     IRP_MN_SET_POWER S-IRP.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp describes the specific device power state that is appropriate for the
     original pending IRP_MN_SET_POWER S-IRP based on the power policy
     implemented by the function driver.
@@ -1163,7 +1159,6 @@ Return Value Description:
     queues a work item for the system worker thread to callback at
     IRQL = PASSIVE_LEVEL. Otherwise ToasterDispatchDeviceSetPower returns
     an error status that indicates the reason a work item could not be queued.
-
 --*/
 {
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(Irp);
@@ -1583,7 +1578,7 @@ ToasterQueuePassiveLevelPowerCallback(
     __in  PIRP                                Irp,
     __in  IRP_DIRECTION                       Direction,
     __in  PFN_QUEUE_SYNCHRONIZED_CALLBACK     Callback
-    )
+    ) // 提示: 此函数名中的 queue , 暗指 IoQueueWorkItem , 并非 IRP-queue
 /*++
 New Routine Description:
     ToasterQueuePassiveLevelPowerCallback queues a work item to be processed later
