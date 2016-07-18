@@ -778,7 +778,7 @@ New Routine Description:
     IRP_MN_QUERY_POWER D-IRP that corresponds to the original incoming SIrp
     parameter. The system sends the corresponding D-IRP to the top of the hardware
     instance's device stack. The D-IRP corresponds to the system power state that
-    is specified in the original IRP_MN_SET_POWER or IRP_MN_QUERY_POWER S-IRP
+    is specified in the original IRP_MN_<SET|QUERY>_POWER S-IRP
     based on the power policy implemented by the function driver.
     ToasterQueueCorrespondingDeviceIrp calls ToasterGetPowerPoliciesDeviceState
     to supply the power policy for the Toaster sample function driver.
@@ -1558,16 +1558,18 @@ Return Value Description:
         ToasterIoDecrement(fdoData);
         return Result;
     }
+	else
+	{
+		// Copy the incoming result code into the IRP's IoStatus.Status block before
+		// calling ToasterDispatchPowerDefault to notify the power manager to start
+		// the next power IRP.
+		//
+		Irp->IoStatus.Status = Result;
+		status = ToasterDispatchPowerDefault(DeviceObject, Irp);
 
-    // Copy the incoming result code into the IRP's IoStatus.Status block before
-    // calling ToasterDispatchPowerDefault to notify the power manager to start
-    // the next power IRP.
-    //
-    Irp->IoStatus.Status = Result;
-    status = ToasterDispatchPowerDefault(DeviceObject, Irp);
-
-    ToasterIoDecrement(fdoData);
-    return status;
+		ToasterIoDecrement(fdoData);
+		return status;
+	}
 }
 
 
@@ -1699,61 +1701,52 @@ ToasterCallbackHandleDeviceQueryPower(
     __in  IRP_DIRECTION       Direction
     )
 /*++
-
 New Routine Description:
     ToasterCallbackHandleDeviceQueryPower processes corresponding
-    IRP_MN_QUERY_POWER D-IRPs that the function driver created in response to
+    IRP_MN_QUERY_POWER D-IRPs [that the function driver created in response to
     IRP_MN_QUERY_POWER S-IRPs when ToasterQueueCorrespondingDeviceIrp calls
-    PoRequestPowerIrp.
+    PoRequestPowerIrp].
     ToasterQueuePassiveLevelPowerCallbackWorker calls this routine to process the
-    IRP_MN_QUERY_POWER D-IRP at IRQL = PASSIVE_LEVEL because the system worker
-    thread can be suspended without causing a system deadlock until every pending
-    IRP completes.
+    IRP_MN_QUERY_POWER D-IRP at IRQL=PASSIVE_LEVEL because the system worker
+    thread can be [suspended(suspend itself) without causing a system deadlock]
+    until every pending IRP completes.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp describes the corresponding IRP_MN_QUERY_POWER D-IRP operation to perform
     on the hardware instance represented by the DeviceObject parameter.
 
-    Direction
-    Direction indicates whether or not to pass the D-IRP down the device stack. If
-    the hardware instance is powering up then Direction = IRP_ALREADY_FORWARDED
-    because the underlying bus driver has already processed the power-up D-IRP and
-    it is being passed back up the device stack. Otherwise,
-    Direction = IRP_NEEDS_FORWARDING because the D-IRP has not yet been processed
-    by the underlying bus driver and must still passed down the device stack to be
-    processed by the underlying bus driver.
+    [Direction]
+    Direction indicates whether or not to pass the D-IRP down the device stack. 
+    * If the hardware instance is powering up then Direction=IRP_ALREADY_FORWARDED
+      because the underlying bus driver has already processed the power-up D-IRP and
+      it is being passed back up the device stack. 
+	* Otherwise, Direction = IRP_NEEDS_FORWARDING because the D-IRP has not yet been processed
+      by the underlying bus driver and must still passed down the device stack to be
+      processed by the underlying bus driver.
 
 Return Value Description:
     This routine does not return a value.
-
 --*/
 {
     DEVICE_POWER_STATE deviceState;
     PIO_STACK_LOCATION stack;
     NTSTATUS status;
-
     PAGED_CODE();
 
     stack = IoGetCurrentIrpStackLocation(Irp);
 
-    //
     // Get the device power state of the corresponding IRP_MN_QUERY_POWER D-IRP.
     //
     deviceState = stack->Parameters.Power.State.DeviceState;
 
-    //
     // Test the assumption that the power manager does not send a query to determine
     // if the hardware instance can change to the D0 device power state.
     //
-    ASSERT(PowerDeviceD0 != deviceState);
+    ASSERT(PowerDeviceD0 != deviceState); // chj: 对应 #M1 处
 
-    //
     // Change the driver managed IRP queue mechanism to begin queuing any new
     // incoming data I/O IRPs in preparation to change the hardware instance's device
     // power state.
@@ -1763,7 +1756,7 @@ Return Value Description:
     // IRP_MN_QUERY_POWER D-IRP.
     //
     // Pass TRUE as the Query parameter to indicate that
-    // ToasterPowerBeginQueueingIrps should check to determine if the hardware
+    // ToasterPowerBeginQueueingIrps should check to determine if(=whether) the hardware
     // instance can enter a suspended power state.
     //
     status = ToasterPowerBeginQueuingIrps(
@@ -1772,7 +1765,6 @@ Return Value Description:
         TRUE
         );
 
-    //
     // Finish the IRP_MN_QUERY_POWER D-IRP. When the ToasterDispatchDeviceQueryPower
     // routine queued a work item to call this routine, it passed
     // IRP_NEEDS_FORWARDING for the incoming Direction parameter to indicate that the
@@ -1784,7 +1776,6 @@ Return Value Description:
     //
     ToasterFinalizeDevicePowerIrp(DeviceObject, Irp, Direction, status);
 }
-
 
 
 VOID
@@ -1893,14 +1884,12 @@ Return Value Description:
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    //
     // Change the driver-managed IRP queue mechanism to hold any new incoming data
     // I/O requests because the power manager might send an IRP_MN_SET_POWER S-IRP to
     // change the hardware instance's device power state.
     //
     fdoData->QueueState = HoldRequests;
 
-    //
     // Decrement the count of outstanding I/O operations to account for the earlier
     // calls to ToasterIoIncrement as part of processing the current power IRP, in
     // order that StopEvent can be signaled.
@@ -1911,13 +1900,12 @@ Return Value Description:
         ToasterIoDecrement(fdoData);
     }
 
-    //
     // Wait for any pending IRPs to finish. ToasterIoDecrement signals StopEvent when
     // the count of outstanding I/O operations becomes 1. Either the last call to
     // ToasterIoDecrement (above) signaled stop event, or another call to
     // ToasterIoDecrement (in another thread of execution) signaled StopEvent because
     // that thread completed the last pending IRP.
-    //
+    //                                           // 自注: 稍加等待即可成功, 类似等待互斥量
     KeWaitForSingleObject(
         &fdoData->StopEvent,
         Executive,
@@ -1926,13 +1914,11 @@ Return Value Description:
         NULL
         );
 
-    //
     // The function driver might be forced to queue if the machine is running out
     // of power. The function driver only asks if asking is optional.
     //
     if (Query)
     {
-        //
         // If ToasterCallbackHandleDeviceQueryPower called this routine, then
         // determine if the hardware instance can enter a suspended power state.
         // Because the toaster hardware is imaginary, ToasterCanSuspendDevice always
@@ -1942,7 +1928,6 @@ Return Value Description:
 
         if (!NT_SUCCESS(status))
         {
-            //
             // If the hardware instance cannot be suspended then change the
             // driver-managed IRP queue state to AllowRequests and begin to process
             // any requests queued since the start of ToasterPowerBeginQueuingIrps.
@@ -1953,7 +1938,6 @@ Return Value Description:
     }
     else
     {
-        //
         // If ToasterCallbackHandleDeviceSetPower called this routine, then the function
         // driver is processing a IRP_MN_SET_POWER D-IRP, so indicate the operation is
         // successful.
