@@ -904,8 +904,8 @@ ToasterCompletionOnFinalizedDeviceIrp(
 New Routine Description:
     ToasterCompletionOnFinalizedDeviceIrp is the function driver's power
     completion routine for corresponding IRP_MN_<SET|QUERY>_POWER D-IRPs 
-    that the function driver requested earlier when
-    ToasterQueueCorrespondingDeviceIrp called PoRequestPowerIrp.
+    [that the function driver requested earlier when
+    ToasterQueueCorrespondingDeviceIrp called PoRequestPowerIrp].
 
     The system calls this routine when the corresponding D-IRP has been completed
     and all I/O completion routines, if any, have returned. 
@@ -939,7 +939,6 @@ Parameters Description:
 
 Return Value Description:
     This routine does not return a value.
-
 --*/
 {
     // Get the pointer to the FDO's device extension. The device extension is used to
@@ -1066,7 +1065,7 @@ Return Value Description:
         //
         status = STATUS_SUCCESS;
     }
-    else // PowerDeviceD0!=deviceState
+    else // PowerDeviceD0!=deviceState (#M1)
     {
         // If the corresponding IRP_MN_QUERY_POWER D-IRP's requested device power
         // state is deeper than D0, then the function driver must wait until every
