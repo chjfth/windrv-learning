@@ -1582,7 +1582,7 @@ ToasterQueuePassiveLevelPowerCallback(
 /*++
 New Routine Description:
     ToasterQueuePassiveLevelPowerCallback queues a work item to be processed later
-    by the system worker thread at IRQL = PASSIVE_LEVEL. The system thread calls
+    by the system worker thread at IRQL=PASSIVE_LEVEL. The system thread calls
     the work item's callback routine.
 
     The Toaster sample function driver must wait for every pending IRP (if any)
@@ -1622,6 +1622,8 @@ Return Value Description:
     the incoming D-IRP as pending.
 --*/
 {
+	/// ToasterQueuePassiveLevelPowerCallback(PDEVICE_OBJECT, PIRP, IRP_DIRECTION, PFN_QUEUE_SYNCHRONIZED_CALLBACK);
+
     PIO_WORKITEM            item;
     PWORKER_THREAD_CONTEXT  context;
     PFDO_DATA               fdoData;
@@ -1689,8 +1691,6 @@ Return Value Description:
 
     return STATUS_PENDING;
 }
-
-
 
 VOID
 ToasterCallbackHandleDeviceQueryPower(
