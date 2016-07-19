@@ -398,7 +398,7 @@ NTSTATUS
 ToasterDispatchPowerDefault(
     __in  PDEVICE_OBJECT  DeviceObject,
     __in  PIRP            Irp
-    )
+    ) // 这是个标准操作，同 PWDM2 p352 DefaultPowerHandler().
 /*++
 New Routine Description:
     ToasterDispatchPowerDefault sends the incoming power IRP down the device stack
@@ -556,11 +556,12 @@ Return Value Description:
 {
 	/// NTSTATUS ToasterDispatchQueryPowerState(PDEVICE_OBJECT DeviceObject, PIRP Irp); 
 
+	NTSTATUS ntstatus;
     PIO_STACK_LOCATION stack;
     PAGED_CODE();
     stack = IoGetCurrentIrpStackLocation(Irp);
 
-    ToasterDebugPrint(TRACE, "Entered ToasterDispatchQueryPowerState\n");
+    ToasterDebugPrint(TRACE, ">ToasterDispatchQueryPowerState\n");
 
     // Determine whether the incoming IRP_MN_QUERY_POWER Irp is a S-IRP or a D-IRP.
     // If the Irp's Parameters.Power.Type I/O stack location member equals
@@ -572,9 +573,12 @@ Return Value Description:
     // power state operation.
     //
     if(stack->Parameters.Power.Type == SystemPowerState)
-        return ToasterDispatchSystemPowerIrp(DeviceObject, Irp);
+        ntstatus = ToasterDispatchSystemPowerIrp(DeviceObject, Irp);
 	else
-        return ToasterDispatchDeviceQueryPower(DeviceObject, Irp);
+        ntstatus = ToasterDispatchDeviceQueryPower(DeviceObject, Irp);
+
+	ToasterDebugPrint(TRACE, "<ToasterDispatchQueryPowerState\n");
+	return ntstatus;
 }
 
 
@@ -621,7 +625,7 @@ Return Value Description:
 	NTSTATUS ret_chk;
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "Entered ToasterDispatchSystemPowerIrp\n");
+    ToasterDebugPrint(TRACE, ">ToasterDispatchSystemPowerIrp\n");
 
     newSystemState = stack->Parameters.Power.State.SystemState;
 
@@ -668,6 +672,7 @@ Return Value Description:
     ret_chk = PoCallDriver(fdoData->NextLowerDriver, Irp);
 		// shall ret_chk==STATUS_PENDING?
 
+	ToasterDebugPrint(TRACE, "<ToasterDispatchSystemPowerIrp\n");
     return STATUS_PENDING;
 }
 
@@ -724,9 +729,9 @@ Return Value Description:
 --*/
 {
     PFDO_DATA   fdoData = (PFDO_DATA) Fdo->DeviceExtension;
-    NTSTATUS    status = Irp->IoStatus.Status;
+    NTSTATUS    status = Irp->IoStatus.Status,     ntret;
 
-    ToasterDebugPrint(TRACE, "Entered ToasterCompletionSystemPowerUp\n");
+    ToasterDebugPrint(TRACE, ">ToasterCompletionSystemPowerUp\n");
 
     if (!NT_SUCCESS(status))
     {
@@ -748,22 +753,25 @@ Return Value Description:
         // should continue to call other completion routines registered by other
         // drivers located above the function driver in the device stack.
         //
-        return STATUS_CONTINUE_COMPLETION;
+        ntret = STATUS_CONTINUE_COMPLETION;
     }
+	else
+	{
+		// Queue a IRP_MN_QUERY_POWER D-IRP or IRP_MN_SET_POWER D-IRP that corresponds the
+		// original IRP_MN_QUERY_POWER S-IRP or IRP_MN_SET_POWER S-IRP. The system sends
+		// the corresponding D-IRP to the top of the hardware instance's device stack.
+		// The function driver eventually receives the corresponding D-IRP
+		//
+		ToasterQueueCorrespondingDeviceIrp(Irp, Fdo); // chj memo: featured1 仅此一处调用此函数
 
-    //
-    // Queue a IRP_MN_QUERY_POWER D-IRP or IRP_MN_SET_POWER D-IRP that corresponds the
-    // original IRP_MN_QUERY_POWER S-IRP or IRP_MN_SET_POWER S-IRP. The system sends
-    // the corresponding D-IRP to the top of the hardware instance's device stack.
-    // The function driver eventually receives the corresponding D-IRP
-    //
-    ToasterQueueCorrespondingDeviceIrp(Irp, Fdo); // chj memo: featured1 仅此一处调用此函数
+		// Do not complete the original S-IRP here in the power completion routine. The
+		// S-IRP is completed in the completion routine of the corresponding D-IRP.
+		//
+		ntret = STATUS_MORE_PROCESSING_REQUIRED;
+	}
 
-    //
-    // Do not complete the original S-IRP here in the power completion routine. The
-    // S-IRP is completed in the completion routine of the corresponding D-IRP.
-    //
-    return STATUS_MORE_PROCESSING_REQUIRED;
+	ToasterDebugPrint(TRACE, "<ToasterDispatchSystemPowerIrp\n");
+	return ntret;
 }
 
 
@@ -805,7 +813,7 @@ Return Value Description:
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(SIrp);
 
-    ToasterDebugPrint(TRACE, "Entered ToasterQueueCorrespondingDeviceIrp\n");
+    ToasterDebugPrint(TRACE, ">ToasterQueueCorrespondingDeviceIrp\n");
 
     // Get the device power state that corresponds to the system power state. The
     // ToasterGetPowerPoliciesDeviceState routine maps a system power state to a
@@ -890,6 +898,8 @@ Return Value Description:
         //
         ToasterIoDecrement(fdoData);
     }
+
+	ToasterDebugPrint(TRACE, "<ToasterQueueCorrespondingDeviceIrp\n");
 }
 
 VOID
@@ -957,7 +967,7 @@ Return Value Description:
     //
     PIRP        sIrp = fdoData->PendingSIrp;
 
-    ToasterDebugPrint(TRACE, "Entered ToasterCompletionOnFinalizedDeviceIrp\n");
+    ToasterDebugPrint(TRACE, ">ToasterCompletionOnFinalizedDeviceIrp\n");
 
     if (NULL != sIrp)
     {
@@ -990,6 +1000,8 @@ Return Value Description:
         //
         ToasterIoDecrement(fdoData);
     }
+
+	ToasterDebugPrint(TRACE, "<ToasterCompletionOnFinalizedDeviceIrp\n");
 }
 
 
@@ -1038,7 +1050,7 @@ Return Value Description:
     NTSTATUS            status;
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "Entered ToasterDispatchDeviceQueryPower\n");
+    ToasterDebugPrint(TRACE, ">ToasterDispatchDeviceQueryPower\n");
 
     if (PowerDeviceD0 == deviceState)
     {
@@ -1109,6 +1121,7 @@ Return Value Description:
         //
         if (STATUS_PENDING == status)
         {
+			ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceQueryPower(STATUS_PENDING)\n");
             return status;
         }
     }
@@ -1123,12 +1136,15 @@ Return Value Description:
     //   unable to allocate and queue a work item to be processed later by the system
     //   worker thread.
     //
-    return ToasterFinalizeDevicePowerIrp(
+    status = ToasterFinalizeDevicePowerIrp(
         DeviceObject,
         Irp,
         IRP_NEEDS_FORWARDING,
         status
         ); // 这里头有 IoCompleteRequest + ToasterIoDecrement
+
+	ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceQueryPower(%d).\n", status);
+	return status;
 }
 
 
@@ -1538,7 +1554,7 @@ Return Value Description:
     NTSTATUS status;
     PFDO_DATA fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    ToasterDebugPrint(TRACE, "Entered ToasterFinalizeDevicePowerIrp\n");
+    ToasterDebugPrint(TRACE, ">ToasterFinalizeDevicePowerIrp\n");
 
     if (IRP_ALREADY_FORWARDED == Direction || (!NT_SUCCESS(Result)))
     {
@@ -1555,6 +1571,8 @@ Return Value Description:
         IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
         ToasterIoDecrement(fdoData);
+
+		ToasterDebugPrint(TRACE, "<ToasterFinalizeDevicePowerIrp(a)\n");
         return Result;
     }
 	else
@@ -1567,6 +1585,8 @@ Return Value Description:
 		status = ToasterDispatchPowerDefault(DeviceObject, Irp);
 
 		ToasterIoDecrement(fdoData);
+
+		ToasterDebugPrint(TRACE, "<ToasterFinalizeDevicePowerIrp(b)\n");
 		return status;
 	}
 }

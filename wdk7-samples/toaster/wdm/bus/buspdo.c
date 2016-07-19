@@ -343,7 +343,7 @@ Return Value:
 
     stack = IoGetCurrentIrpStackLocation (Irp);
 
-    // Get the packet.
+    // Get the packet. 拿到输出缓冲区指针
     deviceCapabilities = stack->Parameters.DeviceCapabilities.Capabilities;
 
     // Set the capabilities.
@@ -365,12 +365,12 @@ Return Value:
         return status;
     }
 
-	// Chj: 本段解释要参考父设备的 devcap 的理由。
+	// Chj: 本段解释: 要参考父设备的  DEVICE_CAPABILITIES 的理由。
     //
     // The entries in the DeviceState array are based on the capabilities
-    // of the parent devnode. These entries signify the highest-powered
-    // state that the device can support for the corresponding system
-    // state. A driver can specify a lower (less-powered) state than the
+    // of the parent devnode. These (parent) entries signify the highest-powered
+    // state that the device can support for the corresponding system state.
+    // A (child device) driver can specify a lower(less-powered) state than the
     // bus driver.  For eg: Suppose the toaster bus controller supports
     // D0, D2, and D3; and the Toaster Device supports D0, D1, D2, and D3.
     // Following the above rule, the device cannot specify D1 as one of
@@ -386,7 +386,7 @@ Return Value:
 
     //
     // Adjust the caps to what your device supports.
-    // Our device just supports D0 and D3. (Chj: 喂，下面明明说可以支持 D1 的)
+    // Our device just supports D0 and D3. (Chj Q: 喂，下面明明说可以支持 D1 的)
     //
 
     deviceCapabilities->DeviceState[PowerSystemWorking] = PowerDeviceD0;
