@@ -338,25 +338,19 @@ Routine Description:
     PLIST_ENTRY         entry, listHead, nextEntry;
     PPDO_DEVICE_DATA    pdoData;
     PDEVICE_RELATIONS   relations, oldRelations;
-
     PAGED_CODE ();
 
     Bus_IncIoCount (DeviceData);
 
     switch (IrpStack->MinorFunction) 
 	{{
-
     case IRP_MN_START_DEVICE:
-
-        //
         // Send the Irp down and wait for it to come back.
         // Do not touch the hardware until then.
         //
         status = Bus_SendIrpSynchronously (DeviceData->NextLowerDriver, Irp);
 
         if (NT_SUCCESS(status)) {
-
-            //
             // Initialize your device with the resources provided
             // by the PnP manager to your device.
             //
@@ -367,7 +361,6 @@ Routine Description:
         // We must now complete the IRP, since we stopped it in the
         // completion routine with MORE_PROCESSING_REQUIRED.
         //
-
         Irp->IoStatus.Status = status;
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
         Bus_DecIoCount (DeviceData);
@@ -375,8 +368,6 @@ Routine Description:
         return status;
 
     case IRP_MN_QUERY_STOP_DEVICE:
-
-        //
         // The PnP manager is trying to stop the device
         // for resource rebalancing. Fail this now if you
         // cannot stop the device in response to STOP_DEVICE.
@@ -386,8 +377,6 @@ Routine Description:
         break;
 
     case IRP_MN_CANCEL_STOP_DEVICE:
-
-        //
         // The PnP Manager sends this IRP, at some point after an
         // IRP_MN_QUERY_STOP_DEVICE, to inform the drivers for a
         // device that the device will not be stopped for
@@ -399,7 +388,6 @@ Routine Description:
         //  someone above us fails a query-stop and passes down the subsequent
         // cancel-stop.
         //
-
         if (StopPending == DeviceData->DevicePnPState)
         {
             //
@@ -412,15 +400,12 @@ Routine Description:
         break;
 
     case IRP_MN_STOP_DEVICE:
-
-        //
         // Stop device means that the resources given during Start device
         // are now revoked. Note: You must not fail this Irp.
         // But before you relieve resources make sure there are no I/O in
         // progress. Wait for the existing ones to be finished.
         // To do that, first we will decrement this very operation.
         // When the counter goes to 1, Stop event is set.
-        //
 
         Bus_DecIoCount(DeviceData);
 
@@ -431,26 +416,20 @@ Routine Description:
                    FALSE, // No allert
                    NULL); // No timeout
 
-        //
         // Increment the counter back because this IRP has to
-        // be sent down to the lower stack.
+        // be sent down to the lower stack.  // Chj Q: "increment back"? Ã»ÓÐÂ©¶´?
         //
-
         Bus_IncIoCount (DeviceData);
 
-        //
         // Free resources given by start device.
         //
-
         SET_NEW_PNP_STATE(DeviceData, Stopped);
 
-        //
         // We don't need a completion routine so fire and forget.
         //
         // Set the current stack location to the next stack location and
         // call the next device object.
         //
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
         break;
 

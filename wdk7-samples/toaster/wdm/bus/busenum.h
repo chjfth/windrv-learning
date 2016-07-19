@@ -169,11 +169,9 @@ extern GLOBALS Globals;
 typedef struct _TOASTER_BUS_WMI_STD_DATA {
 
     // The error Count
-    //
     UINT32   ErrorCount;
 
     // Debug Print Level
-    //
     UINT32  DebugPrintLevel;
 
 } TOASTER_BUS_WMI_STD_DATA, * PTOASTER_BUS_WMI_STD_DATA;

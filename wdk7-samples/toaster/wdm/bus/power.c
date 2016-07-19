@@ -144,7 +144,8 @@ Return Value:
 	// Chj: Do the following for IRP_MN_WAIT_WAKE, IRP_MN_POWER_SEQUENCE, IRP_MN_QUERY_POWER.
     PoStartNextPowerIrp (Irp);
     IoSkipCurrentIrpStackLocation(Irp);
-    status =  PoCallDriver (Data->NextLowerDriver, Irp);
+    status =  PoCallDriver (Data->NextLowerDriver, Irp); 
+		// Chj: 喂,这个 NextLowerDriver(PDO) 可是 Windows 帮我们准备的东西了啊. 会返回什么样的内容?
     Bus_DecIoCount (Data);
     return status;
 }

@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) 1990-2000    Microsoft Corporation All Rights Reserved
 
 Module Name:
@@ -374,29 +373,27 @@ Return Value:
     // bus driver.  For eg: Suppose the toaster bus controller supports
     // D0, D2, and D3; and the Toaster Device supports D0, D1, D2, and D3.
     // Following the above rule, the device cannot specify D1 as one of
-    // it's power state. A driver can make the rules more restrictive
-    // but cannot loosen them.
+    // it's power state.  // Chj Q: 喂, 这句话表达有悖论吧!! 到底是 DEVICE_CAPABILITIES 的哪些成员受 "less" 的限制?
+    // A driver can make the rules more restrictive but cannot loosen them.
     // First copy the parent's S to D state mapping
     //
     RtlCopyMemory(
         deviceCapabilities->DeviceState,
         parentCapabilities.DeviceState,
         (PowerSystemShutdown + 1) * sizeof(DEVICE_POWER_STATE)
-        );
-
+        ); // 拷贝的是数组 DEVICE_CAPABILITIES.DeviceState[POWER_SYSTEM_MAXIMUM]
     //
     // Adjust the caps to what your device supports.
-    // Our device just supports D0 and D3. (Chj Q: 喂，下面明明说可以支持 D1 的)
+    // Our device just supports D0 and D3. (喂，下面明明说可以支持 D1 的)
     //
-
     deviceCapabilities->DeviceState[PowerSystemWorking] = PowerDeviceD0;
-
+	//
     if (deviceCapabilities->DeviceState[PowerSystemSleeping1] != PowerDeviceD0)
         deviceCapabilities->DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
-
+	//
     if (deviceCapabilities->DeviceState[PowerSystemSleeping2] != PowerDeviceD0)
         deviceCapabilities->DeviceState[PowerSystemSleeping2] = PowerDeviceD3;
-
+	//
     if (deviceCapabilities->DeviceState[PowerSystemSleeping3] != PowerDeviceD0)
         deviceCapabilities->DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
 
@@ -1224,10 +1221,8 @@ Return Value:
     PDEVICE_OBJECT      targetObject;
     PIO_STACK_LOCATION  irpStack;
     PIRP                pnpIrp;
-
     PAGED_CODE();
 
-    //
     // Initialize the capabilities that we will send down
     //
     RtlZeroMemory( DeviceCapabilities, sizeof(DEVICE_CAPABILITIES) );
@@ -1236,14 +1231,11 @@ Return Value:
     DeviceCapabilities->Address = ULONG_MAX;
     DeviceCapabilities->UINumber = ULONG_MAX;
 
-    //
     // Initialize the event
-    //
     KeInitializeEvent( &pnpEvent, NotificationEvent, FALSE );
 
     targetObject = IoGetAttachedDeviceReference( DeviceObject );
 
-    //
     // Build an Irp
     //
     pnpIrp = IoBuildSynchronousFsdRequest(
@@ -1256,24 +1248,17 @@ Return Value:
         &ioStatus
         );
     if (pnpIrp == NULL) {
-
         status = STATUS_INSUFFICIENT_RESOURCES;
         goto GetDeviceCapabilitiesExit;
-
     }
 
-    //
     // Pnp Irps all begin life as STATUS_NOT_SUPPORTED;
-    //
     pnpIrp->IoStatus.Status = STATUS_NOT_SUPPORTED;
 
-    //
     // Get the top of stack
-    //
     irpStack = IoGetNextIrpStackLocation( pnpIrp );
 
     // Set the top of stack
-    //
     RtlZeroMemory( irpStack, sizeof(IO_STACK_LOCATION ) );
     irpStack->MajorFunction = IRP_MJ_PNP;
     irpStack->MinorFunction = IRP_MN_QUERY_CAPABILITIES;
@@ -1300,15 +1285,10 @@ Return Value:
     }
 
 GetDeviceCapabilitiesExit:
-    //
     // Done with reference
-    //
     ObDereferenceObject( targetObject );
 
-    //
     // Done
-    //
     return status;
-
 }
 
