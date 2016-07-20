@@ -2222,8 +2222,8 @@ New Routine Description:
     pending IRP_MN_QUERY_POWER S-IRP or IRP_MN_SET_POWER S-IRP.
 
     ToasterGetPowerPoliciesDeviceState gets the corresponding D-IRP out of the
-    system power state to device power state mapping array that ToasterDispatchPnP
-    saved when it processed IRP_MN_QUERY_CAPABILITIES.
+    [[system power state to device power state mapping _array_] that ToasterDispatchPnP
+    saved when it processed IRP_MN_QUERY_CAPABILITIES].
 
     The function driver can choose a deeper sleep state than the mapping (with the
     appropriate caveats if the function driver has children), but the function
@@ -2233,20 +2233,20 @@ New Routine Description:
     Also note that if the function driver rounds down the device power state, it
     must ensure that such a state is supported. A function driver can determine
     this by examining the DeviceD1 and DeviceD2 bits in the DEVICE_CAPABILITIES
-    structure saved when it processes IRP_MN_QUERY_DEVICE_CAPABILITIES (on Windows
+    structure saved when it processes IRP_MN_QUERY_CAPABILITIES (on Windows      //(typo fixed)
     2000, Windows XP and later), or by examining the entire system power state to
     device power state mapping (on Windows 98).
 
 Parameters Description:
-    SIrp
+    [SIrp]
     SIrp specifies the system power state to be mapped to a device power state.
 
-    DeviceObject
+    [DeviceObject] //the FDO
     DeviceObject represents the hardware instance that is associated with the
     incoming SIrp parameter. DeviceObject is an FDO created earlier in
     ToasterAddDevice.
 
-    DevicePowerState
+    [DevicePowerState] Êä³ö²ÎÊý
     DevicePowerState points to caller allocated space that receives the device
     power state appropriate for the incoming system power state.
 
@@ -2254,7 +2254,6 @@ Return Value Description:
     ToasterGetPowerPoliciesDeviceState returns STATUS_SUCCESS if there is an
     appropriate system power state to device power state mapping. Otherwise,
     ToasterGetPowerPoliciesDeviceState returns STATUS_UNSUCCESSFUL.
-
 --*/
 {
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(SIrp);

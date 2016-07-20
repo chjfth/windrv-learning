@@ -60,19 +60,17 @@ Arguments:
     PFDO_DEVICE_DATA    deviceData = NULL;
     PWCHAR              deviceName = NULL;
     ULONG               nameLength;
-
     UNREFERENCED_PARAMETER(nameLength);
-
     PAGED_CODE ();
 
-    Bus_KdPrint_Def (BUS_DBG_SS_TRACE, ("Add Device: 0x%p\n",
+    Bus_KdPrint_Def(BUS_DBG_SS_TRACE, ("AddDevice: busdev PDO is 0x%p\n",
                                           PhysicalDeviceObject));
 
     status = IoCreateDevice (
                     DriverObject,               // our driver object
                     sizeof (FDO_DEVICE_DATA),   // device object extension size
                     NULL,                       // FDOs do not have names
-                    FILE_DEVICE_BUS_EXTENDER,   // We are a bus
+                    FILE_DEVICE_BUS_EXTENDER,   // We are a bus = 0x2a
                     FILE_DEVICE_SECURE_OPEN,    //
                     TRUE,                       // our FDO is exclusive
                     &deviceObject);             // The device object created
@@ -102,51 +100,41 @@ Arguments:
     InitializeListHead (&deviceData->ListOfPDOs);
 
     // Set the PDO for use with PlugPlay functions
-
     deviceData->UnderlyingPDO = PhysicalDeviceObject;
 
-    //
     // Set the initial powerstate of the FDO
     //
-
     deviceData->DevicePowerState = PowerDeviceUnspecified;
     deviceData->SystemPowerState = PowerSystemWorking;
 
 
-    //
     // Biased to 1. Transition to zero during remove device
     // means IO is finished. Transition to 1 means the device
     // can be stopped.
     //
-
     deviceData->OutstandingIO = 1;
 
-    //
     // Initialize the remove event to Not-Signaled.  This event
     // will be set when the OutstandingIO will become 0.
-    //
-
+	//
     KeInitializeEvent(&deviceData->RemoveEvent,
                   SynchronizationEvent,
                   FALSE);
-    //
+
     // Initialize the stop event to Signaled:
     // there are no Irps that prevent the device from being
     // stopped. This event will be set when the OutstandingIO
     // will become 0.
     //
-
     KeInitializeEvent(&deviceData->StopEvent,
                       SynchronizationEvent,
                       TRUE);
 
     deviceObject->Flags |= DO_POWER_PAGABLE;
 
-    //
     // Tell the Plug & Play system that this device will need a
     // device interface.
     //
-
     status = IoRegisterDeviceInterface (
                 PhysicalDeviceObject,
                 (LPGUID) &GUID_DEVINTERFACE_BUSENUM_TOASTER,
@@ -159,18 +147,16 @@ Arguments:
         goto End;
     }
 
-    //
+
     // Attach our FDO to the device stack.
     // The return value of IoAttachDeviceToDeviceStack is the top of the
     // attachment chain.  This is where all the IRPs should be routed.
     //
-
     deviceData->NextLowerDriver = IoAttachDeviceToDeviceStack (
                                     deviceObject,
                                     PhysicalDeviceObject);
 
     if (NULL == deviceData->NextLowerDriver) {
-
         status = STATUS_NO_SUCH_DEVICE;
         goto End;
     }
@@ -219,7 +205,7 @@ Arguments:
     }
 
     Bus_KdPrint (deviceData, BUS_DBG_SS_TRACE,
-                  ("AddDevice: %p to %p->%p (%ws) \n",
+                  ("AddDevice: Attach 0x%p to 0x%p **0x%p(%ws)\n",
                    deviceObject,
                    deviceData->NextLowerDriver,
                    PhysicalDeviceObject,
@@ -246,8 +232,8 @@ End:
     }
 
     return status;
-
 }
+
 
 NTSTATUS
 Bus_PnP (
@@ -269,7 +255,6 @@ Return Value:
     PIO_STACK_LOCATION      irpStack;
     NTSTATUS                status;
     PCOMMON_DEVICE_DATA     commonData;
-
     PAGED_CODE ();
 
     irpStack = IoGetCurrentIrpStackLocation (Irp);
@@ -277,17 +262,14 @@ Return Value:
 
     commonData = (PCOMMON_DEVICE_DATA) DeviceObject->DeviceExtension;
 
-    //
     // If the device has been removed, the driver should
     // not pass the IRP down to the next lower driver.
     //
-
     if (commonData->DevicePnPState == Deleted) {
         Irp->IoStatus.Status = status = STATUS_NO_SUCH_DEVICE ;
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
         return status;
     }
-
 
     if (commonData->IsFDO) {
         Bus_KdPrint (commonData, BUS_DBG_PNP_TRACE,
@@ -490,8 +472,8 @@ Routine Description:
 
         for(entry = listHead->Flink,nextEntry = entry->Flink;
             entry != listHead;
-            entry = nextEntry,nextEntry = entry->Flink) {
-
+            entry = nextEntry,nextEntry = entry->Flink) 
+		{
             pdoData = CONTAINING_RECORD (entry, PDO_DEVICE_DATA, Link);
             RemoveEntryList (&pdoData->Link);
             InitializeListHead (&pdoData->Link);
@@ -505,16 +487,11 @@ Routine Description:
         break;
 
     case IRP_MN_REMOVE_DEVICE:
-
-        //
         // The Plug & Play system has dictated the removal of this device.
         // We have no choice but to detach and delete the device object.
-        //
 
-        //
         // Check the state flag to see whether you are surprise removed
         //
-
         if (DeviceData->DevicePnPState != SurpriseRemovePending)
         {
             Bus_RemoveFdo(DeviceData);
@@ -522,16 +499,13 @@ Routine Description:
 
         SET_NEW_PNP_STATE(DeviceData, Deleted);
 
-        //
         // Wait for all outstanding requests to complete.
         // We need two decrements here, one for the increment in
         // the beginning of this function, the other for the 1-biased value of
         // OutstandingIO.
         //
-
         Bus_DecIoCount (DeviceData);
 
-        //
         // The requestCount is at least one here (is 1-biased)
         //
         Bus_DecIoCount (DeviceData);
@@ -543,8 +517,7 @@ Routine Description:
                 FALSE,
                 NULL);
 
-		//
-        // Typically the system removes all the  children before
+        // Typically the system removes all the children before
         // removing the parent FDO. If for any reason child Pdos are
         // still present we will destroy them explicitly, with one exception -
         // we will not delete the PDOs that are in SurpriseRemovePending state.
@@ -570,31 +543,29 @@ Routine Description:
                 // ReportedMissing flag to cause the deletion of the PDO.
                 //
                 Bus_KdPrint_Cont(DeviceData, BUS_DBG_PNP_INFO,
-                ("\tFound a surprise removed device: 0x%p\n", pdoData->Self));
+	                ("\tBUS-REMOVE: Found a surprise removed device: 0x%p\n", pdoData->Self));
                 InitializeListHead (&pdoData->Link);
                 pdoData->ParentFdo  = NULL;
                 pdoData->ReportedMissing = TRUE;
                 continue;
             }
             DeviceData->NumPDOs--;
-            Bus_DestroyPdo (pdoData->Self, pdoData);
+            Bus_DestroyPdo (pdoData->Self, pdoData); // IoDeleteDevice() inside
         }
 
         ExReleaseFastMutex (&DeviceData->Mutex);
 
-        //
         // We need to send the remove down the stack before we detach,
         // but we don't need to wait for the completion of this operation
         // (and to register a completion routine).
         //
-
         Irp->IoStatus.Status = STATUS_SUCCESS;
         IoSkipCurrentIrpStackLocation (Irp);
         status = IoCallDriver (DeviceData->NextLowerDriver, Irp);
-        //
+
+		//
         // Detach from the underlying devices.
         //
-
         IoDetachDevice (DeviceData->NextLowerDriver);
 
         Bus_KdPrint_Cont(DeviceData, BUS_DBG_PNP_INFO,
@@ -740,6 +711,14 @@ Routine Description:
         Irp->IoStatus.Status = STATUS_SUCCESS;
         break;
 
+	case IRP_MN_QUERY_CAPABILITIES: 
+		status = 0x1111;
+		break; // Chj: write this for easier setting breakpoint 
+
+	case IRP_MN_QUERY_PNP_DEVICE_STATE:
+		status = 0x2222;
+		break;
+
     default:
         // In the default case we merely call the next driver.
         // We must not modify Irp->IoStatus.Status or complete the IRP.
@@ -843,31 +822,24 @@ Return Value:
 {
     PAGED_CODE ();
 
-    //
     // Stop all access to the device, fail any outstanding I/O to the device,
     // and free all the resources associated with the device.
-    //
 
-    //
     // Disable the device interface and free the buffer
     //
-
     if (FdoData->InterfaceName.Buffer != NULL) {
 
         IoSetDeviceInterfaceState (&FdoData->InterfaceName, FALSE);
 
         ExFreePool (FdoData->InterfaceName.Buffer);
-        RtlZeroMemory (&FdoData->InterfaceName,
-                       sizeof (UNICODE_STRING));
+        RtlZeroMemory (&FdoData->InterfaceName, sizeof (UNICODE_STRING));
     }
 
     //
     // Inform WMI to remove this DeviceObject from its
     // list of providers.
     //
-
     Bus_WmiDeRegistration(FdoData);
-
 }
 
 NTSTATUS
@@ -1017,7 +989,7 @@ Routine Description:
     pdoData = (PPDO_DEVICE_DATA)  Pdo->DeviceExtension;
 
     Bus_KdPrint(pdoData, BUS_DBG_SS_NOISE,
-                 ("pdo 0x%p, extension 0x%p\n", Pdo, pdoData));
+                 ("Created PDO=0x%p, extension=0x%p\n", Pdo, pdoData));
 
     // Initialize the rest
     //
