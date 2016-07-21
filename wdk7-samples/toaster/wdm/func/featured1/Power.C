@@ -589,9 +589,9 @@ ToasterDispatchSystemPowerIrp(
     )
 /*++
 New Routine Description:
-    This function processes S-IRPs of IRP_MN_QUERY_POWER and IRP_MN_SET_POWER.
+    This function processes S-IRPs of IRP_MN_<QUERY|SET>_POWER.
 
-    IRP_MN_QUERY_POWER S-IRPs and IRP_MN_SET_POWER S-IRPs must be processed on
+    IRP_MN_<QUERY|SET>_POWER S-IRPs must be processed on
     their passage back up the device stack, after the underlying bus driver
     completes them.
 
@@ -670,7 +670,9 @@ Return Value Description:
     // ensures that power IRPs are properly synchronized throughout the system.
     //
     ret_chk = PoCallDriver(fdoData->NextLowerDriver, Irp);
-		// shall ret_chk==STATUS_PENDING?
+		// shall ret_chk==STATUS_PENDING? (bug?)
+		// Chj Q: 此处代码有问题. 如果 lower driver 否掉了 IRP_MN_QUERY_POWER,
+		// 本函数显然不应该返回 STATUS_PENDING. 
 
 	ToasterDebugPrint(TRACE, "<ToasterDispatchSystemPowerIrp\n");
     return STATUS_PENDING;
@@ -757,8 +759,8 @@ Return Value Description:
     }
 	else
 	{
-		// Queue a IRP_MN_QUERY_POWER D-IRP or IRP_MN_SET_POWER D-IRP that corresponds the
-		// original IRP_MN_QUERY_POWER S-IRP or IRP_MN_SET_POWER S-IRP. The system sends
+		// Queue a IRP_MN_<QUERY|SET>_POWER D-IRP that corresponds the
+		// original IRP_MN_<QUERY|SET>_POWER S-IRP. The system sends
 		// the corresponding D-IRP to the top of the hardware instance's device stack.
 		// The function driver eventually receives the corresponding D-IRP
 		//
@@ -793,11 +795,11 @@ New Routine Description:
 
 Parameters Description:
     [SIrp]
-    SIrp represents the original IRP_MN_QUERY_POWER or IRP_MN_SET_POWER S-IRP that
+    SIrp represents the original IRP_MN_<QUERY|SET>_POWER S-IRP that
     indicates a specific system power state.
     The ToasterGetPowerPoliciesDeviceState determine the corresponding device
     power state. ToasterQueueCorrespondingDeviceIrp calls PoRequestPowerIrp to
-    create a corresponding IRP_MN_SET_POWER or IRP_MN_QUERY_POWER D-IRP for the
+    create a corresponding IRP_MN_<SET|QUERY>_POWER D-IRP for the
     specific system power state. PoRequestPowerIrp sends the corresponding
     D-IRP to the top of the hardware instance's device stack, where
     ToasterDispatchPower subsequently processes it.
