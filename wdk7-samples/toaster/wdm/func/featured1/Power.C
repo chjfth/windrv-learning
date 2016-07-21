@@ -775,8 +775,8 @@ Return Value Description:
     }
 	else
 	{
-		// Queue a IRP_MN_<QUERY|SET>_POWER D-IRP that corresponds the
-		// original IRP_MN_<QUERY|SET>_POWER S-IRP. The system sends
+		// Queue an IRP_MN_<QUERY|SET>_POWER D-IRP that corresponds to the
+		// original IRP_MN_<QUERY|SET>_POWER S-IRP . The system sends
 		// the corresponding D-IRP to the top of the hardware instance's device stack.
 		// The function driver eventually receives the corresponding D-IRP
 		//
@@ -867,8 +867,10 @@ Return Value Description:
         // IRP_MN_<QUERY|SET>_POWER S-IRP.
         //
         // PoRequestPowerIrp allocates a power IRP and sends it to the top of the
-        // device stack that contains the device object specified in the first
-        // parameter. On Windows 2000, PoRequestPowerIrp can accept a FDO, but
+        // device stack that contains the device object specified in the first parameter. 
+			// Chj: 指的是 PoRequestPowerIpr 的第一个参数, 不是 ToasterQueueCorrespondingDeviceIrp 的第一个参数. 
+			// 这句话表达得太啰嗦, 直接说 "send it to the specified Dstack" 不就完了, 还担心程序员蠢到看不出第一个参数的作用?
+        // On Windows 2000, PoRequestPowerIrp can accept a FDO, but
         // Windows 9x/Me requires a PDO.
         //
         // Pass the incoming S-IRP's minor function code (IRP_MN_SET_POWER, or
