@@ -14,7 +14,7 @@ Abstract:
     The function driver for a hardware device is usually the hardware's power
     policy owner. However, for some devices, another driver or system component
     can assume this role. The Toaster sample function driver is the power policy
-    owner for Toaster class hardware
+    owner for Toaster class hardware.  // Chj: Power policy owner abbr: PPowner.
 
     The Toaster sample function driver implements a simple power policy: 
 	* A hardware instance enters the device power state D0 
@@ -31,7 +31,7 @@ Abstract:
     device power IRPs (D-IRPs). S-IRPs represent the system's overall power state,
     whereas D-IRPs represent the hardware instance's device power state.
 
-	[[Power-IRP 流程精要]]
+	[[Power-IRP 处理流程精要]]
     The system initially sends S-IRPs to the device stack for a hardware instance.
     When the power policy owner for the hardware instance receives an S-IRP,
     it creates a corresponding D-IRP for the original S-IRP. 
@@ -641,7 +641,7 @@ Return Value Description:
                     DbgSystemPowerString(fdoData->SystemPowerState));
     }
 
-    // Mark the incoming IRP_MN_SET_POWER or IRP_MN_QUERY_POWER S-IRP as pending. The
+    // Mark the incoming IRP_MN_<SET|QUERY>_POWER S-IRP as pending. The
     // function driver continues to process the S-IRP when the system calls the
     // ToasterCompletionSystemPowerUp I/O completion routine. The system calls
     // ToasterCompletionSystemPowerUp after the underlying bus driver completes the S-IRP.
