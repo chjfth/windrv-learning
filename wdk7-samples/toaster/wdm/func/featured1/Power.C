@@ -686,12 +686,17 @@ Return Value Description:
     // ensures that power IRPs are properly synchronized throughout the system.
     //
     ret_chk = PoCallDriver(fdoData->NextLowerDriver, Irp);
-		// shall ret_chk==STATUS_PENDING? (bug?)
-		// Chj Q: 此处代码有问题. 如果 lower driver 否掉了 IRP_MN_QUERY_POWER,
-		// 本函数显然不应该返回 STATUS_PENDING. 
 
 	ToasterDebugPrint(TRACE, "<ToasterDispatchSystemPowerIrp\n");
     return STATUS_PENDING;
+	
+	// Chj memo: 返回 STATUS_PENDING 是因为用了 IoMarkIrpPending ,这个返回值别无选择.
+	// 如果 lower driver 否掉了 IRP_MN_QUERY_POWER, 此 IRP 的发起者如何知道此 S-IRP 被否了呢?
+	// 显然不是通过此函数的返回值来得知的, 而是通过 Irp->IoStatus.Status 得知, 因为那才存放
+	// 一个 IRP 真正的处理结果的地方. 
+	// 如果 lower driver 真的否掉了 IRP_MN_QUERY_POWER, 那么 ToasterCompletionSystemPowerUp
+	// 会检测到 Irp->IoStatus.Status 为失败, 进而让这个 IRP 以 Irp->IoStatus.Status 为失败码宣告
+	// IRP 完成.
 }
 
 
@@ -772,9 +777,13 @@ Return Value Description:
         // drivers located above the function driver in the device stack.
         //
         ntret = STATUS_CONTINUE_COMPLETION;
+
+		// Chj memo: 继续调用上层的 completion-routine ,意味着真的要把这个 S-IRP 给 complete 掉了(虽然是以失败的姿态 complete 的)
     }
 	else
 	{
+		// Chj memo: 走这个 else 的话, 其实是截断了 PDO 发起的 IRP-completion 路线, 效果是让当前的 S-IRP 真的处于 pending 状态.
+
 		// Queue an IRP_MN_<QUERY|SET>_POWER D-IRP that corresponds to the
 		// original IRP_MN_<QUERY|SET>_POWER S-IRP . The system sends
 		// the corresponding D-IRP to the top of the hardware instance's device stack.
