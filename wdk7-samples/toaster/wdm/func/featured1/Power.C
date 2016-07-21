@@ -87,6 +87,13 @@ Revision History:
 // code, followed by the device specific programming code.
 //
 
+NTSTATUS myCompleteRequest(IN PIRP Irp, IN NTSTATUS status, IN void* info)
+{							// CompleteRequest
+	Irp->IoStatus.Status = status;
+	Irp->IoStatus.Information = (ULONG_PTR)info;
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	return status;
+}							// CompleteRequest
 
 //
 // Begin Boilerplate Code
@@ -628,6 +635,15 @@ Return Value Description:
     ToasterDebugPrint(TRACE, ">ToasterDispatchSystemPowerIrp\n");
 
     newSystemState = stack->Parameters.Power.State.SystemState;
+
+#if 0 // Chj: Enable this snippet to test Standby-deny on Windows XP
+	if(newSystemState==PowerSystemSleeping1)
+	{
+		ToasterDebugPrint(TRACE, "Chj fails S-IRP S1 query.\n");
+		PoStartNextPowerIrp(Irp);
+		return myCompleteRequest(Irp, STATUS_NOT_SUPPORTED, NULL);
+	}
+#endif
 
     if (IRP_MN_SET_POWER == stack->MinorFunction)
     {
