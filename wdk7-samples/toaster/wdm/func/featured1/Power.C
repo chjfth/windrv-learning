@@ -112,9 +112,10 @@ Updated Routine Description:
 
     -To query a driver to determine if the system can change its overall power
      state to a different power level.
+	 // Chj: To query a driver's consent to change system-power-state into a new one(e.g. S0 to S1).
 
-    -To notify a driver of a change in the overall system power state so that the
-     driver can adjust the device power state of its hardware instance to an
+    -To notify a driver of a system-determined change in the overall system power state 
+     so that the driver can adjust the device power state of its hardware instance to an
      appropriate level.
 
     -To respond to system wake-up events.
@@ -144,15 +145,15 @@ Updated Routine Description:
 
 1a) -The function driver receives an IRP_MN_QUERY_POWER S-IRP(query power system-IRP).
      
-    -The function driver pre-arranges the system to call an I/O completion routine
-     because the function driver must process the IRP_MN_QUERY_POWER S-IRP on its
+    -The function driver pre-arranges the system to call an I/O completion routine,
+     because: the function driver must process the IRP_MN_QUERY_POWER S-IRP on its
      passage back up the device stack, after the underlying bus driver completes it.
 
     -The function driver passes the IRP_MN_QUERY_POWER S-IRP down the device stack.
 
     -The function driver returns STATUS_PENDING to the caller.
 
-    +After the bus driver completes the IRP_MN_QUERY_POWER S-IRP, the system passes
+    =After the bus driver completes the IRP_MN_QUERY_POWER S-IRP, the system passes
      the IRP back up the device stack and calls the I/O completion routine arranged
      earlier:
 
@@ -161,42 +162,41 @@ Updated Routine Description:
      original pending IRP_MN_QUERY_POWER S-IRP. 
 	                                            When the I/O completion routine
      requests the corresponding D-IRP it also pre-arranges the system to [call a 
-     power completion routine after the function driver completes the corresponding
-     D-IRP]. // 中括号里头用 which is called after ... 显然能减少歧义
+     *power completion routine(abbr. PowerCR)* which will be called after the 
+     function driver completes the corresponding D-IRP]. 
     
 	-The I/O completion routine returns STATUS_MORE_PROCESSING_REQUIRED to the
-     caller.
+     caller. // 采用此返回值，是因为现在还不能宣告 S-IRP 已经完成。
 
 1c) -The function driver receives the corresponding IRP_MN_QUERY_POWER D-IRP and
-     either completes it successfully to indicate that the hardware instance can
-     change to an appropriate device power state without data loss, or fails the
-     D-IRP to indicate that the hardware instance cannot change its device power
-     state without disrupting work.
+     * either completes it successfully to indicate that the hardware instance can
+       change to an appropriate device power state without data loss, 
+	 * or fails the D-IRP to indicate that the hardware instance cannot change 
+       its device power state without disrupting work.
 
-    The system then calls the power completion routine [arranged to be called earlier
+    The system then calls the PowerCR [arranged(@1b) to be called earlier
     when the I/O completion requested the corresponding D-IRP]:
 
-1d) -The power completion routine copies the status of the corresponding completed
+1d) -The PowerCR copies the status of the corresponding completed
      IRP_MN_QUERY_POWER D-IRP into the original pending IRP_MN_QUERY_POWER S-IRP.
-    -The power completion routine then completes the original pending
-     IRP_MN_QUERY_POWER S-IRP.
-    -The power completion routine returns to the caller.
+    -The PowerCR then completes the original pending IRP_MN_QUERY_POWER S-IRP.
+    -The PowerCR returns to the caller.
 
     If the function driver fails the original IRP_MN_QUERY_POWER S-IRP, then the
     power manager might send another IRP_MN_QUERY_POWER S-IRP to specify a
     different system power state, and the previous sequence repeats.
 
-    However, if the function driver succeeds the original IRP_MN_QUERY_POWER
-    S-IRP, then the power manager sends a IRP_MN_SET_POWER S-IRP (set power
-    system IRP) with the same system power state as the original
+    However, if the function driver succeeds the original IRP_MN_QUERY_POWER S-IRP, 
+    then the power manager sends a IRP_MN_SET_POWER S-IRP (set power system IRP) 
+    with the same system power state as the original
     IRP_MN_QUERY_POWER S-IRP to notify the function driver to change its hardware
     instance to the device power state appropriate for the system power state.
 
-    Alternately, even if the function driver fails the original IRP_MN_QUERY_POWER
-    S-IRP, the power manager can still send a IRP_MN_SET_POWER S-IRP to notify the
+    Alternately, even if the function driver fails the original IRP_MN_QUERY_POWER S-IRP,
+    the power manager can still send a IRP_MN_SET_POWER S-IRP to notify the
     function driver that the system is preparing to change its power state. The
     power manager might force a driver to change its hardware instance to a
-    specific device power state because a battery or UPS is going offline
+    specific device power state because a battery or UPS is going offline.
 
 ----------------------------------------------------------------------------------
 
@@ -212,15 +212,14 @@ Updated Routine Description:
 
     -The function driver returns STATUS_PENDING to the caller.
 
-    +After the bus driver completes the IRP_MN_SET_POWER S-IRP, the system calls
+    =After the bus driver completes the IRP_MN_SET_POWER S-IRP, the system calls
      the I/O completion routine arranged earlier: 
 
 2b) -The I/O completion routine requests that the power manager send a
      IRP_MN_SET_POWER D-IRP (set power device-IRP) that corresponds to the
      original pending IRP_MN_SET_POWER S-IRP. When the I/O completion routine
      requests the corresponding D-IRP it also pre-arranges the system to [call a 
-     power completion routine after the function driver completes the corresponding
-     D-IRP].
+     power completion after the function driver completes the corresponding D-IRP].
     
 	-The I/O completion routine returns STATUS_MORE_PROCESSING_REQUIRED to the
      caller.
@@ -230,19 +229,21 @@ Updated Routine Description:
 3)  -The function driver receives the corresponding IRP_MN_SET_POWER D-IRP and
      must determine if it is a *power-down D-IRP* or a *power-up D-IRP* .
 
+	 // 注意： power-down D-IRP 这个提法中的 power-down, 指的是系统(而非设备)电源状态的 "down"。
+
 4)  If the original pending IRP_MN_SET_POWER S-IRP specifies a higher(means: S0>S1) 
     system power state than the current system power state then the corresponding
     IRP_MN_SET_POWER D-IRP is a power-up D-IRP. 
 	                                            The underlying bus driver must
     process power-up D-IRPs before the function driver because the bus driver must
     supply power to the hardware instance before the function driver can use it.
-    However, the function driver cannot process the power-up D-IRP until every
+    However, the function driver cannot process the power-up D-IRP until every         // 为什么 cannot?
     pending IRP (if any) such as read, write, or device control operations
     complete (in other threads of execution). Note that, however, the function
     driver cannot wait in the thread processing the power-up D-IRP because that
     might cause the system to stop responding.
 
-    Therefore, the function driver marks the power-up D-IRP as pending and sets
+    Therefore, the function driver marks the power-up D-IRP as pending and sets        // 这个 mark 是在 IRP 处理的前半段中做的
     the system to call an I/O completion routine after the bus driver completes
     the power-up D-IRP. Then, the function driver passes the power-up D-IRP down
     the device stack. Next, the function driver returns STATUS_PENDING to the
@@ -251,18 +252,18 @@ Updated Routine Description:
 
     After the bus driver completes the power-up D-IRP, the system calls the I/O
     completion routine set earlier. Recall, that the function driver must still
-    wait until every pending IRP completes. However, because the function driver
+    wait until every pending IRP completes. However, because the function driver        // pending IRP 指的是前两段讲的 read, write, devcontrol 那些 IRP 吗？
     cannot wait in the I/O completion routine for every IRP to complete, the I/O
     completion routine queues a callback for the system worker thread to process
-    at IRQL = PASSIVE_LEVEL. Then the I/O completion routine returns
+    at IRQL=PASSIVE_LEVEL. Then the I/O completion routine returns
     STATUS_MORE_PROCESSING_REQUIRED to the caller.
 
     Finally, the system worker thread calls the callback routine at
-    IRQL = PASSIVE_LEVEL to finish processing the power-up D-IRP. The callback
+    IRQL=PASSIVE_LEVEL to finish processing the power-up D-IRP. The callback
     routine can then wait until every pending IRP completes by suspending the
     execution of the system worker thread (which will not cause a system deadlock
     because the system worker thread calls the callback routine at
-    IRQL = PASSIVE_LEVEL), and then the callback routine finishes processing the
+    IRQL=PASSIVE_LEVEL), and then the callback routine finishes processing the
     power-up D-IRP before it returns to the caller.
 
 ----------------------------------------------------------------------------------
@@ -283,11 +284,11 @@ Updated Routine Description:
     STATUS_PENDING to the caller.
 
     Finally, the system worker thread calls the callback routine at
-    IRQL = PASSIVE_LEVEL to finish processing the power-down D-IRP. The callback
+    IRQL=PASSIVE_LEVEL to finish processing the power-down D-IRP. The callback
     routine can then wait until every pending IRP completes by suspending the
     execution of the system worker thread (which will not cause a system deadlock
     because the system worker thread calls the callback routine at
-    IRQL = PASSIVE_LEVEL), and then the callback routine finishes processing the
+    IRQL=PASSIVE_LEVEL), and then the callback routine finishes processing the
     power-down D-IRP before it returns to the caller.
 
 Updated Return Value Description:
@@ -297,7 +298,6 @@ Updated Return Value Description:
     immediately processes the power IRP, then ToasterDispatchPower returns
     STATUS_SUCCESS. If the function driver marked the power IRP as pending, then
     ToasterDispatchPower returns STATUS_PENDING.
-
 --*/
 {
 	/// NTSTATUS ToasterDispatchPower(PDEVICE_OBJECT DeviceObject, PIRP Irp){...}
@@ -355,7 +355,7 @@ Updated Return Value Description:
 
     case IRP_MN_QUERY_POWER:
         // ToasterDispatchQueryPowerState process IRP_MN_QUERY_POWER S-IRPs sent by
-        // the system, as-well-as [IRP_MN_SET_POWER D-IRPs requested by the function
+        // the system, as-well-as [IRP_MN_QUERY_POWER D-IRPs requested by the function  // typo fixed
         // driver in response to IRP_MN_QUERY_POWER S-IRPs].
         status = ToasterDispatchQueryPowerState(DeviceObject, Irp);
         break;
@@ -393,7 +393,7 @@ Updated Return Value Description:
         // stack to be processed by the bus driver.
         //
         status = ToasterDispatchPowerDefault(DeviceObject, Irp);
-        ToasterIoDecrement(fdoData);
+        ToasterIoDecrement(fdoData); // Chj: 觉得 ToasterIoDecrement 可以移到 ToasterDispatchPowerDefault 里头。
         break;
     }
 
@@ -534,11 +534,13 @@ ToasterDispatchQueryPowerState(
     )
 /*++
 New Routine Description:
-    ToasterDispatchQueryPowerState processes IRP_MN_QUERY_POWER S-IRPs sent
-    originally from the system as-well-as IRP_MN_QUERY_POWER D-IRPs requested by
-    the function driver in response to IRP_MN_QUERY_POWER S-IRPs. The incoming
-    IRP's Parameters.Power.Type I/O stack location member determines whether the
-    incoming power IRP is a S-IRP or a D-IRP.
+    ToasterDispatchQueryPowerState processes 
+	+ IRP_MN_QUERY_POWER S-IRPs sent originally from the system 
+	  as-well-as 
+	+ IRP_MN_QUERY_POWER D-IRPs requested by the function driver in response to 
+	  IRP_MN_QUERY_POWER S-IRPs. 
+	The incoming IRP's Parameters.Power.Type I/O stack location member determines 
+    whether the incoming power IRP is a S-IRP or a D-IRP.
 
 Parameters Description:
     [Irp]
@@ -573,8 +575,9 @@ Return Value Description:
     // Determine whether the incoming IRP_MN_QUERY_POWER Irp is a S-IRP or a D-IRP.
     // If the Irp's Parameters.Power.Type I/O stack location member equals
     // SystemPowerState, then the incoming Irp is a S-IRP and the function driver
-    // calls ToasterDispatchSystemPowerIrp to create a corresponding
-    // IRP_MN_QUERY_POWER D-IRP. Otherwise, the incoming IRP_MN_QUERY_POWER Irp is a
+    // calls ToasterDispatchSystemPowerIrp to create a corresponding IRP_MN_QUERY_POWER D-IRP. 
+    // 
+	// Otherwise, the incoming IRP_MN_QUERY_POWER Irp is a
     // D-IRP (requested earlier in response to an IRP_MN_QUERY_POWER S-IRP) and the
     // function driver calls ToasterDispatchDeviceQueryPower to process the query
     // power state operation.
