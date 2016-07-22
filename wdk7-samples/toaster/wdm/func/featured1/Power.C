@@ -641,7 +641,9 @@ Return Value Description:
 	{
 		ToasterDebugPrint(TRACE, "Chj fails S-IRP S1 query.\n");
 		PoStartNextPowerIrp(Irp);
-		return myCompleteRequest(Irp, STATUS_NOT_SUPPORTED, NULL);
+		ret_chk = myCompleteRequest(Irp, STATUS_NOT_SUPPORTED, NULL);
+		ToasterIoDecrement(fdoData);
+		return ret_chk;
 	}
 #endif
 
