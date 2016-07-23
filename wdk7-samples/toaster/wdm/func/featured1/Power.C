@@ -1219,14 +1219,13 @@ Return Value Description:
 --*/
 {
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(Irp);
-    POWER_STATE         state = stack->Parameters.Power.State;
+    POWER_STATE         new_state = stack->Parameters.Power.State;
     NTSTATUS            status;
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
     PIO_STACK_LOCATION  sIrpstack;
-
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "Entered ToasterDispatchDeviceSetPower\n");
+    ToasterDebugPrint(TRACE, ">ToasterDispatchDeviceSetPower\n");
 
     if (fdoData->PendingSIrp)
     {
@@ -1235,7 +1234,7 @@ Return Value Description:
         if (IRP_MN_SET_POWER == sIrpstack->MinorFunction &&
            PowerSystemWorking == stack->Parameters.Power.State.SystemState)
         {
-            // Chj: 这段注解好像挺重要
+            // Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须——仅在系统恢复到 S0 时适用.
 			// 
             // On Windows 2000 and later, the Toaster sample function driver
             // completes S0 IRP_MN_SET_POWER S-IRPs before it begins to process D0
@@ -1244,15 +1243,14 @@ Return Value Description:
             // may experience a slower resume from suspend than is necessary because
             // the system waits until all S0 IRP_MN_SET_POWER S-IRPs have been
             // completed before resuming any user-mode activity. Because powering-up
-            // a device and restoring its context takes time, it is not necessary to
+            // a device and restoring its context takes time, it is *not necessary* to
             // hold S0 IRP_MN_SET_POWER S-IRPs for non-critical devices.
             //
-            ToasterDebugPrint(TRACE, "\t ****Completing S0 IRP\n");
+            ToasterDebugPrint(TRACE, "****Completing S0 IRP(from S0)\n");
 
             fdoData->PendingSIrp->IoStatus.Status = STATUS_SUCCESS;
 
             PoStartNextPowerIrp(fdoData->PendingSIrp);
-
             IoCompleteRequest(fdoData->PendingSIrp, IO_NO_INCREMENT);
 
             fdoData->PendingSIrp = NULL;
@@ -1261,7 +1259,7 @@ Return Value Description:
         }
     }
 
-    if (state.DeviceState < fdoData->DevicePowerState)
+    if (new_state.DeviceState < fdoData->DevicePowerState)
     {
         //
         // The system is increasing the power level to the device. The bus driver
@@ -1309,26 +1307,24 @@ Return Value Description:
         //
         PoCallDriver(fdoData->NextLowerDriver, Irp);
 
+		ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceSetPower(pending)\n");
         return STATUS_PENDING;
     }
-    else
+    else // D0 -> D3 etc, or same Dx -> Dx
     {
-        //
         // The system is decreasing the power level to the hardware instance, or is
         // entering a power state the hardware instance is already in.
         //
         // While D0 IRP_MN_SET_POWER D-IRPs are alike, non-D0 IRP_MN_SET_POWER D-IRPs
         // are not alike because some might be for suspend, stand-by, hibernate, or
         // shutdown. Although it is not necessary to manipulate the hardware instance
-        // to process a D0 D-IRP (when the hardware instance is already in D0) each
-        // non-D0 D-IRP must be processed by the function driver in case the function
+        // to process a D0 D-IRP (when the hardware instance is already in D0), each
+        // non-D0 D-IRP must be processed by the function driver in case [the function
         // driver succeeded an earlier IRP_MN_QUERY_POWER D-IRP (and thus began to
         // queue new incoming data I/O IRPs instead of processing them immediately)
-        // and the system subsequently sent a S0 IRP_MN_SET_POWER S-IRP, which
+        // and the system subsequently sent a *S0* IRP_MN_SET_POWER S-IRP], which
         // effectively cancels the earlier IRP_MN_QUERY_POWER D-IRP.
-        //
 
-        //
         // The function driver must wait until every pending IRP (if any) such as
         // read, write, or device control operations completes (in other threads of
         // execution). However, the function driver cannot wait in the thread that is
@@ -1337,10 +1333,10 @@ Return Value Description:
         //
         // Instead, the function driver queues a separate work item to be processed
         // later by the system worker thread which executes a callback routine at
-        // IRQL = PASSIVE_LEVEL. The queued work item is not related to the
+        // IRQL=PASSIVE_LEVEL. The queued work item is not related to the
         // driver-managed IRP queue. The queued work item uses a different mechanism
         // which is implemented by the system to process driver callback routines at
-        // IRQL = PASSIVE_LEVEL.
+        // IRQL=PASSIVE_LEVEL.
         //
         // The callback routine in the work item waits until the function driver
         // completes every pending IRP (in other threads of execution) and then
@@ -1355,28 +1351,37 @@ Return Value Description:
             DeviceObject,
             Irp,
             IRP_NEEDS_FORWARDING,
-            ToasterCallbackHandleDeviceSetPower
+            ToasterCallbackHandleDeviceSetPower   // chj: 经过双重回调才可达
             );
 
-        //
         // If ToasterQueuePassiveLevelPowerCallback successfully queued the work
         // item, then it returns STATUS_PENDING, and the system will finish
-        // processing the IRP_MN_QUERY_POWER D-IRP at a later time when the system
+        // processing the IRP_MN_SET_POWER D-IRP at a later time when the system     //(typo fixed, error due to chunk copy-paste)
         // worker thread calls the work item's callback routine. Otherwise, if
         // ToasterQueuePassiveLevelPowerCallback is unable to allocate the resources
         // to queue the work item, then it returns STATUS_INSUFFICIENT_RESOURCES, and
-        // the IRP_MN_QUERY_POWER D-IRP will be finalized below.
+        // the IRP_MN_SET_POWER D-IRP will be finalized below.
         //
         if (STATUS_PENDING == status)
         {
+			ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceSetPower(pending)\n");
             return status;
+
+			// [2016-07-24]Chj memo: 今注意到这条路线 return 时, 并没有调用 PoStartNextPowerIrp, 
+			// 对照PoStartNextPowerIrp文档,确实应该如此, 因为这条 return 路线上以下三件事
+			// 一件都没干: IoCompleteRequest, IoSkipCurrentIrpStackLocation, PoCallDriver.
+			// 此 IRP Pending 后, 延迟处理出现于:
+			// ToasterCallbackHandleDeviceSetPower -> ToasterFinalizeDevicePowerIrp -> ToasterDispatchPowerDefault -> PoCallDriver(lower).
         }
 
-        //
         // Test the assumption that IRP_MN_SET_POWER has not been failed. Drivers must
-        // not fail IRP_MN_SET_POWER.
-        //
-        ASSERT(!NT_SUCCESS(status));
+        // not fail IRP_MN_SET_POWER. // 这句注释有错! 紧接着的 ASSERT 要捕捉的明明是"异常成功"的情况. 
+		//
+        ASSERT(!NT_SUCCESS(status));  // 接下来的几句是处理(意外)失败情况
+
+		// Chj: 下面的代码更奇怪了, 很可能是写错了. 
+		// ToasterQueuePassiveLevelPowerCallback 根本不会返回"异常成功"的错误码, 只会返回"内存不足"
+		// 之类的错误码, 如果是这样, 还有必要交由 Dstack 的下一层去处理吗?
 
         //
         // Finish the power-down D-IRP. The IRP_NEEDS_FORWARDING parameter indicates
@@ -1387,12 +1392,15 @@ Return Value Description:
         // ToasterQueuePassiveLevelPowerCallback was unable to allocate and queue a
         // work item to be processed later by the system worker thread.
         //
-        return ToasterFinalizeDevicePowerIrp(
+        status = ToasterFinalizeDevicePowerIrp(
             DeviceObject,
             Irp,
             IRP_NEEDS_FORWARDING,
             status
             );
+		
+		ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceSetPower(st=0x%X)\n", status);
+		return status;
     }
 }
 
@@ -2038,8 +2046,8 @@ ToasterCallbackHandleDeviceSetPower(
 New Routine Description:
     ToasterCallbackHandleDeviceSetPower processes corresponding power-up or
     power-down D-IRPs that the function driver created in response to
-    IRP_MN_SET_POWER S-IRPs when ToasterQueueCorrespondingDeviceIrp calls
-    PoRequestPowerIrp.
+    IRP_MN_SET_POWER S-IRPs when ToasterQueueCorrespondingDeviceIrp(wrong func?)     //(chj)
+    calls PoRequestPowerIrp.
     ToasterQueuePassiveLevelPowerCallbackWorker calls this routine to process the
     IRP_MN_SET_POWER D-IRP at IRQL=PASSIVE_LEVEL because the system worker
     thread can [be suspended(suspend itself) without causing a system deadlock]
@@ -2073,7 +2081,7 @@ Return Value Description:
     NTSTATUS            status = STATUS_SUCCESS;
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "Entered ToasterCallbackHandleDeviceSetPower\n");
+    ToasterDebugPrint(TRACE, ">ToasterCallbackHandleDeviceSetPower\n");
 
     // Get the device power state from the corresponding power-up or power-down
     // D-IRP.
@@ -2087,8 +2095,8 @@ Return Value Description:
     // Update the device extension's device power state to the new device power state.
     fdoData->DevicePowerState = newDeviceState;
 
-    ToasterDebugPrint(INFO, "\tSetting the device state to %s\n",
-                            DbgDevicePowerString(fdoData->DevicePowerState));
+	ToasterDebugPrint(INFO, "  Device state: %s->%s\n",
+		DbgDevicePowerString(oldDeviceState), DbgDevicePowerString(newDeviceState));
 
     if (newDeviceState == oldDeviceState)
     {
@@ -2124,6 +2132,7 @@ Return Value Description:
             STATUS_SUCCESS
             );
 
+		ToasterDebugPrint(TRACE, "<ToasterCallbackHandleDeviceSetPower\n");
         return;
     }
 
@@ -2163,6 +2172,7 @@ Return Value Description:
         // If newDeviceState is greater than oldDeviceState then the hardware
         // instance is entering a lower (deeper) sleep state.
         //
+		// [Realworld TODO]
         // Store the appropriate hardware context and perform the power-down
         // operation here. Because the toaster hardware is imaginary (the device
         // hardware as well as the bus hardware), there is no code to execute here.
@@ -2174,22 +2184,19 @@ Return Value Description:
         // checked to determine the reason, such as standby, suspend, or hibernate.
         //
 
-        //
         // Notify the power manager of the new device power state.
-        //
         PoSetPowerState(DeviceObject, DevicePowerState, newState);
 
-        //
         // Indicate that the imaginary hardware successfully powered down.
         //
         status = STATUS_SUCCESS;
     }
     else if (newDeviceState < oldDeviceState)
     {
-        //
         // If newDeviceState is less than oldDeviceState then the hardware instance
         // is entering a higher (more awake) sleep state.
         //
+		// [Realworld TODO]
         // Restore the saved hardware context and perform the power-up operation
         // here. Because the toaster hardware is imaginary (the device hardware as
         // well as the bus hardware), there is no code to execute here. Examine the
@@ -2201,12 +2208,9 @@ Return Value Description:
         // checked to determine the reason, such as standby, suspend, or hibernate.
         //
 
-        //
         // Notify the power manager of the new device power state.
-        //
         PoSetPowerState(DeviceObject, DevicePowerState, newState);
 
-        //
         // Indicate the imaginary hardware successfully powered up. However, in
         // practice, the power-up D-IRP might be failed here because the hardware
         // has been removed between the power-down D-IRP and the power-up D-IRP.
@@ -2235,12 +2239,15 @@ Return Value Description:
     // operation (in this case, STATUS_SUCCESS) to indicate that the function driver
     // has completed the power-up or power-down D-IRP.
     //
-    ToasterFinalizeDevicePowerIrp(
+    status = ToasterFinalizeDevicePowerIrp(
         DeviceObject,
         Irp,
         Direction,
         status
         );
+	
+	ToasterDebugPrint(TRACE, "<ToasterCallbackHandleDeviceSetPower(st=0x%X)\n", status);
+	return status;
 }
 
 
