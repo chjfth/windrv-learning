@@ -841,7 +841,7 @@ Return Value Description:
 --*/
 {
     NTSTATUS            status;
-    POWER_STATE         state;
+    POWER_STATE         devpower_state;
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(SIrp);
 
@@ -854,7 +854,7 @@ Return Value Description:
     status = ToasterGetPowerPoliciesDeviceState(
         SIrp,
         DeviceObject,
-        &state.DeviceState // output param
+        &devpower_state.DeviceState // output param
         );
 
     if (NT_SUCCESS(status))
@@ -897,13 +897,13 @@ Return Value Description:
         status = PoRequestPowerIrp(
             fdoData->UnderlyingPDO,
             stack->MinorFunction,
-            state,
+            devpower_state,  // Chj: 这个值将要决定我们的设备将转入哪一种 Dx 状态.
             ToasterCompletionOnFinalizedDeviceIrp,
             fdoData,
             NULL
             );
 
-		status = status; // easy set breakpoint
+		status = status; // easy set breakpoint, 如果没出现内存不足, 那应该是得到 STATUS_PENDING(算是一种成功结果)
     }
 
     if (!NT_SUCCESS(status))
@@ -1001,7 +1001,8 @@ Return Value Description:
     //
     PIRP        sIrp = fdoData->PendingSIrp;
 
-    ToasterDebugPrint(TRACE, ">ToasterCompletionOnFinalizedDeviceIrp\n");
+    ToasterDebugPrint(TRACE, ">ToasterCompletionOnFinalizedDeviceIrp(%s)\n",
+		MinorFunction==IRP_MN_QUERY_POWER?"query":"set");
 
     if (NULL != sIrp)
     {
@@ -1035,7 +1036,8 @@ Return Value Description:
         ToasterIoDecrement(fdoData);
     }
 
-	ToasterDebugPrint(TRACE, "<ToasterCompletionOnFinalizedDeviceIrp\n");
+	ToasterDebugPrint(TRACE, "<ToasterCompletionOnFinalizedDeviceIrp(%s)\n",
+		MinorFunction==IRP_MN_QUERY_POWER?"query":"set");
 }
 
 
@@ -1687,9 +1689,7 @@ Return Value Description:
 
     PIO_WORKITEM            item;
     PWORKER_THREAD_CONTEXT  context;
-//	PFDO_DATA               fdoData; // 此变量无用
-
-//	fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
+	PFDO_DATA fdoData = (PFDO_DATA)DeviceObject->DeviceExtension;; // 此变量无用, 仅方便调试器查看 fdoData
 
     // Allocate memory for worker thread context. The PWORKER_THREAD_CONTEXT data
     // type is defined in Power.h. ToasterQueuePassiveLevelPowerCallbackWorker later
@@ -2298,6 +2298,12 @@ Return Value Description:
 {
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(SIrp);
     SYSTEM_POWER_STATE  systemState = stack->Parameters.Power.State.SystemState;
+	
+	PFDO_DATA fdoData = (PFDO_DATA) DeviceObject->DeviceExtension; // 此句无用, 只是为了调试器看 fdoData 方便.
+		// Chj: 对于现实的硬件设备, 可能需要参考 fdoData->DeviceCaps 里头的 DeviceState[] 等信息
+		// 来选择一个最合适的 Dx 状态. 比如, Toaster bus 报告的电源映射项之一是 S1->D1 , 那么
+		// System-power 要切换为 S1 时, FDO 可以选 D1(most-powered) 或 D3 .
+		// 此处简化了, 直接用最保守的 D3 .
 
     if (PowerSystemWorking == systemState)
     {
@@ -2313,7 +2319,7 @@ Return Value Description:
         // wait-wake. Therefore, return D3 device power state. The Featured2 stage
         // of the function driver implements wait-wake support.
         //
-        *DevicePowerState = PowerDeviceD3;
+        *DevicePowerState = PowerDeviceD3; // Chj: Tried it, using PowerDeviceD1 is ok(Win7)
     }
 
     return STATUS_SUCCESS;
