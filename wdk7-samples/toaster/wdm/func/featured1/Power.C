@@ -1009,7 +1009,7 @@ Return Value Description:
         // corresponding IRP_MN_<QUERY|SET>_POWER D-IRP into the
         // original pending IRP_MN_<QUERY|SET>_POWER S-IRP .
         //
-        sIrp->IoStatus.Status = IoStatus->Status;
+        sIrp->IoStatus.Status = IoStatus->Status; // Chj: 这个 Status 可能是成功, 也可能是失败, 对吗?
 
         // Notify the power manager to start the next power IRP before completing the
         // S-IRP.
@@ -1117,15 +1117,15 @@ Return Value Description:
         // state is deeper than D0, then the function driver must wait until every
         // pending IRP (if any) such as read, write, or device control operations
         // completes (in other threads of execution). However, the driver cannot
-        // wait in the thread that is processing the IRP_MN_QUERY_POWER D-IRP
+        // wait(block) in the thread that is processing the IRP_MN_QUERY_POWER D-IRP
         // because that might cause a system deadlock.
         //
         // Instead, the function driver queues a separate work item to be processed
         // later by the system worker thread which executes a callback routine at
-        // IRQL = PASSIVE_LEVEL. The queued work item is not related to the
+        // IRQL=PASSIVE_LEVEL. The queued work item is not related to the
         // driver-managed IRP queue. The queued work item uses a different mechanism
         // which is implemented by the system to process driver callback routines at
-        // IRQL = PASSIVE_LEVEL.
+        // IRQL=PASSIVE_LEVEL.
         //
         // If the worker thread successfully processes the queued IRP_MN_QUERY_POWER
         // D-IRP, then the driver indicates that the hardware instance can change to
@@ -1142,7 +1142,7 @@ Return Value Description:
             DeviceObject,
             Irp,  // chj: the D-IRP
             IRP_NEEDS_FORWARDING,
-            ToasterCallbackHandleDeviceQueryPower
+            ToasterCallbackHandleDeviceQueryPower // chj: 经过双重回调才可达
             );
 
         // If ToasterQueuePassiveLevelPowerCallback successfully queued the work
@@ -1153,10 +1153,16 @@ Return Value Description:
         // to queue the work item, then it returns STATUS_INSUFFICIENT_RESOURCES, and
         // the IRP_MN_QUERY_POWER D-IRP will be finalized below.
         //
-        if (STATUS_PENDING == status)
+        if (STATUS_PENDING == status) // Chj: will get this unless no memory
         {
 			ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceQueryPower(STATUS_PENDING)\n");
             return status;
+
+			// [2016-07-23]Chj memo: 今注意到这条路线 return 时, 并没有调用 PoStartNextPowerIrp, 
+			// 对照PoStartNextPowerIrp文档,确实应该如此, 因为这条 return 路线上以下三件事
+			// 一件都没干: IoCompleteRequest, IoSkipCurrentIrpStackLocation, PoCallDriver.
+			// 此 IRP Pending 后, 延迟处理出现于:
+			// ToasterCallbackHandleDeviceQueryPower -> ToasterFinalizeDevicePowerIrp -> ToasterDispatchPowerDefault -> PoCallDriver(lower).
         }
     }
 
@@ -1616,8 +1622,8 @@ Return Value Description:
 		// the next power IRP.
 		//
 		Irp->IoStatus.Status = Result;
-		status = ToasterDispatchPowerDefault(DeviceObject, Irp);
-
+		
+		status = ToasterDispatchPowerDefault(DeviceObject, Irp); // 此中做了 PoCallDriver(lower);
 		ToasterIoDecrement(fdoData);
 
 		ToasterDebugPrint(TRACE, "<ToasterFinalizeDevicePowerIrp(b)\n");
@@ -1681,9 +1687,9 @@ Return Value Description:
 
     PIO_WORKITEM            item;
     PWORKER_THREAD_CONTEXT  context;
-    PFDO_DATA               fdoData;
+//	PFDO_DATA               fdoData; // 此变量无用
 
-    fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
+//	fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
     // Allocate memory for worker thread context. The PWORKER_THREAD_CONTEXT data
     // type is defined in Power.h. ToasterQueuePassiveLevelPowerCallbackWorker later
