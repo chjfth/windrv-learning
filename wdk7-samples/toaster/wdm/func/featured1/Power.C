@@ -995,7 +995,6 @@ Return Value Description:
     //
     PFDO_DATA   fdoData = (PFDO_DATA) PowerContext;
 
-    //
     // Get the pointer to the original pending S-IRP. The S-IRP can now be completed
     // with the corresponding D-IRP's status.
     //
@@ -1004,7 +1003,7 @@ Return Value Description:
     ToasterDebugPrint(TRACE, ">ToasterCompletionOnFinalizedDeviceIrp(%s)\n",
 		MinorFunction==IRP_MN_QUERY_POWER?"query":"set");
 
-    if (NULL != sIrp)
+    if (NULL != sIrp) // 若 sIrp==NULL, 说明 #M2 处的优化代码已执行
     {
         // Copy the status of the underlying bus driver's processing of the
         // corresponding IRP_MN_<QUERY|SET>_POWER D-IRP into the
@@ -1231,10 +1230,18 @@ Return Value Description:
     {
         sIrpstack = IoGetCurrentIrpStackLocation(fdoData->PendingSIrp);
 
+		ASSERT(IRP_MN_SET_POWER==sIrpstack->MinorFunction); // chj test
+// 		if(IRP_MN_SET_POWER != sIrpstack->MinorFunction);   // chj test
+// 		{
+// 			ToasterDebugPrint(TRACE, "Chj: Meet non-SET_POWER when PendingSIrp==true.\n");
+// 		}
+
         if (IRP_MN_SET_POWER == sIrpstack->MinorFunction &&
-           PowerSystemWorking == stack->Parameters.Power.State.SystemState)
+           PowerSystemWorking == stack->Parameters.Power.State.SystemState) // #M2
         {
-            // Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须——仅在系统恢复到 S0 时适用.
+            // Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须--仅在系统由 Sx->S0 时适用.
+			// 小结: Sx->S0(优化行为): 一开始处理 set-power D-IRP(此处), 就可以完结 S-IRP 了.
+			//     S0->Sx, 得等到 D-IRP 完结之后再完结 S-IRP (在 ToasterCompletionOnFinalizedDeviceIrp 做).
 			// 
             // On Windows 2000 and later, the Toaster sample function driver
             // completes S0 IRP_MN_SET_POWER S-IRPs before it begins to process D0
@@ -1259,34 +1266,22 @@ Return Value Description:
         }
     }
 
-    if (new_state.DeviceState < fdoData->DevicePowerState)
+    if (new_state.DeviceState < fdoData->DevicePowerState) // D3 -> D0 etc
     {
-        //
         // The system is increasing the power level to the device. The bus driver
         // must process the incoming power-up D-IRP before the function driver can,
         // otherwise the hardware instance may not even be powered on.
-        //
 
-        //
         // Mark the incoming IRP_MN_SET_POWER D-IRP as pending. The function driver
-        // continues to process the D-IRP when the system calls the
+        // (later) continues to process the D-IRP when the system calls the
         // ToasterCompletionDevicePowerUp I/O completion routine. The system calls
         // ToasterCompletionDevicePowerUp after the underlying bus driver completes
         // the S-IRP.
         //
         IoMarkIrpPending(Irp);
 
-        //
-        // Set up the I/O stack location for the next lower driver (the target
-        // device object for the PoCallDriver call). The function driver calls
-        // IoCopyCurrentIrpStackLocationToNext to copy the parameters from the I/O
-        // stack location for the function driver to the I/O stack location for the
-        // next lower driver, so that the next lower driver uses the same parameters
-        // as the function driver.
-        //
         IoCopyCurrentIrpStackLocationToNext(Irp);
 
-        //
         // Set the system to call ToasterCompletionDevicePowerUp after the underlying
         // bus driver completes the incoming IRP_MN_SET_POWER D-IRP.
         //
@@ -1299,16 +1294,12 @@ Return Value Description:
             TRUE
             );
 
-        //
-        // Pass the incoming S-IRP down the device stack. Drivers must use
-        // PoCallDriver instead of IoCallDriver to pass power IRPs down the device
-        // stack. PoCallDriver ensures that power IRPs are properly synchronized
-        // throughout the system.
-        //
-        PoCallDriver(fdoData->NextLowerDriver, Irp);
+        // Pass the incoming S-IRP down the device stack. 
+        PoCallDriver(fdoData->NextLowerDriver, Irp);	
 
 		ToasterDebugPrint(TRACE, "<ToasterDispatchDeviceSetPower(pending)\n");
-        return STATUS_PENDING;
+        
+		return STATUS_PENDING;
     }
     else // D0 -> D3 etc, or same Dx -> Dx
     {
@@ -1412,25 +1403,19 @@ ToasterCompletionDevicePowerUp(
     PVOID NotUsed
     )
 /*++
-
 New Routine Description:
     ToasterCompletionDevicePowerUp is the function driver's I/O completion routine
     for power-up D-IRP. This routine continues to process the incoming power-up
     D-IRP that was pended earlier in ToasterDispatchDeviceSetPower.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp represents the power-up operation that has been completed by the
     underlying bus driver.
 
-    NotUsed
-    NotUsed represents an optional context parameter that the function driver
-    specified to the system to pass to this routine. This parameter is not used.
+    [NotUsed] the context
 
 Return Value Description:
     ToasterCompletionDevicePowerUp returns STATUS_CONTINUE_COMPLETION if the
@@ -1439,20 +1424,17 @@ Return Value Description:
     STATUS_MORE_PROCESSING_REQUIRED indicates to the I/O manager that the function
     driver must process the IRP further before the I/O manager resumes calling any
     other I/O completion routines.
-
 --*/
 {
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
     NTSTATUS            status = Irp->IoStatus.Status;
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(Irp);
-
     UNREFERENCED_PARAMETER(stack);
 
-    ToasterDebugPrint(TRACE, "Entered ToasterCompletionDevicePowerUp\n");
+    ToasterDebugPrint(TRACE, ">ToasterCompletionDevicePowerUp\n");
 
     if (!NT_SUCCESS(status))
     {
-        //
         // If the underlying bus driver failed the D-IRP, then the D-IRP's
         // IoStatus.Status member will indicate the failure and the NT_SUCCESS macro
         // fails. In this case, notify the power manager to start the next power IRP.
@@ -1462,7 +1444,6 @@ Return Value Description:
         //
         PoStartNextPowerIrp(Irp);
 
-        //
         // Decrement the count of how many IRPs remain uncompleted. This call to
         // ToasterIoDecrement balances the earlier call to ToasterIoIncrement. An
         // equal number of calls to ToasterIoincrement and ToasterIoDecrement is
@@ -1471,33 +1452,27 @@ Return Value Description:
         //
         ToasterIoDecrement(fdoData);
 
-        //
         // Return STATUS_CONTINUE_COMPLETION to the I/O manager to indicate that it
         // should continue to call other completion routines registered by other
         // drivers located above the function driver in the device stack.
         //
+		ToasterDebugPrint(TRACE, "<ToasterCompletionDevicePowerUp(bus-deny)\n");
         return STATUS_CONTINUE_COMPLETION;
     }
 
-    //
-    // Test the assumption that incoming IRP_MN_SET_POWER D-IRP is really a set power
-    // IRP.
+    // Test the assumption that incoming IRP_MN_SET_POWER D-IRP is really a set power IRP.
     //
     ASSERT(IRP_MJ_POWER == stack->MajorFunction);
     ASSERT(IRP_MN_SET_POWER == stack->MinorFunction);
-    UNREFERENCED_PARAMETER(stack);
 
-    //
     // The function driver must wait until every pending IRP (if any) such as read,
     // write, or device control operations completes (in other threads of execution).
     // However, the function driver cannot wait in the thread that is processing the
-    // power-up D-IRP because that might cause a system deadlock.
+    // power-up D-IRP because that might cause a system deadlock.     // Chj memo: 最广泛场景中,有可能是从 D1->D0, 因此有可能存在一些 D1 时候的 pending IRP.
     //
     // Instead, the function driver queues a separate work item to be processed
     // later by the system worker thread which executes a callback routine at
-    // IRQL = PASSIVE_LEVEL. The queued work item uses a different mechanism which is
-    // implemented by the system to process driver callback routines at
-    // IRQL = PASSIVE_LEVEL.
+    // IRQL=PASSIVE_LEVEL. 
     //
     // The callback routine in the work item waits until the function driver
     // completes every pending IRP (in other threads of execution) and then processes
@@ -1516,19 +1491,14 @@ Return Value Description:
 
     if (STATUS_PENDING != status)
     {
-        //
         // If ToasterQueuePassiveLevelPowerCallback did not successfully queue a
         // separate work item, then it does not return STATUS_PENDING, and the
         // power-up D-IRP will be finalized below.
-        //
 
-        //
         // Test the assumption that ToasterQueuePassiveLevelPowerCallback returned
         // a failure.
-        //
         ASSERT(!NT_SUCCESS(status));
 
-        //
         // Finish the power-up D-IRP. The IRP_ALREADY_FORWARDED parameter indicates
         // that the D-IRP has been passed down the device stack, so
         // ToasterFinalizeDevicePowerIrp does not need to send it down. Pass the
@@ -1543,11 +1513,13 @@ Return Value Description:
             IRP_ALREADY_FORWARDED,
             status
             );
+
+		// Chj Q: 既然失败了, 难道不应该 return STATUS_INSUFFICIENT_RESOURCES (bug)?
     }
 
-    //
+	ToasterDebugPrint(TRACE, "<ToasterCompletionDevicePowerUp(ret-more)\n");
+
     // Do not complete the power-up D-IRP here in the I/O completion routine.
-    //
     return STATUS_MORE_PROCESSING_REQUIRED;
 }
 
@@ -1607,7 +1579,7 @@ Return Value Description:
     ToasterDebugPrint(TRACE, ">ToasterFinalizeDevicePowerIrp\n");
 
     if (IRP_ALREADY_FORWARDED == Direction || (!NT_SUCCESS(Result)))
-    {
+    {																// !NT_SUCCESS(Result) 的情况由 ToasterCompletionDevicePowerUp() 进入
         // If the incoming IRP_MN_<QUERY|SET>_POWER has already
         // been passed down the device stack, or the function driver has failed the
         // incoming IRP_MN_<QUERY|SET>_POWER D-IRP, then notify the
@@ -1634,6 +1606,7 @@ Return Value Description:
 		Irp->IoStatus.Status = Result;
 		
 		status = ToasterDispatchPowerDefault(DeviceObject, Irp); // 此中做了 PoCallDriver(lower);
+
 		ToasterIoDecrement(fdoData);
 
 		ToasterDebugPrint(TRACE, "<ToasterFinalizeDevicePowerIrp(b)\n");
@@ -2083,8 +2056,7 @@ Return Value Description:
 
     ToasterDebugPrint(TRACE, ">ToasterCallbackHandleDeviceSetPower\n");
 
-    // Get the device power state from the corresponding power-up or power-down
-    // D-IRP.
+    // Get the device power state from the corresponding power-up or power-down D-IRP.
     //
     newState =  stack->Parameters.Power.State;
     newDeviceState = newState.DeviceState;
