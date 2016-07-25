@@ -160,7 +160,6 @@ Updated Routine Description:
 }
 
 
-
 NTSTATUS
 ToasterAddDevice(
     __in PDRIVER_OBJECT DriverObject,
@@ -353,7 +352,6 @@ Updated Routine Description:
         {
             status = ToasterStartDevice(fdoData, Irp); // featured2 special inside
         }
-
         break;
 
     case IRP_MN_QUERY_STOP_DEVICE:
@@ -924,7 +922,6 @@ Updated Routine Description:
 
 
 
-
 NTSTATUS
 ToasterStartDevice (
     __in PFDO_DATA     FdoData,
@@ -1013,7 +1010,6 @@ Updated Routine Description:
 
             default:
                 ToasterDebugPrint(ERROR, "Unhandled resource type (0x%x)\n", resource->Type);
-
                 break;
             }
         }
@@ -1835,18 +1831,16 @@ ToasterDebugPrint    (
     __in PCCHAR  DebugMessage,
     ...
     )
-
 /*++
-
 Updated Routine Description:
     ToasterDebugPrint does not change in this stage of the function driver.
-
  --*/
 {
 #define     TEMP_BUFFER_SIZE        1024
     va_list    list;
     UCHAR      debugMessageBuffer[TEMP_BUFFER_SIZE];
     NTSTATUS status;
+	static int s_seq;
 
     va_start(list, DebugMessage);
 
@@ -1861,7 +1855,7 @@ Updated Routine Description:
         }
         if (DebugPrintLevel <= DebugLevel)
         {
-            KdPrint ((_DRIVER_NAME_": %s", debugMessageBuffer));
+			KdPrint (("[%d]" _DRIVER_NAME_": %s", s_seq++, debugMessageBuffer));
         }
     }
     va_end(list);
@@ -1937,7 +1931,4 @@ Updated Routine Description:
         return "unknown_pnp_irp";
     }
 }
-
-
-
 

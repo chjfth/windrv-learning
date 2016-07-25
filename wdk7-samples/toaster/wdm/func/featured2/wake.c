@@ -118,7 +118,6 @@ ToasterDispatchWaitWake(
     __in  PIRP            Irp
     )
 /*++
-
 New Routine Description:
     ToasterDispatchWaitWake processes IRP_MN_WAIT_WAKE requested earlier by the
     ToasterArmForWake routine when the function driver processed
@@ -128,31 +127,25 @@ New Routine Description:
     device stack, after the underlying bus driver has completed it.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp represents the wait/wake operation associated with DeviceObject.
 
 Return Value Description:
     ToasterDispatchWaitWake returns STATUS_CANCELLED if the hardware instance's
     wait/wake state has been cancelled. Otherwise ToasterDispatchWaitWake returns
     STATUS_PENDING because it marked the incoming wait/wake power IRP pending.
-
 --*/
 {
     PFDO_DATA       fdoData;
     WAKESTATE       oldWakeState;
-
     PAGED_CODE ();
 
-    ToasterDebugPrint(TRACE, "Entered ToasterDispatchWaitWake\n");
+    ToasterDebugPrint(TRACE, ">ToasterDispatchWaitWake\n");
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    //
     // Save the incoming IRP_MN_WAIT_WAKE power IRP in the device extension. When the
     // WakeIrp member does not equal NULL, then that indicates the function driver is
     // currently processing a IRP_MN_WAIT_WAKE power IRP.
@@ -162,7 +155,6 @@ Return Value Description:
     //
     fdoData->WakeIrp = Irp;
 
-    //
     // If fdoData->WakeState equals WAKESTATE_WAITING, then
     // InterlockedCompareExchange sets fdoData->WakeState to WAKESTATE_ARMED.
     // WAKESTATE_ARMED is the next step after WAKESTATE_WAITING when processing
@@ -183,7 +175,6 @@ Return Value Description:
 
     if (WAKESTATE_WAITING_CANCELLED == oldWakeState)
     {
-        //
         // Fail the IRP_MN_WAIT_WAKE power IRP if InterlockedCompareExchange did not
         // change FdoData->WakeState to WAKESTATE_ARMED because the function driver
         // has called ToasterDisarmWake to cancel the IRP_MN_WAIT_WAKE power IRP.
@@ -193,13 +184,11 @@ Return Value Description:
         Irp->IoStatus.Status = STATUS_CANCELLED;
 
         IoCompleteRequest( Irp, IO_NO_INCREMENT );
-
         ToasterIoDecrement(fdoData);
 
         return STATUS_CANCELLED;
     }
 
-    //
     // Mark the incoming IRP_MN_WAIT_WAKE power IRP as pending. The function driver
     // continues to process the IRP_MN_WAIT_WAKE power IRP when the system calls the
     // ToasterWaitWakeIoCompletionRoutine I/O completion routine. The system calls
@@ -208,24 +197,18 @@ Return Value Description:
     //
     IoMarkIrpPending( Irp );
 
-    //
     // Set up the I/O stack location for the next lower driver (the target device
-    // object for the PoCallDriver call). The function driver calls
-    // IoCopyCurrentIrpStackLocationToNext to copy the parameters from the I/O stack
-    // location for the function driver to the I/O stack location for the next lower
-    // driver, so that the next lower driver uses the same parameters as the function
-    // driver.
+    // object for the PoCallDriver call). 
     //
     IoCopyCurrentIrpStackLocationToNext( Irp );
 
     //
-    // Set the system to call ToasterWaitWakeIoCompletionRoutine after the underlying
-    // bus driver completes the wait/wake power IRP.
+    // Set the system to [call ToasterWaitWakeIoCompletionRoutine after the underlying
+    // bus driver completes the wait/wake power IRP].
     //
     IoSetCompletionRoutine( Irp, ToasterWaitWakeIoCompletionRoutine, NULL,
                                                             TRUE, TRUE, TRUE );
 
-    //
     // Pass the IRP_MN_WAIT_WAKE power IRP down the device stack. Drivers must use
     // PoCallDriver instead of IoCallDriver to pass power IRPs down the device stack.
     // PoCallDriver ensures that power IRPs are properly synchronized throughout the
@@ -233,7 +216,6 @@ Return Value Description:
     //
     PoCallDriver( fdoData->NextLowerDriver, Irp);
 
-    //
     // Decrement the count of how many IRPs remain uncompleted. This call to
     // ToasterIoDecrement balances the earlier call to ToasterIoIncrement in
     // ToasterDispatchPower. An equal number of calls to ToasterIoincrement and
@@ -242,6 +224,7 @@ Return Value Description:
     //
     ToasterIoDecrement(fdoData);
 
+	ToasterDebugPrint(TRACE, "<ToasterDispatchWaitWake\n");
     return STATUS_PENDING;
 }
 
@@ -253,17 +236,16 @@ ToasterArmForWake(
     __in BOOLEAN      DeviceStateChange
     )
 /*++
-
 New Routine Description:
     ToasterArmForWake arms, or re-arms a hardware instance for wake-up by
     requesting a IRP_MN_WAIT_WAKE power IRP to the device stack.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance to
     arm for wake.
 
-    DeviceStateChange
+    [DeviceStateChange]
     DeviceStateChange represents what system component is arming for wake. If
     DeviceStateChange equals TRUE, then the PnP manager is arming for wake.
     Otherwise, if DeviceStateChange equals FALSE then the WMI library is arming
@@ -273,18 +255,15 @@ Return Value Description:
     ToasterArmForWake returns TRUE if the hardware instance is already armed for
     wake-up. Otherwise, ToasterArmForWake returns FALSE if the hardware instance
     is not armed for wake-up.
-
 --*/
 {
     NTSTATUS     status;
     WAKESTATE    oldWakeState;
     POWER_STATE  powerState;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ArmForWake\n");
 
-    //
     // Lock the arming/disarming logic to prevent potential simultaneous arming and
     // disarming.
     //
@@ -294,7 +273,7 @@ Return Value Description:
     // until KeLeaveCriticalRegion is called.
     //
     // KeEnterCriticalRegion disables the system from sending normal kernel-mode
-    // asynchronous procedure calls (APCs). KeLeaveCriticalRegion reenables the
+    // asynchronous procedure calls (APCs). KeLeaveCriticalRegion re-enables the
     // delivery of normal kernel-mode APCs.
     //
     KeEnterCriticalRegion();
@@ -305,18 +284,17 @@ Return Value Description:
     // KeWaitForSingleObject does not return until the kernel event is signaled.
     // The event is initialized to signaled in ToasterAddDevice as a synchronization
     // event. When such an event is set, a single waiting thread becomes eligible for
-    // execution. The system automatically resets (clears) WakeDisableEnableLock each
+    // execution. The system automatically resets (clears) WakeDisableEnableLock each          // !!! automatically? 待理解
     // time a wait is satisfied.
     //
     KeWaitForSingleObject( &FdoData->WakeDisableEnableLock,
                            Executive,
                            KernelMode,
                            FALSE,
-                           NULL );
+                           NULL ); // Chj Q: 不会永久卡住吗?
 
     if (TRUE == DeviceStateChange)
     {
-        //
         // If the DeviceStateChange parameter equals TRUE, then that indicates the
         // PnP manager is the source of the call to ToasterArmForWake, and the
         // function driver is processing IRP_MN_START_DEVICE or
@@ -332,7 +310,6 @@ Return Value Description:
 
     if (!(TRUE == FdoData->AllowWakeArming && TRUE == ToasterGetWaitWakeEnableState(FdoData)))
     {
-        //
         // If the device extension's AllowWakeArming member does not equal TRUE,
         // because the hardware instance is no longer present or stopped, or the
         // function driver's wait/wake registry key does not indicate the hardware
@@ -342,7 +319,6 @@ Return Value Description:
     }
     else
     {
-        //
         // If FdoData->WakeState equals WAKESTATE_DISARMED, then
         // InterlockedCompareExchange sets FdoData->WakeState to WAKESTATE_WAITING.
         // Otherwise, InterlockedCompareExchange does not change FdoData->WakeState.
@@ -353,7 +329,6 @@ Return Value Description:
 
         if (WAKESTATE_DISARMED != oldWakeState)
         {
-            //
             // If the call to InterlockedCompareExchange did not change
             // FdoData->WakeState to WAKESTATE_DISARMED then the hardware instance is
             // already armed, or in the process of arming or re-arming for wake-up.
@@ -362,7 +337,6 @@ Return Value Description:
         }
         else
         {
-            //
             // The call to InterlockedCompareExchange changed FdoData->WakeState to
             // WAKESTATE_WAITING, and the ToasterDispatchWaitWake routine is ready to
             // receive an IRP_MN_WAIT_WAKE power IRP.
@@ -377,17 +351,15 @@ Return Value Description:
             //
             KeClearEvent(&FdoData->WakeCompletedEvent);
 
-            //
             // Specify the least-powered system power state from which
             // the device can wake the system.
             //
             powerState.SystemState = FdoData->DeviceCaps.SystemWake;
 
-            //
             // Request the power manager to send a IRP_MN_WAIT_WAKE power IRP to the
             // hardware instance's device stack. The function driver will eventually
             // receive and process the IRP_MN_WAIT_WAKE power IRP in the
-            // ToasterDispatchWaitWake routine
+            // ToasterDispatchWaitWake routine.
             //
             // If PoRequestPowerIrp returns STATUS_PENDING then that indicates
             // success.
@@ -401,14 +373,12 @@ Return Value Description:
 
             if (!NT_SUCCESS(status))
             {
-                //
                 // If the IRP_MN_WAIT_WAKE power IRP request fails then reset the
                 // device extension's WakeState to indicate the hardware instance is
                 // disarmed.
                 //
                 FdoData->WakeState = WAKESTATE_DISARMED;
 
-                //
                 // Reset the WakeCompletedEvent kernel event to signaled because it
                 // was cleared earlier in the call to KeClearEvent.
                 //
@@ -419,7 +389,6 @@ Return Value Description:
         }
     }
 
-    //
     // Unlock the arm/disarm logic.
     //
     // Signal the WakeDisableEnableLock kernel event. After the event is set, a
@@ -430,8 +399,7 @@ Return Value Description:
                 IO_NO_INCREMENT,
                 FALSE );
 
-    //
-    // Reenable the delivery of normal kernel-mode APCs. The system was prevented
+    // Re-enable the delivery of normal kernel-mode APCs. The system was prevented
     // from sending normal kernel-mode asynchronous procedure calls (APCs) earlier
     // when ToasterArmForWake called KeEnterCriticalRegion.
     //
@@ -442,7 +410,6 @@ Return Value Description:
 
 
 
-
 NTSTATUS
 ToasterWaitWakeIoCompletionRoutine(
     PDEVICE_OBJECT   DeviceObject,
@@ -450,7 +417,6 @@ ToasterWaitWakeIoCompletionRoutine(
     PVOID            Context
     )
 /*++
-
 New Routine Description:
     ToasterWaitWakeIoCompletionRoutine is the function driver's I/O completion
     routine for IRP_MN_WAIT_WAKE power IRPs. This routine continues to process
@@ -458,16 +424,13 @@ New Routine Description:
     ToasterDispatchWaitWake.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Irp
+    [Irp]
     Irp represents the wait/wake operation that has been completed by the
     underlying bus driver.
 
-    Context
+    [Context]
     Context represents an optional context parameter that the function driver
     specified to the system to pass to this routine. This parameter is not used.
 
@@ -477,17 +440,15 @@ Return Value Description:
     ToasterWaitWakeIoCompletionRoutine returns STATUS_MORE_PROCESSING_REQUIRED if
     the IRP_MN_WAIT_WAKE power IRP has been cancelled. If the IRP_MN_WAIT_WAKE
     power IRP has been cancelled, then the ToasterDisarmWake routine completes it.
-
 --*/
 {
     PFDO_DATA               fdoData;
     WAKESTATE       oldWakeState;
 
-    ToasterDebugPrint(TRACE, "Entered WaitWakeIoCompletionRoutine\n");
+    ToasterDebugPrint(TRACE, ">WaitWakeIoCompletionRoutine\n");
 
     fdoData  = (PFDO_DATA) DeviceObject->DeviceExtension;
 
-    //
     // Set the device extension's WakeState to WAKESTATE_COMPLETING as an atomic
     // operation.
     //
@@ -496,18 +457,17 @@ Return Value Description:
 
     if (WAKESTATE_ARMED == oldWakeState)
     {
-        //
         // If the device extension's previous WakeState equaled WAKESTATE_ARMED, then
         // that indicates that the IRP_MN_WAIT_WAKE power IRP has not been cancelled.
         // That is, the function driver has not called IoCancelIrp to cancel the
         // IRP_MN_WAIT_WAKE power IRP, and the I/O manager can continue calling I/O
         // completion routines registered earlier by higher level drivers.
         //
+		ToasterDebugPrint(TRACE, "<WaitWakeIoCompletionRoutine(cont)\n");
         return STATUS_CONTINUE_COMPLETION;
     }
     else
     {
-        //
         // Test the assumption that the device extension's WakeState should equal
         // WAKESTATE_ARMING_CANCELLED.
         //
@@ -519,6 +479,7 @@ Return Value Description:
         //
         ASSERT(WAKESTATE_ARMING_CANCELLED == oldWakeState);
 
+		ToasterDebugPrint(TRACE, "<WaitWakeIoCompletionRoutine(stop)\n");
         return STATUS_MORE_PROCESSING_REQUIRED;
     }
 }
@@ -531,34 +492,30 @@ ToasterDisarmWake(
     __in BOOLEAN      DeviceStateChange
     )
 /*++
-
 New Routine Description:
     ToasterDisarmWake cancels an IRP_MN_WAIT_WAKE power IRP that was requested
     earlier by the function driver.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance to
     disarm for wake.
 
-    DeviceStateChange
-    DeviceStateChange represents what system component is disarming for wake. If
-    DeviceStateChange equals TRUE, then the PnP manager is disarming for wake.
+    [DeviceStateChange]
+    DeviceStateChange represents what system component is disarming for wake.
+    If DeviceStateChange equals TRUE, then the PnP manager is disarming for wake.
     Otherwise, if DeviceStateChange equals FALSE then the WMI library is disarming
     for wake.
 
 Return Value Description:
     ToasterDisarmWake does not return a value.
-
 --*/
 {
     WAKESTATE       oldWakeState;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered DisarmWake\n");
 
-    //
     // Lock the arming/disarming logic to prevent potential simultaneous arming and
     // disarming.
     //
@@ -573,7 +530,6 @@ Return Value Description:
     //
     KeEnterCriticalRegion();
 
-    //
     // Call KeWaitForSingleObject to suspend the thread executing in
     // ToasterArmForWake until the WakeDisableEnableLock kernel event is signaled.
     // KeWaitForSingleObject does not return until the kernel event is signaled.
@@ -590,7 +546,6 @@ Return Value Description:
 
     if (TRUE == DeviceStateChange)
     {
-        //
         // If the DeviceStateChange parameter equals TRUE, then that indicates the
         // PnP manager is the source of the call to ToasterDisarmWake, and the
         // function driver is processing IRP_MN_STOP_DEVICE,
@@ -603,7 +558,6 @@ Return Value Description:
         FdoData->AllowWakeArming = FALSE;
     }
 
-    //
     // Advance the device extension's WakeState member to its respective cancelled
     // state, if appropriate.
     //
@@ -1151,7 +1105,6 @@ Return Value:
     }
     else if (PowerDeviceUnspecified != deepestDeviceWakeState)
     {
-        //
         // If the hardware instance can signal wake-up, then set the hardware
         // instance device capabilities' SystemWake member to the lowest-powered
         // system power state from which the hardware instance can signal wake-up.
@@ -1171,7 +1124,6 @@ Return Value:
             }
         }
 
-        //
         // Set the hardware instance's device capabilities' SystemWake member to
         // PowerSystemUnspecified because the lowest system power state from which
         // the hardware instance can signal wake-up was not found.
@@ -1188,18 +1140,17 @@ ToasterSetWaitWakeEnableState(
     __in BOOLEAN WakeState
     )
 /*++
-
 New Routine Description:
-    ToasterSetWaitWakeEnableState sets the WaitWakeEnable Registry key to the
+    ToasterSetWaitWakeEnableState sets the WaitWakeEnable Registry key to the      // "WaitWakeEnable" 是自定义的名字
     value specified in the WakeState parameter. The function driver calls this
     routine in response to WMI_POWER_DEVICE_WAKE_ENABLE requests.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance to
     set the wait/wake enable state for in the Registry.
 
-    WakeState
+    [WakeState]
     WakeState represents the TRUE or FALSE state to store in the function driver's
     "WaitWakeEnable" key in the Registry.
 
@@ -1208,19 +1159,16 @@ Return Value Description:
     the function driver's "WaitWakeEnabled" registry key. Otherwise, if there was
     an error opening the registry key, then ToasterSetWaitWakeEnableState returns
     the value from IoOpenDeviceRegistryKey.
-
 --*/
 {
     HANDLE hKey = NULL;
     NTSTATUS status;
     ULONG tmp = WakeState;
     UNICODE_STRING strEnable;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "ToasterSetWaitWakeEnableState  \n");
 
-    //
     // Open the function driver's registry key that corresponds to the specific
     // device interface instance.
     //
@@ -1230,14 +1178,12 @@ Return Value Description:
                                              &hKey);
     if (NT_SUCCESS(status))
     {
-        //
         // Copy the string name of the function driver's WaitWakeEnable registry key,
         // which is defined in Toaster.h as TOASTER_WAIT_WAKE_ENABLE, into the
         // temporary strEnable variable.
         //
         RtlInitUnicodeString (&strEnable, TOASTER_WAIT_WAKE_ENABLE);
 
-        //
         // Write the incoming WakeState parameter to the "WaitWakeEnable" key.
         //
         ZwSetValueKey (hKey,
@@ -1247,16 +1193,13 @@ Return Value Description:
                        &tmp,
                        sizeof(tmp));
 
-        //
         // Close the device interface instance key's handle that was opened earlier
         // in the call to IoOpenDeviceRegistryKey.
         //
         ZwClose (hKey);
     }
-
     return status;
 }
-
 
 
 BOOLEAN
@@ -1264,14 +1207,13 @@ ToasterGetWaitWakeEnableState(
     __in PFDO_DATA   FdoData
     )
 /*++
-
 New Routine Description:
     ToasterGetWaitWakeEnableState returns the value of the WaitWakeEnabled
     Registry key. The function driver calls this routine in response to
     WMI_POWER_DEVICE_WAKE_ENABLE requests.
 
 Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance to
     return the wait/wake enable state for in the Registry.
 
@@ -1282,7 +1224,6 @@ Return Value Description:
     there was an error opening the Registry, or if ToasterGetWaitWakeEnableState
     could not allocate memory to read the full information from the device
     interface instance's "WaitWakeEnabled" registry key.
-
 --*/
 {
     HANDLE hKey = NULL;
@@ -1292,12 +1233,10 @@ Return Value Description:
     ULONG           length;
     PKEY_VALUE_FULL_INFORMATION fullInfo;
     UNICODE_STRING  valueName;
-
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "ToasterGetWaitWakeEnableState  \n");
+    ToasterDebugPrint(TRACE, ">ToasterGetWaitWakeEnableState\n");
 
-    //
     // Open the function driver's registry key that corresponds to the specific
     // device interface instance.
     //
@@ -1308,7 +1247,6 @@ Return Value Description:
 
     if (NT_SUCCESS (status))
     {
-        //
         // Copy the string name of the function driver's WaitWakeEnable registry key,
         // which is defined in Toaster.h as TOASTER_WAIT_WAKE_ENABLE, into the
         // temporary valueName variable.
@@ -1317,13 +1255,12 @@ Return Value Description:
 
         length = sizeof (KEY_VALUE_FULL_INFORMATION)
                                + valueName.MaximumLength
-                               + sizeof(ULONG);
+                               + sizeof(ULONG); // ULONG is for the REG_DWORD WaitWakeEnable value
 
         fullInfo = ExAllocatePoolWithTag (PagedPool, length, TOASTER_POOL_TAG);
 
         if (NULL != fullInfo)
         {
-            //
             // Copy the specific device interface instance's "WaitWakeEnable" key
             // into the valueName variable.
             //
@@ -1336,21 +1273,18 @@ Return Value Description:
 
             if (NT_SUCCESS (status))
             {
-                //
                 // Test the assumption that the size of the data returned from the
                 // Registry equals 4 bytes.
                 //
                 ASSERT (sizeof(ULONG) == fullInfo->DataLength);
 
-                //
                 // Copy the "WaitWakeEnable" value into the temporary tmp variable.
                 //
                 RtlCopyMemory (&tmp,
                                ((PUCHAR) fullInfo) + fullInfo->DataOffset,
                                fullInfo->DataLength);
 
-                //
-                // Determine if the "waitWaitEnable" value is TRUE. If so, set the
+                // Determine if the "WaitWakeEnable" value is TRUE. If so, set the    // (typo fixed)
                 // return value to TRUE to indicate that the hardware instance
                 // supports wait/wake. Otherwise set the value to FALSE to indicate
                 // that the hardware instance does not support wait/wake.
@@ -1362,7 +1296,6 @@ Return Value Description:
         }
         else
         {
-            //
             // Fail the routine if there is not enough memory to read the full
             // information from the device interface instance's "WaitWakeEnabled"
             // registry key.
@@ -1370,13 +1303,14 @@ Return Value Description:
             waitWakeEnabled =  FALSE;
         }
 
-        //
         // Close the device interface instance key's handle that was opened earlier
         // in the call to IoOpenDeviceRegistryKey.
         //
         ZwClose (hKey);
     }
 
-    return waitWakeEnabled;
+	ToasterDebugPrint(TRACE, "<ToasterGetWaitWakeEnableState\n");
+
+	return waitWakeEnabled;
 }
 

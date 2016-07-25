@@ -234,8 +234,16 @@ Return Value:
         // If the function driver, decides to cancel the wake IRP, your cancel routine
         // will be called. There you just complete the IRP with STATUS_CANCELLED.
         //
+		// Chj: 由于此处没有实现代码, 因此无法测试"设备唤醒系统"的场景.
+
+		status = status; // chj test, easy set breakpoint
+		// fall through
+
     case IRP_MN_POWER_SEQUENCE:
-    default:
+		status = status; // chj test, easy set breakpoint
+		// fall through
+
+	default:
         status = STATUS_NOT_SUPPORTED;
         break;
 	}}
