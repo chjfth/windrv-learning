@@ -1369,7 +1369,7 @@ Return Value Description:
 		//
         ASSERT(!NT_SUCCESS(status));  // 接下来的几句是处理(意外)失败情况
 
-		// Chj: 下面的代码更奇怪了, 很可能是写错了. 
+		// Chj Q: 下面的代码更奇怪了, 很可能是写错了. 
 		// ToasterQueuePassiveLevelPowerCallback 根本不会返回"异常成功"的错误码, 只会返回"内存不足"
 		// 之类的错误码, 如果是这样, 还有必要交由 Dstack 的下一层去处理吗?
 

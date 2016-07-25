@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster_wdm_incomplete2", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster_wdm_featured1", "wdm\func\featured1_vs2010\featured1_vs2010.vcxproj", "{123F5DA6-8249-4143-AAA0-984EB2A30003}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toaster_wdm_featured2", "wdm\func\featured2_vs2010\featured2_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-59061A6DE9E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -49,6 +51,14 @@ Global
 		{123F5DA6-8249-4143-AAA0-984EB2A30003}.Release|Win32.Build.0 = Release|Win32
 		{123F5DA6-8249-4143-AAA0-984EB2A30003}.Release|x64.ActiveCfg = Release|x64
 		{123F5DA6-8249-4143-AAA0-984EB2A30003}.Release|x64.Build.0 = Release|x64
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Debug|Win32.Build.0 = Debug|Win32
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Debug|x64.ActiveCfg = Debug|x64
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Debug|x64.Build.0 = Debug|x64
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Release|Win32.ActiveCfg = Release|Win32
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Release|Win32.Build.0 = Release|Win32
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Release|x64.ActiveCfg = Release|x64
+		{AAE14642-CB46-449B-B30F-59061A6DE9E0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

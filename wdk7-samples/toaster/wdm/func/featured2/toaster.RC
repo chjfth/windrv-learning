@@ -4,7 +4,7 @@
 
 #define VER_FILETYPE                VFT_DRV
 #define VER_FILESUBTYPE             VFT2_DRV_SYSTEM
-#define VER_FILEDESCRIPTION_STR     "Toaster Device Driver"
+#define VER_FILEDESCRIPTION_STR     "Toaster Device Driver2"
 #define VER_INTERNALNAME_STR        "toaster.sys"
 #define VER_ORIGINALFILENAME_STR    "toaster.sys"
 
