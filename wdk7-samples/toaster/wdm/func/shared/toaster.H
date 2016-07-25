@@ -593,24 +593,20 @@ typedef struct _FDO_DATA
     // function driver.
     // ----------------------------------------------------------------------------
 
-    //
     // WakeState describes the present wait/wake power state of the function driver.
     //
     WAKESTATE           WakeState;
 
-    //
     // WakeIrp represents the present IRP_MN_WAIT_WAKE power IRP that the function
     // driver is processing.
     //
     PIRP                WakeIrp;
 
-    //
     // WakeCompletedEvent represents the kernel event to flush outstanding
     // IRP_MN_WAIT_WAKE power IRPs.
     //
     KEVENT              WakeCompletedEvent;
 
-    //
     // WakeDisableEnableLock represents the kernel event to prevent against
     // simultaneous arming and disarming requests.
     //

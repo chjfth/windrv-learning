@@ -1,7 +1,5 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
@@ -9,7 +7,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
 Module Name:
 
-    Toaster.c
+	TOaster.c
 
 Abstract:
 
@@ -26,7 +24,6 @@ Abstract:
      provide more information when debugging the function driver.
 
 Environment:
-
     Kernel mode
 
 Revision History:
@@ -94,12 +91,10 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 Updated Routine Description:
     DriverEntry initializes WPP software tracing with the incoming DriverObject and
     RegistryPath parameters (when the function driver is compiled under Windows XP
     and later).
-
 --*/
 {
     NTSTATUS            status = STATUS_SUCCESS;
@@ -172,18 +167,15 @@ ToasterAddDevice(
     __in PDEVICE_OBJECT PhysicalDeviceObject
     )
 /*++
-
 Updated Routine Description:
     ToasterAddDevice initializes the members of the device extension that are
     related to wait/wake processing in Wake.c.
-
 --*/
 {
     NTSTATUS                status = STATUS_SUCCESS;
     PDEVICE_OBJECT          deviceObject = NULL;
     PFDO_DATA               fdoData;
     POWER_STATE             powerState;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "AddDevice PDO (0x%p)\n", PhysicalDeviceObject);
@@ -231,8 +223,6 @@ Updated Routine Description:
                       SynchronizationEvent,
                       TRUE);
 
-
-
     fdoData->OutstandingIO = 1;
 
     deviceObject->Flags |= DO_POWER_PAGABLE;
@@ -245,25 +235,21 @@ Updated Routine Description:
     powerState.DeviceState = PowerDeviceD3;
     PoSetPowerState ( deviceObject, DevicePowerState, powerState );
 
-    //
     // Initialize the member of the device extension that describes the hardware
     // instance's present wake-up state to WAKESTATE_DISARMED.
     //
     fdoData->WakeState = WAKESTATE_DISARMED;
 
-    //
-    // Initialize the member of the device extension that indicates whether the
-    // hardware instance can be armed to signal wake-up to FALSE.
+    // Initialize the member of the device extension [that indicates whether the
+    // hardware instance can be armed to signal wake-up] to FALSE.
     //
     fdoData->AllowWakeArming = FALSE;
 
-    //
     // Initialize the function driver's current IRP_MN_WAIT_WAKE IRP pointer to
     // NULL.
     //
     fdoData->WakeIrp = NULL;
 
-    //
     // Initialize WakeDisableEnableLock to a signaled state. Wake.c uses
     // WakeDisableEnableLock to prevent potential simultaneous arm/disarm requests
     // from causing a deadlock.
@@ -277,7 +263,6 @@ Updated Routine Description:
                        SynchronizationEvent,
                        TRUE );
 
-    //
     // Initialize WakeCompletedEvent to a signaled state. Wake.c uses
     // WakeCompletedEvent to flush any outstanding wait/wake power IRPs.
     //
@@ -320,13 +305,12 @@ ToasterDispatchPnp (
     PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchPnP arms the hardware instance to signal wake-up when
-    processing IRP_MN_START_DEVICE (from ToasterStartDevice) or
-    IRP_MN_CANCEL_REMOVE_DEVICE. ToasterDispatchPnP disarms the hardware instance
+    processing IRP_MN_START_DEVICE (from ToasterStartDevice) or IRP_MN_CANCEL_REMOVE_DEVICE.
+    ToasterDispatchPnP disarms the hardware instance
     from signaling wake-up when processing IRP_MN_STOP_DEVICE,
-    IRP_MN_QUERY_REMOVE_DEVICE, and IRP_MN_SURPRISE_REMOVAL.
+    IRP_MN_QUERY_REMOVE_DEVICE, and IRP_MN_SURPRISE_REMOVAL.  //(²»º¬ query-stop ?)
 
     ToasterDispatchPnP deactivates WPP software tracing when processing
     IRP_MN_REMOVE_DEVICE (if the function driver was compiled under Windows 2000).
@@ -334,7 +318,6 @@ Updated Routine Description:
     ToasterDispatchPnP calls ToasterAdjustCapabilities to adjust the device
     capabilities returned after the underlying bus driver completed
     IRP_MN_QUERY_CAPABILITIES.
-
 --*/
 {
     PFDO_DATA               fdoData;
@@ -342,7 +325,6 @@ Updated Routine Description:
     NTSTATUS                status = STATUS_SUCCESS;
     ULONG                   requestCount;
     PPNP_DEVICE_STATE       deviceState;
-
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -357,11 +339,8 @@ Updated Routine Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         Irp->IoStatus.Status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         ToasterIoDecrement(fdoData);
-
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -372,7 +351,7 @@ Updated Routine Description:
 
         if (NT_SUCCESS (status))
         {
-            status = ToasterStartDevice (fdoData, Irp);
+            status = ToasterStartDevice(fdoData, Irp); // featured2 special inside
         }
 
         break;
@@ -952,14 +931,12 @@ ToasterStartDevice (
     __in PIRP             Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterStartDevice initializes WPP software tracing with the FDO and the
     function driver's Registry path (when the function driver is compiled under
     Windows 2000).
 
     ToasterStartDevice arms the hardware instance to signal wake-up.
-
 --*/
 {
     NTSTATUS    status = STATUS_SUCCESS;
@@ -970,9 +947,7 @@ Updated Routine Description:
     PIO_STACK_LOCATION stack;
     POWER_STATE powerState;
     ULONG i;
-
     stack = IoGetCurrentIrpStackLocation (Irp);
-
     PAGED_CODE();
 
     if ((NULL != stack->Parameters.StartDevice.AllocatedResources) &&
@@ -1091,7 +1066,6 @@ Updated Routine Description:
 
     FdoData->QueueState = AllowRequests;
 
-    //
     // In order to arm for wake, the function driver must query for the hardware
     // instance's power capabilities.
     //
@@ -1099,7 +1073,6 @@ Updated Routine Description:
     if (!NT_SUCCESS (status) )
     {
         ToasterDebugPrint(ERROR, "ToasterGetDeviceCapabilities failed (%x)\n", status);
-
         return status;
     }
 
@@ -1694,25 +1667,21 @@ ToasterGetDeviceCapabilities(
     __in  PDEVICE_CAPABILITIES    DeviceCapabilities
     )
 /*++
-
 New Routine Description:
     ToasterGetDeviceCapabilities sends an IRP_MN_QUERY_CAPABILITIES to the device
     stack to obtain the device capabilities of the hardware instance.
 
 Arguments Description:
-    DeviceObject
-    DeviceObject represents the hardware instance to query for device capabilities.
-    DeviceObject is an FDO created earlier in ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    DeviceCapabilites
+    [DeviceCapabilites] output param
     DeviceCapabilities represents the capabilities, including the power capabilities
-    Of the hardware instance.
+    of the hardware instance.
 
 Return Value Description:
     ToasterGetDeviceCapabilities returns STATUS_SUCCESS. Otherwise, if
     ToasterGetDeviceCapabilities cannot build the query IRP, it returns
     STATUS_INSUFFICIENT_RESOURCES.
-
 --*/
 {
     IO_STATUS_BLOCK     ioStatus;
@@ -1721,12 +1690,9 @@ Return Value Description:
     PDEVICE_OBJECT      targetObject;
     PIO_STACK_LOCATION  irpStack;
     PIRP                pnpIrp;
-
     PAGED_CODE();
 
-    //
-    // Initialize the capabilities that the function driver passes down the device
-    // stack.
+    // Initialize the capabilities that the function driver passes down the device stack.
     //
     RtlZeroMemory( DeviceCapabilities, sizeof(DEVICE_CAPABILITIES) );
     DeviceCapabilities->Size = sizeof(DEVICE_CAPABILITIES);
@@ -1734,7 +1700,6 @@ Return Value Description:
     DeviceCapabilities->Address = (ULONG)-1;
     DeviceCapabilities->UINumber = (ULONG)-1;
 
-    //
     // Initialize a kernel event to block the thread executing
     // ToasterGetDeviceCapabilities until the underlying bus driver completes
     // the query IRP.
@@ -1743,7 +1708,6 @@ Return Value Description:
 
     targetObject = IoGetAttachedDeviceReference( DeviceObject );
 
-    //
     // Build the IRP_MN_QUERY_CAPABILITIES IRP.
     //
     pnpIrp = IoBuildSynchronousFsdRequest(IRP_MJ_PNP,
@@ -1757,21 +1721,15 @@ Return Value Description:
     if (NULL == pnpIrp)
     {
         status = STATUS_INSUFFICIENT_RESOURCES;
-
         goto End;
     }
 
-    //
     // All PnP IRPs must be initialized with a status of STATUS_NOT_SUPPORTED.
-    //
     pnpIrp->IoStatus.Status = STATUS_NOT_SUPPORTED;
 
-    //
     // Get the driver at the top of hardware instance's device stack.
-    //
     irpStack = IoGetNextIrpStackLocation( pnpIrp );
 
-    //
     // Initialize the query IRP.
     //
     RtlZeroMemory( irpStack, sizeof(IO_STACK_LOCATION ) );
@@ -1779,7 +1737,6 @@ Return Value Description:
     irpStack->MinorFunction = IRP_MN_QUERY_CAPABILITIES;
     irpStack->Parameters.DeviceCapabilities.Capabilities = DeviceCapabilities;
 
-    //
     // Pass the query IRP to the driver at the top of the device stack. The query
     // IRP will be passed down the device stack until the underlying bus driver
     // completes it.
@@ -1787,7 +1744,6 @@ Return Value Description:
     status = IoCallDriver( targetObject, pnpIrp );
     if (STATUS_PENDING == status)
     {
-        //
         // Block the execution of the thread executing ToasterGetDeviceCapabilities
         // until the underlying bus driver completes the query IRP.
         // Pass KernelMode in the WaitMode parameter to KeWaitForSingleObject to
@@ -1797,12 +1753,10 @@ Return Value Description:
         status = KeWaitForSingleObject(&pnpEvent, Executive, KernelMode,
                                         FALSE, NULL);
         ASSERT(NT_SUCCESS(status));
-
         status = ioStatus.Status;
     }
 
 End:
-    //
     // Decrement the reference count on the driver at the top of the hardware
     // instance's device stack. The reference count was incremented earlier in
     // the call to IoGetAttachedDeviceReference.
@@ -1817,49 +1771,34 @@ LONG
 ToasterIoIncrement    (
     __in PFDO_DATA   FdoData
     )
-
 /*++
-
 Updated Routine Description:
     ToasterIoIncrement does not change in this stage of the function driver.
-
 --*/
-
 {
     LONG            result;
-
     result = InterlockedIncrement(&FdoData->OutstandingIO);
-
     //ToasterDebugPrint(TRACE, "ToasterIoIncrement %d\n", result);
 
     ASSERT(result > 0);
-
     if (2 == result)
     {
         KeClearEvent(&FdoData->StopEvent);
     }
-
     return result;
 }
-
-
 
 LONG
 ToasterIoDecrement    (
     __in  PFDO_DATA  FdoData
     )
-
 /*++
-
 Updated Routine Description:
     ToasterIoDecrement does not change in this stage of the function driver.
-
 --*/
 {
     LONG            result;
-
     result = InterlockedDecrement(&FdoData->OutstandingIO);
-
     //ToasterDebugPrint(TRACE, "ToasterIoDecrement %d\n", result);
 
     ASSERT(result >= 0);
@@ -1879,7 +1818,6 @@ Updated Routine Description:
                     IO_NO_INCREMENT,
                     FALSE);
     }
-
     return result;
 }
 

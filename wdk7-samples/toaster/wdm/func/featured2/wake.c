@@ -998,13 +998,11 @@ Return Value Description:
 }
 
 
-
 VOID
 ToasterAdjustCapabilities(
     __in PDEVICE_CAPABILITIES DeviceCapabilities
     )
 /*++
-
 New Routine Description:
     ToasterAdjustCapabilities updates the hardware instance's device capabilities
     after the underlying bus driver has processed IRP_MN_QUERY_CAPABILITIES.
@@ -1014,26 +1012,23 @@ New Routine Description:
     members to.
 
 Parameters Description:
-    DeviceCapabilities
+    [DeviceCapabilities]
     DeviceCapabilities represents the capabilities of the hardware instance, such
     as whether the device can be locked or ejected, and what device power states
     the hardware can wake the system from.
 
 Return Value:
     ToasterAdjustCapabilities does not return a value.
-
 --*/
 {
     DEVICE_POWER_STATE  dState;
     SYSTEM_POWER_STATE  sState;
     DEVICE_POWER_STATE  deepestDeviceWakeState;
     int i;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "AdjustCapabilities  \n");
 
-    //
     // Determine the hardware instance's power capabilities and set the DeviceD1
     // DeviceD2 members based on the system power state to device power state
     // mapping. The DeviceD1 bit indicates that the hardware instance supports the
@@ -1042,31 +1037,24 @@ Return Value:
     //
     for(sState=PowerSystemSleeping1; sState<=PowerSystemHibernate; sState++)
     {
-
         if (PowerDeviceD1 == DeviceCapabilities->DeviceState[sState])
         {
-            //
             // Adjust the device capabilities DeviceD1 member to indicate that the
             // hardware instance supports the DeviceD1 device power state.
-            //
             DeviceCapabilities->DeviceD1 = TRUE;
         }
         else if (PowerDeviceD2 == DeviceCapabilities->DeviceState[sState])
         {
-            //
             // Adjust the device capabilities DeviceD2 member to indicate that the
             // hardware instance supports the DeviceD2 device power state.
-            //
             DeviceCapabilities->DeviceD2 = TRUE;
         }
-
     }
 
     dState = DeviceCapabilities->DeviceWake;
 
     for(i=0; i<2; i++)
     {
-        //
         // Determine the least-powered device power state from which the hardware
         // instance can signal wake-up and set the WakeFromD* and DeviceD* members
         // as appropriate.
@@ -1077,10 +1065,15 @@ Return Value:
         //
         // In the second iteration of the for loop, ToasterAdjustCapabilities
         // determines the least-powered device power state from which the hardware
-        // instance can signal wake-up based on the most-powered device power state
+        // instance can signal wake-up based on [the most-powered device power state
         // that the hardware instance can maintain for the least-powered system power
-        // state from which the device can signal wake-up.
-        //
+        // state from which the device can signal wake-up].  
+		// 什么狗屁从句那么长！解读为：
+		// 1. 从 S1-S4 中筛选出一些 Sn, 条件是系统在这些 Sn 状态下都具备被当前外设唤醒的可能，
+		//    比如筛出的是 S1,S2 , 从这些 Sn 取出那个 least-powered 的，即 S2 .
+        // 2. 接着考察 S2 这个系统状态， 查出 S2 状态下有哪些设备状态是可以将系统从 S2 唤醒到 S0 的，
+		//    比如有 D1,D3, 从中挑出 most-powered 那个设备状态，即 D1.
+		// 3. 然后呢？ ... 到底选 least-powerd Dx 还是 most-powered Dx ?
         switch(dState)
         {
         case PowerDeviceD0:
@@ -1103,7 +1096,6 @@ Return Value:
             ASSERT(0);
         }
 
-        //
         // Set the dState variable for the second iteration of the for loop.
         //
         if (PowerSystemUnspecified != DeviceCapabilities->SystemWake)
@@ -1125,22 +1117,18 @@ Return Value:
     {
         deepestDeviceWakeState = PowerDeviceD3;
     }
-
     else if (DeviceCapabilities->WakeFromD2)
     {
         deepestDeviceWakeState = PowerDeviceD2;
     }
-
     else if (DeviceCapabilities->WakeFromD1)
     {
         deepestDeviceWakeState = PowerDeviceD1;
     }
-
     else if (DeviceCapabilities->WakeFromD0)
     {
         deepestDeviceWakeState = PowerDeviceD0;
     }
-
     else
     {
         deepestDeviceWakeState = PowerDeviceUnspecified;
@@ -1150,7 +1138,6 @@ Return Value:
 
     if (PowerSystemUnspecified != sState)
     {
-        //
         // If the hardware instance cannot signal wake-up, then the underlying bus
         // driver sets the hardware instance's device capabilities' SystemWake member
         // to PowerSystemUnspecified.
