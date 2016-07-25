@@ -1238,9 +1238,9 @@ Return Value Description:
 		   PowerDeviceD0==stack->Parameters.Power.State.DeviceState
 		   ) // #M2
         {
-            // Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须--仅在系统由 Sx->S0 时适用.
-			// 小结: Sx->S0(优化行为): 一开始处理 set-power D-IRP(此处), 就可以完结 S-IRP 了.
-			//     S0->Sx, 得等到 D-IRP 完结之后再完结 S-IRP (在 ToasterCompletionOnFinalizedDeviceIrp 做).
+			// Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须--仅在设备从 Dx->D0 时适用.
+			// 小结: Dx->D0(优化行为): 一开始处理 set-power D-IRP(此处), 就可以完结 S-IRP 了.
+			//     D0->Dx, 得等到 D-IRP 完结之后再完结 S-IRP (在 ToasterCompletionOnFinalizedDeviceIrp 做).
 			// 
             // On Windows 2000 and later, the Toaster sample function driver
             // completes S0 IRP_MN_SET_POWER S-IRPs before it begins to process D0
