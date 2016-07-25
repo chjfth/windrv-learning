@@ -471,7 +471,6 @@ Return Value Description:
 }
 
 
-
 NTSTATUS
 ToasterDispatchSetPowerState(
     __in PDEVICE_OBJECT DeviceObject,
@@ -573,6 +572,7 @@ Return Value Description:
     ToasterDebugPrint(TRACE, ">ToasterDispatchQueryPowerState\n");
 
     // Determine whether the incoming IRP_MN_QUERY_POWER Irp is a S-IRP or a D-IRP.
+	//
     // If the Irp's Parameters.Power.Type I/O stack location member equals
     // SystemPowerState, then the incoming Irp is a S-IRP and the function driver
     // calls ToasterDispatchSystemPowerIrp to create a corresponding IRP_MN_QUERY_POWER D-IRP. 
@@ -1231,13 +1231,12 @@ Return Value Description:
         sIrpstack = IoGetCurrentIrpStackLocation(fdoData->PendingSIrp);
 
 		ASSERT(IRP_MN_SET_POWER==sIrpstack->MinorFunction); // chj test
-// 		if(IRP_MN_SET_POWER != sIrpstack->MinorFunction);   // chj test
-// 		{
-// 			ToasterDebugPrint(TRACE, "Chj: Meet non-SET_POWER when PendingSIrp==true.\n");
-// 		}
+		ASSERT(DevicePowerState==stack->Parameters.Power.Type); // chj test
 
         if (IRP_MN_SET_POWER == sIrpstack->MinorFunction &&
-           PowerSystemWorking == stack->Parameters.Power.State.SystemState) // #M2
+           // PowerSystemWorking == stack->Parameters.Power.State.SystemState // <- 语义错误(bug?)
+		   PowerDeviceD0==stack->Parameters.Power.State.DeviceState
+		   ) // #M2
         {
             // Chj: 这段话的最后一句的后半句是要点, 一种优化方法, 并非必须--仅在系统由 Sx->S0 时适用.
 			// 小结: Sx->S0(优化行为): 一开始处理 set-power D-IRP(此处), 就可以完结 S-IRP 了.
@@ -2219,7 +2218,6 @@ Return Value Description:
         );
 	
 	ToasterDebugPrint(TRACE, "<ToasterCallbackHandleDeviceSetPower(st=0x%X)\n", status);
-	return status;
 }
 
 
