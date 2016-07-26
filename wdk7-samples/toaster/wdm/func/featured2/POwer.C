@@ -83,17 +83,14 @@ ToasterDispatchPower (
     PIRP Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterDispatchPower calls ToasterDispatchWaitWake to process IRP_MN_WAIT_WAKE
     power IRPs.
-
 --*/
 {
     PIO_STACK_LOCATION  stack;
     PFDO_DATA           fdoData;
     NTSTATUS            status;
-
     PAGED_CODE();
 
     stack   = IoGetCurrentIrpStackLocation(Irp);
@@ -111,13 +108,9 @@ Updated Routine Description:
     if (Deleted == fdoData->DevicePnPState)
     {
         PoStartNextPowerIrp (Irp);
-
         Irp->IoStatus.Status = status = STATUS_NO_SUCH_DEVICE;
-
         IoCompleteRequest (Irp, IO_NO_INCREMENT);
-
         ToasterIoDecrement (fdoData);
-
         return status;
     }
 
@@ -170,37 +163,27 @@ Updated Routine Description:
 }
 
 
-
 NTSTATUS
 ToasterDispatchPowerDefault(
     __in  PDEVICE_OBJECT  DeviceObject,
     __in  PIRP            Irp
     )
-
 /*++
-
 Updated Routine Description:
-    ToasterDispatchPowerDefault does not change in this stage of the function
-    driver.
-
+    ToasterDispatchPowerDefault does not change in this stage of the function driver.
 --*/
 {
     NTSTATUS         status;
     PFDO_DATA        fdoData;
-
     PAGED_CODE();
 
     PoStartNextPowerIrp(Irp);
-
     IoSkipCurrentIrpStackLocation(Irp);
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
-
     status = PoCallDriver(fdoData->NextLowerDriver, Irp);
-
     return status;
 }
-
 
 
 NTSTATUS
@@ -209,25 +192,20 @@ ToasterDispatchSetPowerState(
     __in PIRP Irp
     )
 /*++
-
 Updated Routine Description:
-    ToasterDispatchSetPowerState does not change in this stage of the function
-    driver.
-
+    ToasterDispatchSetPowerState does not change in this stage of the function driver.
 --*/
 {
     PIO_STACK_LOCATION stack;
-
     PAGED_CODE();
-
     stack = IoGetCurrentIrpStackLocation(Irp);
 
     ToasterDebugPrint(TRACE, "Entered ToasterDispatchSetPowerState\n");
 
-    return (stack->Parameters.Power.Type == SystemPowerState) ?
-        ToasterDispatchSystemPowerIrp(DeviceObject, Irp) :
-        ToasterDispatchDeviceSetPower(DeviceObject, Irp);
-
+	if(stack->Parameters.Power.Type == SystemPowerState)
+		return ToasterDispatchSystemPowerIrp(DeviceObject, Irp);
+	else
+		return ToasterDispatchDeviceSetPower(DeviceObject, Irp);
 }
 
 
