@@ -95,7 +95,7 @@ KmdfService =  wdfToastMon, wdfToastMon_wdfsect
 KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
-MSFT = "Microsoft"
+MSFT = "MicrosoftDemo"
 ClassName = "Sample Device"
 WdfToastMon.SVCDESC = "Sample WDF ToastMon Service"
 WdfToastMon.DRVDESC = "Sample WDF ToastMon Driver"
