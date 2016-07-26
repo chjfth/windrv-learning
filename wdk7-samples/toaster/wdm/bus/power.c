@@ -121,7 +121,7 @@ Return Value:
     Bus_IncIoCount (Data);
 
     //
-    // If the device is not stated yet, just pass it down.
+    // If the device is not started yet, just pass it down.
     //
 
     if (Data->DevicePnPState == NotStarted) {
@@ -228,7 +228,7 @@ Return Value:
         // b) Set a cancel routine.
         // c) Save this IRP in the device extension
         // d) Return STATUS_PENDING.
-        // Later on if you suspend and resume your system, your BUS_FDO_POWER
+        // Later on if you suspend and resume your system, your Bus_FDO_Power() 
         // will be called to power the bus. In response to IRP_MN_SET_POWER, if the
         // powerstate is PowerSystemWorking, complete this Wake IRP.
         // If the function driver, decides to cancel the wake IRP, your cancel routine

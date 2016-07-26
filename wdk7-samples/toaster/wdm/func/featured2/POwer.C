@@ -20,6 +20,9 @@ Abstract:
     -ToasterDispatchPower passes IRP_MN_WAIT_WAKE power IRPs to
      ToasterDispatchWaitWake, which is implemented in Wake.c.
 
+Updated functions:
+	* ToasterGetPowerPoliciesDeviceState()
+
 Environment:
 
     Kernel mode
@@ -749,11 +752,9 @@ ToasterCallbackHandleDeviceQueryPower(
     __in  IRP_DIRECTION       Direction
     )
 /*++
-
 Updated Routine Description:
     ToasterCallbackHandleDeviceQueryPower does not change in this stage of the
     function driver.
-
 --*/
 {
     DEVICE_POWER_STATE deviceState;
@@ -988,13 +989,11 @@ ToasterGetPowerPoliciesDeviceState(
     __out DEVICE_POWER_STATE *DevicePowerState
     )
 /*++
-
 Updated Routine Description:
     ToasterGetPowerPoliciesDeviceState determines whether the device extension's
     WakeState member does not equal WAKESTATE_ARMED. If Wake does not equal
     WAKESTATE_ARMED, then return D3 device power state as the deepest device power
     state that can signal wake-up.
-
 --*/
 {
     PFDO_DATA           fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
@@ -1030,19 +1029,15 @@ Updated Routine Description:
         case PowerDeviceD0:
             wakeSupported = fdoData->DeviceCaps.WakeFromD0;
             break;
-
         case PowerDeviceD1:
             wakeSupported = fdoData->DeviceCaps.WakeFromD1;
             break;
-
         case PowerDeviceD2:
             wakeSupported = fdoData->DeviceCaps.WakeFromD2;
             break;
-
         case PowerDeviceD3:
             wakeSupported = fdoData->DeviceCaps.WakeFromD3;
             break;
-
         default:
             ASSERT(0);
             wakeSupported = FALSE;
@@ -1067,16 +1062,13 @@ Updated Routine Description:
 }
 
 
-
 NTSTATUS
 ToasterCanSuspendDevice(
     __in PDEVICE_OBJECT   DeviceObject
     )
 /*++
-
 Updated Routine Description:
     ToasterCanSuspendDevice does not change in this stage of the function driver.
-
 --*/
 {
     PAGED_CODE();

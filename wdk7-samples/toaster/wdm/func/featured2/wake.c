@@ -1,7 +1,5 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
@@ -514,7 +512,7 @@ Return Value Description:
     WAKESTATE       oldWakeState;
     PAGED_CODE();
 
-    ToasterDebugPrint(TRACE, "Entered DisarmWake\n");
+    ToasterDebugPrint(TRACE, ">DisarmWake\n");
 
     // Lock the arming/disarming logic to prevent potential simultaneous arming and
     // disarming.
@@ -638,8 +636,9 @@ Return Value Description:
     // when ToasterArmForWake called KeEnterCriticalRegion.
     //
     KeLeaveCriticalRegion();
-}
 
+	ToasterDebugPrint(TRACE, "<DisarmWake\n");
+}
 
 
 VOID
@@ -651,11 +650,10 @@ ToasterWaitWakePoCompletionRoutine(
     PIO_STATUS_BLOCK    IoStatus
     )
 /*++
-
 New Routine Description:
     ToasterWaitWakePoCompletionRoutine is the function driver's power completion
-    routine for IRP_MN_WAIT_WAKE power IRP's that the function driver requested
-    earlier when ToasterArmForWake called PoRequestPowerIrp.
+    routine for IRP_MN_WAIT_WAKE power IRP's [that the function driver requested
+    earlier when ToasterArmForWake called PoRequestPowerIrp].
 
     The system calls this routine after the IRP_MN_WAIT_WAKE power IRP has been
     completed and all I/O completion routines, if any, have returned.
@@ -664,62 +662,52 @@ New Routine Description:
     ToasterWaitWakePoCompletionRoutine must conform to.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the target device object for the completed
     wait/wake power IRP. This parameter is not used.
 
-    MinorFunction
+    [MinorFunction]
     MinorFunction represents the minor function code for the completed
     wait/wake power IRP. This parameter is not used.
 
-    State
+    [State]
     State represents the new device power state. This parameter is not used.
 
-    Context
+    [Context]
     Context represents the device extension for the hardware instance.
     ToasterArmForWake set the system to pass the device extension in the call to
     PoRequestPowerIrp.
 
-    IoStatus
+    [IoStatus]
     IoStatus represents the I/O status block structure for the completed
     wait/wake power IRP.
 
 Return Value Description:
     ToasterWaitWakePoCompletionRoutine does not return a value.
-
 --*/
 {
     PFDO_DATA               fdoData;
+    ToasterDebugPrint(TRACE, ">WaitWakePoCompletionRoutine\n");
 
-    ToasterDebugPrint(TRACE, "WaitWakePoCompletionRoutine  \n");
-
-    //
     // Get the pointer to the FDO's device extension. The device extension is used to
     // store any information that must not be paged out. This includes hardware state
     // information, storage for mechanisms implemented by the function driver, and
     // pointers to the underlying PDO and the next lower driver.
     //
-    // The FDO's device extension is defined as a PVOID. The PVOID must be recast to
-    // a pointer to the data type of the device extension, PFDO_DATA.
-    //
     fdoData  = (PFDO_DATA) Context;
 
-    //
     // Clear the device extension's WakeIrp member to NULL. This step is not required,
     // but is helpful when debugging.
     //
     fdoData->WakeIrp = NULL;
 
-    //
     // Re-initialize the device extension's WakeState member to WAKESTATE_DISARMED.
     // The previous state should be WAKESTATE_COMPLETING .
     //
     fdoData->WakeState = WAKESTATE_DISARMED;
 
-    //
     // Signal the WakeCompletedEvent kernel event so that ToasterDisarmWake can
-    // proceed and the function driver can request another IRP_MN_WAIT_WAKE power
-    // IRP.
+    // proceed and the function driver can request another IRP_MN_WAIT_WAKE power IRP.     // À§»ó£¡
     //
     KeSetEvent( &fdoData->WakeCompletedEvent,
                 IO_NO_INCREMENT,
@@ -727,15 +715,14 @@ Return Value Description:
 
     if (NT_SUCCESS(IoStatus->Status))
     {
-        //
         // The system has awakened and successfully completed the IRP_MN_WAIT_WAKE
         // power IRP.
         //
         // Because the routines for arming a hardware instance for wake-up can only
-        // be called at IRQL = PASSIVE_LEVEL, call
+        // be called at IRQL=PASSIVE_LEVEL, call
         // ToasterQueuePassiveLevelCallback (which is different than
         // ToasterQueuePassiveLevelPowerCallback) to queue a work item for the system
-        // worker thread to process at IRQL = PASSIVE_LEVEL.
+        // worker thread to process at IRQL=PASSIVE_LEVEL.
          //
         // Specify the work item to call the
         // ToasterPassiveLevelReArmCallbackWorker routine to check the function
@@ -751,14 +738,13 @@ Return Value Description:
              STATUS_NOT_IMPLEMENTED == IoStatus->Status ||
              STATUS_NOT_SUPPORTED == IoStatus->Status)
     {
-        //
         // The underlying bus driver is not capable of awakening the system from a
         // low-power state.
         //
         // Because the routines for disarming a hardware instance can only be called
-        // at IRQL = PASSIVE_LEVEL, call ToasterQueuePassiveLevelCallback (which is
+        // at IRQL=PASSIVE_LEVEL, call ToasterQueuePassiveLevelCallback (which is
         // different than ToasterQueuePassiveLevelPowerCallback) to queue a work item
-        // for the system worker thread to process at IRQL = PASSIVE_LEVEL.
+        // for the system worker thread to process at IRQL=PASSIVE_LEVEL.
         //
         // Specify the work item to call the
         // ToasterPassiveLevelClearWaitWakeEnableState routine to clear the function
@@ -771,9 +757,9 @@ Return Value Description:
                                     );
     }
 
+	ToasterDebugPrint(TRACE, "<WaitWakePoCompletionRoutine\n");
     return;
 }
-
 
 
 VOID
@@ -782,35 +768,32 @@ ToasterQueuePassiveLevelCallback(
      __in PIO_WORKITEM_ROUTINE CallbackFunction
     )
 /*++
-
 New Routine Description:
     ToasterQueuePassiveLevelCallback queues a work item to be processed later
-    by the system worker thread at IRQL = PASSIVE_LEVEL. The system thread calls
-    the work item's callback routine. However, if
-    ToasterQueuePassiveLevelCallback is called at IRQL < DISPATCH_LEVEL, then
+    by the system worker thread at IRQL=PASSIVE_LEVEL. The system thread calls
+    the work item's callback routine.   However, if
+    ToasterQueuePassiveLevelCallback is called at IRQL<DISPATCH_LEVEL, then
     ToasterQueuePassiveLevelCallback calls the callback routine immediately,
     without creating a work item for the system worker thread to process later
-    at IRQL = PASSIVE_LEVEL.
+    at IRQL=PASSIVE_LEVEL.
 
  Parameters Description:
-    FdoData
+    [FdoData]
     FdoData represents the device extension of the FDO of the hardware instance
     processing the wait/wake power IRP.
 
-    CallbackFunction
+    [CallbackFunction]
     CallbackFunction specifies the routine for the worker thread to callback at
-    IRQL = PASSIVE_LEVEL.
+    IRQL=PASSIVE_LEVEL.
 
 Return Value Description:
     ToasterQueuePassiveLevelCallback does not return a value.
-
 --*/
 {
     PIO_WORKITEM            item;
 
-    //
     // Call the callback routine described by the CallbackFunction parameter directly
-    // if the current thread is not executing at IRQL = DISPATCH_LEVEL. Otherwise,
+    // if the current thread is not executing at IRQL=DISPATCH_LEVEL. Otherwise,
     // queue a work item for the system worker thread to process at
     // IRQL = PASSIVE_LEVEL.
     //
@@ -820,7 +803,6 @@ Return Value Description:
     }
     else
     {
-        //
         // Windows 98 does not support IoAllocateWorkItem, it only supports
         // ExInitializeWorkItem and ExQueueWorkItem. The Toaster sample function
         // driver uses IoAllocateWorkItem because
@@ -837,21 +819,19 @@ Return Value Description:
 
         if (NULL != item)
         {
-            //
             // Queue the initialized work item for the system worker thread. When the
             // system worker thread later processes the work item, it calls the
             // callback routine specified by the incoming CallbackFunction parameter
             // and passes it the information in the item variable.
             //
             IoQueueWorkItem( item,
-                                        CallbackFunction,
-                                        DelayedWorkQueue,
-                                        item
-                                        );
+                            CallbackFunction,
+                            DelayedWorkQueue,
+                            item
+                            );
         }
      }
 }
-
 
 
 VOID
@@ -860,34 +840,27 @@ ToasterPassiveLevelReArmCallbackWorker(
     PVOID Context
     )
 /*++
-
 New Routine Description:
     ToasterPassiveLevelReArmCallbackWorker re-arms the hardware instance after the
     function driver has completed a previous IRP_MN_WAIT_WAIT power IRP.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Context parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Context
+    [Context]
     Context describes the work item initialized earlier when
     ToasterQueuePassiveLevelCallback was called to process a power IRP at
-    IRQL = PASSIVE_LEVEL.
+    IRQL=PASSIVE_LEVEL.
 
 Return Value Description:
     ToasterPassiveLevelReArmCallbackWorker does not return a value.
-
 --*/
 {
     PFDO_DATA fdoData = DeviceObject->DeviceExtension;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ToasterPassiveLevelReArmCallbackWorker\n");
 
-    //
     // Notify the hardware instance to re-arm itself for wake if wait/wake is enabled
     // in the Registry.
     //
@@ -895,9 +868,7 @@ Return Value Description:
 
     if (NULL != Context)
     {
-        //
         // Free the work item allocated earlier in ToasterQueuePassiveLevelCallback.
-        //
         IoFreeWorkItem((PIO_WORKITEM)Context);
     }
 }
@@ -909,44 +880,34 @@ ToasterPassiveLevelClearWaitWakeEnableState(
     PVOID Context
     )
 /*++
-
 New Routine Description:
     ToasterPassiveLevelClearWaitWakeEnableState clears the hardware instance's
     WaitWakeEnabled Registry key after the function driver has completed a
     previous IRP_MN_WAIT_WAIT power IRP.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Context parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject] the FDO
 
-    Context
+    [Context]
     Context describes the work item initialized earlier when
     ToasterQueuePassiveLevelCallback was called to process a power IRP at
     IRQL = PASSIVE_LEVEL. Context contains the power IRP to be processed.
 
 Return Value Description:
     ToasterPassiveLevelClearWaitWakeEnableState does not return a value.
-
 --*/
 {
     PFDO_DATA fdoData = DeviceObject->DeviceExtension;
-
     PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ToasterPassiveLevelClearWaitWakeEnableState\n");
 
-    //
     // Clear the wait/wake state in the Registry.
-    //
     ToasterSetWaitWakeEnableState(fdoData, FALSE);
 
     if (NULL != Context)
     {
-        //
         // Free the work item allocated earlier in ToasterQueuePassiveLevelCallback.
-        //
         IoFreeWorkItem((PIO_WORKITEM)Context);
     }
 }
