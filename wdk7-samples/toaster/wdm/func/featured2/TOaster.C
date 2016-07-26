@@ -1091,18 +1091,14 @@ Updated Routine Description:
 }
 
 
-
 NTSTATUS
 ToasterCleanup (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 Updated Routine Description:
     ToasterCleanup does not change in this stage of the function driver.
-
 --*/
 {
     PFDO_DATA              fdoData;
@@ -1169,19 +1165,13 @@ Updated Routine Description:
     }
 
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = STATUS_SUCCESS;
 
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
-
     ToasterIoDecrement (fdoData);
 
     return STATUS_SUCCESS;
 }
-
-
-
-
 
 
 VOID
@@ -1189,11 +1179,9 @@ ToasterUnload(
     __in PDRIVER_OBJECT DriverObject
     )
 /*++
-
 Updated Routine Description:
     ToasterUnload deactivates WPP software tracing (if the function driver was
     compiled under Windows XP and later).
-
 --*/
 {
     PAGED_CODE();
@@ -1223,21 +1211,15 @@ Updated Routine Description:
 }
 
 
-
-
 NTSTATUS
 ToasterQueueRequest    (
     __in PFDO_DATA FdoData,
     __in PIRP Irp
     )
-
 /*++
-
 Updated Routine Description:
-
 --*/
 {
-
     KIRQL               oldIrql;
     PDRIVER_CANCEL      ret;
 
@@ -1275,9 +1257,7 @@ Updated Routine Description:
         if (NULL != ret)
         {
             Irp->IoStatus.Status = STATUS_CANCELLED;
-
             Irp->IoStatus.Information = 0;
-
             IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
             //
@@ -1496,17 +1476,13 @@ ToasterCanRemoveDevice    (
     __in PDEVICE_OBJECT DeviceObject,
     __in PIRP           Irp
     )
-
 /*++
-
 Updated Routine Description:
     ToasterCanRemoveDevice does not change in this stage of the function driver.
-
 --*/
 {
     UNREFERENCED_PARAMETER(DeviceObject);
     UNREFERENCED_PARAMETER(Irp);
-
     return STATUS_SUCCESS;
 }
 
@@ -1516,16 +1492,12 @@ NTSTATUS
 ToasterReturnResources (
     __in PDEVICE_OBJECT DeviceObject
     )
-
 /*++
-
 Updated Routine Description:
     ToasterReturnResources does not change in this stage of the function driver.
-
 --*/
 {
     UNREFERENCED_PARAMETER(DeviceObject);
-
     return STATUS_SUCCESS;
 }
 
@@ -1870,12 +1842,6 @@ PCHAR
 PnPMinorFunctionString (
     __in UCHAR MinorFunction
 )
-/*++
-
-Updated Routine Description:
-    PnPMinorFunctionString does not change in this stage of the function driver.
-
---*/
 {
     switch (MinorFunction)
     {
