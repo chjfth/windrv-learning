@@ -36,7 +36,7 @@ h1
 	margin-left:0in;
 	margin-bottom:.0001pt;
 	page-break-after:avoid;
-	font-size:14.0pt;
+	font-size:18.0pt;
 	font-family:"Cambria","serif";
 	color:#365F91;
 	font-weight:bold;}
@@ -44,7 +44,7 @@ h2
 	{mso-style-link:"Heading 2 Char";
 	margin-right:0in;
 	margin-left:0in;
-	font-size:18.0pt;
+	font-size:16.0pt;
 	font-family:"Times New Roman","serif";
 	font-weight:bold;}
 h3
@@ -189,9 +189,9 @@ WDM version of toaster. So read the instruction and test application files from
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
 sample contains bus, func, filter and toastmon sub directories. </span></p>
 
-<h3>bus&nbsp; </h3>
+<h2>bus</h2>
 
-<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<blockquote>
 
 <p class=MsoNormal><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
 job of this driver is to service the TOASTER bus controller, enumerate devices
@@ -256,7 +256,7 @@ driver should set the <b>Failed</b> member of the WDF_DEVICE_STATE structure to
 <h3>dynamic</h3>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Dynamic
-version shows how to enumerate child devices using child list objects. </span></p>
+version shows how to enumerate child devices using <u>child list objects</u>. </span></p>
 
 <p><i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Dynamic
 enumeration</span></i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
@@ -291,6 +291,7 @@ An identification description is a structure that contains information that
 uniquely identifies each device that the driver enumerates. The driver defines
 this structure, but its first member must be a <u>WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER</u>
 structure.</span></p>
+<p class=MsoNormal>&nbsp;</p>
 
 <p class=MsoNormal><i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Address
 Description</span></i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>:
@@ -305,11 +306,11 @@ descriptions.</span></p>
 children to a child list, the driver calls <b><u>WdfChildListAddOrUpdateChildDescriptionAsPresent</u></b>
 for each child device that it finds. This call informs the framework that a
 driver has discovered a child device that is connected to a parent device. When
-your driver calls <b>WdfChildListAddOrUpdateChildDescriptionAsPresent</b>, it
+your driver calls WdfChildListAddOrUpdateChildDescriptionAsPresent, it
 supplies an identification description and, optionally, an address description.</span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>After the
-driver calls <b>WdfChildListAddOrUpdateChildDescriptionAsPresent</b> to report
+driver calls WdfChildListAddOrUpdateChildDescriptionAsPresent to report
 a new device, the framework informs the PnP manager that the new device exists.
 The PnP manager then builds a device stack and driver stack for the new device.
 As part of this process, the framework calls the bus driver's <i><u>EvtChildListCreateDevice</u></i>
@@ -317,11 +318,15 @@ callback function. This callback function must call <b><u>WdfDeviceCreate</u></b
 to create a PDO for the new device.</span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>To report
-a children missing, this driver calls WdfChildListUpdateChildDescriptionAsMissing.
+a children missing, this driver calls <strong>WdfChildListUpdateChildDescriptionAsMissing</strong>.
 For further details on dynmaic enumeration, please refer to the framework
 documentation.</span></p>
 
-<h4>Func</h4>
+</blockquote>
+
+<h2>Func</h2>
+
+<blockquote>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
 sub-directories under this one contain the source code of the function driver
@@ -334,8 +339,6 @@ common header file present in the <i>shared</i> directory.</span></p>
 
 <h3>Simple</h3>
 
-<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
-
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This is a
 simple form of function driver for toaster device. The driver doesn't handle
 any PnP and Power events because the framework provides default behavior for
@@ -343,11 +346,8 @@ those events. This driver has enough support to allow an user application
 (toast/notify.exe) to open the device&nbsp; interface registered by the driver
 and send read, write or ioctl requests.</span></p>
 
-</blockquote>
 
 <h3>Featured</h3>
-
-<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
 version shows how to register for PNP and Power events, handle create &amp;
@@ -360,7 +360,10 @@ when there is no I/O activity.</span></p>
 
 </blockquote>
 
-<h4>Filter</h4>
+<h2>Filter</h2>
+
+<blockquote>
+
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
 directory contains source code of a two filter drivers. The Generic sample is a
@@ -372,7 +375,11 @@ also demonstrates how to implement a collection of device objects if the driver
 will handle requests for more than one device. You can install these filters on
 an existing toaster device by using the filter.inf.</span></p>
 
-<h4>Toastmon</h4>
+</blockquote>
+
+<h2>Toastmon</h2>
+
+<blockquote>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
 purpose of this sample is to show how to open a device and perform I/O in
@@ -391,6 +398,8 @@ controlling. Even though this sample is based on the WDM toastmon, it has been
 enhanced to show some additional features of the framework. You install this
 driver as a root-enumerate device using the Wdftoastmon.inf. The steps for
 installing this sample is identical to installing the toaster bus driver. </span></p>
+
+</blockquote>
 
 <h1>Building the sample</h1>
 
