@@ -148,7 +148,6 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;_AMD64_;_DDK_;_DEBUG;DBG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -235,19 +234,34 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\bus\static\busenum.rc" />
+    <ResourceCompile Include="..\bus\static\busenum.rc">
+      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SuppressStartupBanner>
+      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SuppressStartupBanner>
+      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SuppressStartupBanner>
+      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</SuppressStartupBanner>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\bus\static\BusStat.inx">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">set SDK_INC_PATH=$(WDKPATH)\inc\api
+copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
 stampinf -f $(TargetDir)BusStat.inf -a x86 -k 1.9</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Translating .inx to .inf ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">set SDK_INC_PATH=$(WDKPATH)\inc\api
+copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
 stampinf -f $(TargetDir)BusStat.inf -a AMD64 -k 1.9</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Translating .inx to .inf ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)BusStat.inf</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)BusStat.inf</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">set SDK_INC_PATH=$(WDKPATH)\inc\api
+copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+stampinf -f $(TargetDir)BusStat.inf -a x86 -k 1.9</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">set SDK_INC_PATH=$(WDKPATH)\inc\api
+copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+stampinf -f $(TargetDir)BusStat.inf -a AMD64 -k 1.9</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)BusStat.inf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)BusStat.inf</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
