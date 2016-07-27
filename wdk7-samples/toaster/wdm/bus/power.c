@@ -172,7 +172,7 @@ Return Value:
 {
 	// Chj: 此函数基本没做什么, 就是输出调试信息然后 PoStartNextPowerIrp + 返回值接力给 IoCompleteRequest.
 
-    NTSTATUS            status;
+    NTSTATUS            status = 0;
     PIO_STACK_LOCATION  stack;
     POWER_STATE         powerState;
     POWER_STATE_TYPE    powerType;

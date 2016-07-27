@@ -255,7 +255,9 @@ OpenBusInterface (
                               &bytes, NULL)) 
 		{
               free (hardware);
-              printf("PlugIn failed:0x%x\n", GetLastError());
+              
+			  DWORD winerr = GetLastError();
+			  printf("PlugIn failed. DeviceIoControl() returns winerr=%d\n", winerr);
               goto End;
         }
 
