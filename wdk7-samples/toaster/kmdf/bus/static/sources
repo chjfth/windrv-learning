@@ -8,7 +8,7 @@ INCLUDES=$(INCLUDES);..\..\inc\
 
 KMDF_VERSION_MAJOR=1
 
-INF_NAME=statbus
+INF_NAME=BusStat
 
 TARGETLIBS=$(TARGETLIBS) \
            $(DDK_LIB_PATH)\ntstrsafe.lib

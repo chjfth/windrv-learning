@@ -237,6 +237,19 @@
   <ItemGroup>
     <ResourceCompile Include="..\bus\static\busenum.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\bus\static\BusStat.inx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+stampinf -f $(TargetDir)BusStat.inf -a x86 -k 1.9</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Translating .inx to .inf ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy ..\bus\static\BusStat.inx $(TargetDir)BusStat.inf
+stampinf -f $(TargetDir)BusStat.inf -a AMD64 -k 1.9</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Translating .inx to .inf ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)BusStat.inf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)BusStat.inf</Outputs>
+    </CustomBuild>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

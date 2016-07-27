@@ -4,13 +4,13 @@
 ;
 ;Module Name:
 ;
-;    STATBUS.INF
+;    BusStat.INF
 ;
 ;Abstract:
 ;    INF file for installing toaster bus enumerator driver
 ;
 ;Installation Notes:
-;    Using Devcon: Type "devcon install statbus.inf root\statbus" to install
+;    Using Devcon: Type "devcon install BusStat.inf root\BusStat" to install
 ;
 ;--*/
 [Version]
@@ -28,10 +28,10 @@ DefaultDestDir = 12
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
-statbus.sys  = 1,,
+BusStat.sys  = 1,,
 
 ;*****************************************
-; ToasterStatBus  Install Section
+; ToasterBusStat  Install Section
 ;*****************************************
 
 [Manufacturer]
@@ -42,62 +42,62 @@ statbus.sys  = 1,,
 ;
 ; These are the toaster bus pnp ids
 ;
-%ToasterStatBus.DeviceDesc%=ToasterStatBus_Device, root\statbus
+%ToasterBusStat.DeviceDesc%=ToasterBusStat_Device, root\BusStat
 
 ; For XP and later
 [Standard.NT$ARCH$]
-%ToasterStatBus.DeviceDesc%=ToasterStatBus_Device, root\statbus
+%ToasterBusStat.DeviceDesc%=ToasterBusStat_Device, root\BusStat
 
-[ToasterStatBus_Device.NT]
+[ToasterBusStat_Device.NT]
 CopyFiles=Drivers_Dir
 
-[ToasterStatBus_Device.NT.HW]
-AddReg=ToasterStatBus_Device.NT.AddReg
+[ToasterBusStat_Device.NT.HW]
+AddReg=ToasterBusStat_Device.NT.AddReg
 
-[ToasterStatBus_Device.NT.AddReg]                            
+[ToasterBusStat_Device.NT.AddReg]                            
 HKR,,DeviceCharacteristics,0x10001,0x0100         ; Use same security checks on relative opens
 HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"      ; Allow generic-all access to Built-in administrators and Local system 
 
 [Drivers_Dir]
-statbus.sys
+BusStat.sys
 
 
 ;-------------- Service installation
-[ToasterStatBus_Device.NT.Services]
-AddService = statbus,%SPSVCINST_ASSOCSERVICE%, Statbus_Service_Inst
+[ToasterBusStat_Device.NT.Services]
+AddService = BusStat,%SPSVCINST_ASSOCSERVICE%, BusStat_Service_Inst
 
-; -------------- statbus driver install sections
-[Statbus_Service_Inst]
-DisplayName    = %statbus.SVCDESC%
+; -------------- BusStat driver install sections
+[BusStat_Service_Inst]
+DisplayName    = %BusStat.SVCDESC%
 ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
 StartType      = 3               ; SERVICE_DEMAND_START 
 ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
-ServiceBinary  = %12%\statbus.sys
+ServiceBinary  = %12%\BusStat.sys
 LoadOrderGroup = Extended Base
 
 
 ;
-;--- ToasterStatBus_Device WDF Coinstaller installation ------
+;--- ToasterBusStat_Device WDF Coinstaller installation ------
 ;
 [DestinationDirs]
-ToasterStatBus_Device_CoInstaller_CopyFiles = 11
+ToasterBusStat_Device_CoInstaller_CopyFiles = 11
 
-[ToasterStatBus_Device.NT.CoInstallers]
-AddReg=ToasterStatBus_Device_CoInstaller_AddReg
-CopyFiles=ToasterStatBus_Device_CoInstaller_CopyFiles
+[ToasterBusStat_Device.NT.CoInstallers]
+AddReg=ToasterBusStat_Device_CoInstaller_AddReg
+CopyFiles=ToasterBusStat_Device_CoInstaller_CopyFiles
 
-[ToasterStatBus_Device_CoInstaller_AddReg]
+[ToasterBusStat_Device_CoInstaller_AddReg]
 HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
 
-[ToasterStatBus_Device_CoInstaller_CopyFiles]
+[ToasterBusStat_Device_CoInstaller_CopyFiles]
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
 
 [SourceDisksFiles]
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
-[ToasterStatBus_Device.NT.Wdf]
-KmdfService = statbus, statbus_wdfsect
-[statbus_wdfsect]
+[ToasterBusStat_Device.NT.Wdf]
+KmdfService = BusStat, BusStat_wdfsect
+[BusStat_wdfsect]
 KmdfLibraryVersion = $KMDFVERSION$
 
 
@@ -107,6 +107,6 @@ SPSVCINST_ASSOCSERVICE= 0x00000002
 MSFT = "MicrosoftDemo"
 StdMfg = "(Standard system devices)"
 DiskId1 = "Toaster Static Bus Installation Disk #1"
-ToasterStatBus.DeviceDesc = "Toaster Static Bus Enumerator"
-statbus.SVCDESC = "Toaster Static Bus Enumerator"
+ToasterBusStat.DeviceDesc = "Toaster Static Bus Enumerator"
+BusStat.SVCDESC = "Toaster Static Bus Enumerator"
 
