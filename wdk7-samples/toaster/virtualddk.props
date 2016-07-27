@@ -2,7 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <TargetExt>.sys</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..\inc;$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt;</AdditionalIncludeDirectories>
@@ -17,6 +19,11 @@
     <Link>
       <AdditionalDependencies>WdfDriverEntry.lib;WdfLdr.lib;wmilib.lib;ntoskrnl.lib;hal.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">int64.lib;exsup.lib;%(AdditionalDependencies)</AdditionalDependencies>
+
+      <OutputFile>$(TargetPath)</OutputFile>
+
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(WDKPATH)\lib\wdf\kmdf\i386\1.9;$(WDKPATH)\lib\wxp\i386;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(WDKPATH)\lib\wdf\kmdf\amd64\1.9;$(WDKPATH)\lib\win7\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
