@@ -66,7 +66,7 @@ Return Value:
     if (commonData->IsFDO) {
 
         Bus_KdPrint (commonData, BUS_DBG_POWER_TRACE,
-            ("FDO %s IRP:0x%p %s %s\n",
+            ("Bus_Power(): FDO %s IRP:0x%p %s %s\n",
             PowerMinorFunctionString(irpStack->MinorFunction), Irp,
             DbgSystemPowerString(commonData->SystemPowerState),
             DbgDevicePowerString(commonData->DevicePowerState)));
@@ -76,7 +76,7 @@ Return Value:
     } else {
 
         Bus_KdPrint (commonData, BUS_DBG_POWER_TRACE,
-            ("PDO %s IRP:0x%p %s %s\n",
+            ("Bus_Power(): PDO %s IRP:0x%p %s %s\n",
             PowerMinorFunctionString(irpStack->MinorFunction), Irp,
             DbgSystemPowerString(commonData->SystemPowerState),
             DbgDevicePowerString(commonData->DevicePowerState)));
