@@ -15,6 +15,11 @@ Environment:
 #if !defined(_TOASTER_H_)
 #define _TOASTER_H_
 
+#ifdef __cplusplus
+extern"C"{
+#endif
+
+
 #include <ntddk.h>
 #include <wdf.h>
 
@@ -60,6 +65,9 @@ DRIVER_INITIALIZE DriverEntry;
 EVT_WDF_DRIVER_DEVICE_ADD ToasterEvtDeviceAdd;
 
 EVT_WDF_DEVICE_CONTEXT_CLEANUP ToasterEvtDeviceContextCleanup;
+//VOID ToasterEvtDeviceContextCleanup(WDFDEVICE Device);
+
+
 EVT_WDF_DEVICE_D0_ENTRY ToasterEvtDeviceD0Entry;
 EVT_WDF_DEVICE_D0_EXIT ToasterEvtDeviceD0Exit;
 EVT_WDF_DEVICE_PREPARE_HARDWARE ToasterEvtDevicePrepareHardware;
@@ -111,6 +119,14 @@ NTSTATUS
 ToasterFireArrivalEvent(
     __in WDFDEVICE  Device
     );
+
+
+extern ULONG DebugLevel;
+
+
+#ifdef __cplusplus
+} // extern"C"{
+#endif
 
 #endif  // _TOASTER_H_
 

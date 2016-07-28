@@ -1,18 +1,14 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Toaster.c
 
 Abstract:
-
     This is a featured version of the toaster function driver. This version
     shows how to register for PNP and Power events, handle create & close
     file requests, handle WMI set and query events, fire WMI notification
@@ -20,11 +16,8 @@ Abstract:
     of toaster WDM driver present in the DDK
     (src\general\toaster\func\featured2).
 
-
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "toaster.h"
@@ -50,7 +43,6 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
     DriverEntry initializes the driver and is the first routine called by the
     system after the driver is loaded. DriverEntry specifies the other entry
@@ -69,20 +61,17 @@ Parameters Description:
     reboots. The path does not store hardware instance specific data.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     NTSTATUS            status = STATUS_SUCCESS;
     WDF_DRIVER_CONFIG   config;
 
-    KdPrint(("WDF Toaster Function Driver Sample - Featured version\n"));
+    KdPrint(("KMDF Toaster Function Driver Sample - Featured version\n"));
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
-    //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
@@ -598,7 +587,7 @@ Return Value:
 
 VOID
 ToasterEvtDeviceContextCleanup(
-    IN WDFDEVICE Device
+    IN WDFOBJECT Device //WDFDEVICE Device (chj fix for .cpp compile)
     )
 /*++
 

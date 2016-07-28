@@ -228,11 +228,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\func\featured\poWer.c" />
-    <ClCompile Include="..\func\featured\toaster-featured.c" />
+    <ClCompile Include="..\func\featured\toaster-featured.cpp" />
     <ClCompile Include="..\func\featured\wMi.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\func\featured\toaster.h" />
+    <ClInclude Include="..\func\shared\toaster.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\func\featured\toaster.rc" />
