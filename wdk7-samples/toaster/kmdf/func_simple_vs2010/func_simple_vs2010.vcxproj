@@ -102,7 +102,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
       <Driver>Driver</Driver>
-      <EntryPointSymbol>DriverEntry</EntryPointSymbol>
+      <EntryPointSymbol>FxDriverEntry</EntryPointSymbol>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -172,7 +172,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Native</SubSystem>
       <Driver>Driver</Driver>
-      <EntryPointSymbol>DriverEntry</EntryPointSymbol>
+      <EntryPointSymbol>FxDriverEntry</EntryPointSymbol>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
