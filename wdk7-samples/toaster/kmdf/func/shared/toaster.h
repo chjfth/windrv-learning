@@ -1,19 +1,14 @@
 /*++
-
 Copyright (c) 1990-2000 Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     Toaster.h
 
 Abstract:
-
     Header file for the toaster driver modules.
 
 Environment:
-
     Kernel mode
-
 --*/
 
 
@@ -40,7 +35,6 @@ Environment:
 //
 typedef struct _FDO_DATA
 {
-
     WDFWMIINSTANCE WmiDeviceArrivalEvent;
 
     BOOLEAN     WmiPowerDeviceEnableRegistered;

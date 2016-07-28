@@ -1,18 +1,14 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
-    Toaster.c
+    toaster-simple.c
 
 Abstract:
-
     This is a simple form of function driver for toaster device. The driver
     doesn't handle any PnP and Power events because the framework provides
     default behavior for those events. This driver has enough support to
@@ -20,9 +16,7 @@ Abstract:
     interface registered by the driver and send read, write or ioctl requests.
 
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "toaster.h"
@@ -42,7 +36,6 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
     DriverEntry initializes the driver and is the first routine called by the
     system after the driver is loaded. DriverEntry configures and creates a WDF driver
@@ -60,20 +53,17 @@ Parameters Description:
     reboots. The path does not store hardware instance specific data.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     NTSTATUS            status = STATUS_SUCCESS;
     WDF_DRIVER_CONFIG   config;
 
-    KdPrint(("Toaster Function Driver Sample - Driver Framework Edition.\n"));
+    KdPrint(("\n\nToaster Function Driver Sample - KMDF Edition.\n"));
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
-    //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If DriverEntry creates any resources
     // that require clean-up in driver unload,
@@ -81,14 +71,11 @@ Return Value:
     // callback in the config structure. In general xxx_CONFIG_INIT macros are provided to
     // initialize most commonly used members.
     //
-
     WDF_DRIVER_CONFIG_INIT(
         &config,
         ToasterEvtDeviceAdd
         );
 
-
-    //
     // Create a framework driver object to represent our driver.
     //
     status = WdfDriverCreate(
@@ -114,21 +101,16 @@ ToasterEvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     ToasterEvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a WDF device object to
     represent a new instance of toaster device.
 
 Arguments:
-
-    Driver - Handle to a framework driver object created in DriverEntry
-
+    Driver     - Handle to a framework driver object created in DriverEntry
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     NTSTATUS               status = STATUS_SUCCESS;
@@ -137,20 +119,14 @@ Return Value:
     WDF_OBJECT_ATTRIBUTES  fdoAttributes;
     WDFDEVICE              hDevice;
     WDFQUEUE               queue;
-
     UNREFERENCED_PARAMETER(Driver);
-
     PAGED_CODE();
 
-    KdPrint(("ToasterEvtDeviceAdd called\n"));
+    KdPrint((">ToasterEvtDeviceAdd\n"));
 
-    //
     // Initialize attributes and a context area for the device object.
-    //
-    //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DATA);
 
-    //
     // Create a framework device object.This call will in turn create
     // a WDM device object, attach to the lower stack, and set the
     // appropriate flags and attributes.
@@ -161,13 +137,11 @@ Return Value:
         return status;
     }
 
-    //
     // Get the device context by using the accessor function specified in
     // the WDF_DECLARE_CONTEXT_TYPE_WITH_NAME macro for FDO_DATA.
     //
     fdoData = ToasterFdoGetData(hDevice);
 
-    //
     // Tell the Framework that this device will need an interface
     //
     status = WdfDeviceCreateDeviceInterface(
@@ -181,13 +155,13 @@ Return Value:
         return status;
     }
 
-    //
     // Register I/O callbacks to tell the framework that you are interested
     // in handling IRP_MJ_READ, IRP_MJ_WRITE, and IRP_MJ_DEVICE_CONTROL requests.
-    // If a specific callback function is not specified for one ofthese,
+    // If a specific callback function is not specified for one of these,
     // the request will be dispatched to the EvtIoDefault handler, if any.
     // If there is no EvtIoDefault handler, the request will be failed with
     // STATUS_INVALID_DEVICE_REQUEST.
+	//
     // WdfIoQueueDispatchParallel means that we are capable of handling
     // all the I/O requests simultaneously and we are responsible for protecting
     // data that could be accessed by these callbacks simultaneously.
@@ -213,6 +187,7 @@ Return Value:
         return status;
     }
 
+	KdPrint(("<ToasterEvtDeviceAdd\n"));
     return status;
 }
 
@@ -223,43 +198,35 @@ ToasterEvtIoRead (
     size_t        Length
     )
 /*++
-
 Routine Description:
-
     Performs read from the toaster device. This event is called when the
     framework receives IRP_MJ_READ requests.
 
 Arguments:
-
     Queue -  Handle to the framework queue object that is associated with the
              I/O request.
     Request - Handle to a framework request object.
 
-    Lenght - Length of the data buffer associated with the request.
+    Length - Length of the data buffer associated with the request.
                  By default, the queue does not dispatch
                  zero length read & write requests to the driver and instead to
                  complete such requests with status success. So we will never get
                  a zero length request.
 
 Return Value:
-
   None.
-
 --*/
 {
     NTSTATUS    status;
     ULONG_PTR bytesCopied =0;
     WDFMEMORY memory;
-
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Length);
-
     PAGED_CODE();
 
     KdPrint(( "ToasterEvtIoRead: Request: 0x%p, Queue: 0x%p\n",
                                     Request, Queue));
 
-    //
     // Get the request memory and perform read operation here
     //
     status = WdfRequestRetrieveOutputMemory(Request, &memory);
@@ -279,40 +246,34 @@ ToasterEvtIoWrite (
     size_t        Length
     )
 /*++
-
 Routine Description:
-
     Performs write to the toaster device. This event is called when the
     framework receives IRP_MJ_WRITE requests.
 
 Arguments:
 
-    Queue -  Handle to the framework queue object that is associated with the
-            I/O request.
-    Request - Handle to a framework request object.
+    Queue -  Handle to the framework queue object that is associated with the I/O request.
 
-    Lenght - Length of the data buffer associated with the request.
-                 The default property of the queue is to not dispatch
-                 zero lenght read & write requests to the driver and
-                 complete is with status success. So we will never get
-                 a zero length request.
+	Request - Handle to a framework request object.
+
+    Length - Length of the data buffer associated with the request.
+             The default property of the queue is to not dispatch
+             zero length read & write requests to the driver and
+             complete is with status success. So we will never get
+             a zero length request.
 
 Return Value:
-
    None
 --*/
-
 {
     NTSTATUS    status;
     ULONG_PTR bytesWritten =0;
     WDFMEMORY memory;
-
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Length);
 
     KdPrint(("ToasterEvtIoWrite. Request: 0x%p, Queue: 0x%p\n",
                                 Request, Queue));
-
     PAGED_CODE();
 
     //
@@ -332,7 +293,6 @@ Return Value:
     }
 
     WdfRequestCompleteWithInformation(Request, status, bytesWritten);
-
 }
 
 
@@ -346,28 +306,24 @@ ToasterEvtIoDeviceControl(
     )
 /*++
 Routine Description:
-
     This event is called when the framework receives IRP_MJ_DEVICE_CONTROL
     requests from the system.
 
 Arguments:
 
-    Queue - Handle to the framework queue object that is associated
-            with the I/O request.
+    Queue - Handle to the framework queue object that is associated with the I/O request.
+            
     Request - Handle to a framework request object.
 
-    OutputBufferLength - length of the request's output buffer,
-                        if an output buffer is available.
-    InputBufferLength - length of the request's input buffer,
-                        if an input buffer is available.
+    OutputBufferLength - length of the request's output buffer, if an output buffer is available.
+
+    InputBufferLength - length of the request's input buffer, if an input buffer is available.
 
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
 
 Return Value:
-
    VOID
-
 --*/
 {
     NTSTATUS  status= STATUS_SUCCESS;
@@ -396,5 +352,3 @@ Return Value:
     //
     WdfRequestCompleteWithInformation(Request, status, (ULONG_PTR) 0);
 }
-
-
