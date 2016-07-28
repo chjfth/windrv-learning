@@ -69,7 +69,7 @@ Return Value:
     WDF_DRIVER_CONFIG   config;
 
     KdPrint(("KMDF Toaster Function Driver Sample - Featured version\n"));
-    KdPrint(("Built %s %s\n", __DATE__, __TIME__));
+    KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
