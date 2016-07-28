@@ -4,7 +4,7 @@ TARGETTYPE=DRIVER
 
 KMDF_VERSION_MAJOR=1
 
-INF_NAME=wdffeatured
+INF_NAME=kmdf_toast_featured
 
 INCLUDES = $(INCLUDES);..\..\inc;..\shared
 

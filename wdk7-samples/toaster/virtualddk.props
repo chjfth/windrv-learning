@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <stampinf_ARCH Condition="'$(Platform)'=='Win32'">x86</stampinf_ARCH>
+    <stampinf_ARCH Condition="'$(Platform)'=='x64'">AMD64</stampinf_ARCH>
+  </PropertyGroup>
   <PropertyGroup>
     <TargetExt>.sys</TargetExt>
     <ExecutablePath>$(WDKPATH)\bin\x86;$(ExecutablePath)</ExecutablePath>
@@ -25,5 +28,9 @@
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(WDKPATH)\lib\wdf\kmdf\amd64\1.9;$(WDKPATH)\lib\win7\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BuildMacro Include="stampinf_ARCH">
+      <Value>$(stampinf_ARCH)</Value>
+    </BuildMacro>
+  </ItemGroup>
 </Project>
