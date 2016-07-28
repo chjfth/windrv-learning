@@ -19,7 +19,7 @@ NTTARGETFILE0 = $(OBJ_PATH)\$(O)\toaster.bmf
 #
 SOURCES=            \
         toaster.rc  \
-        toaster.c   \
+        toaster-featured.c   \
           power.c   \
             wmi.c
 
