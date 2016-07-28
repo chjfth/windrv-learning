@@ -63,7 +63,7 @@ tostrcls.dll
 CopyFiles=Toaster_Device.NT.Copy
 
 [Toaster_Device.NT.Copy]
-wdffeatured.sys
+kmdf_toast_featured.sys
 
 [Toaster_Device.NT.HW]
 AddReg=Toaster_Device.NT.HW.AddReg
@@ -81,7 +81,7 @@ DisplayName     = %Toaster.SVCDESC%
 ServiceType     = 1               ; SERVICE_KERNEL_DRIVER
 StartType       = 3               ; SERVICE_DEMAND_START
 ErrorControl    = 1               ; SERVICE_ERROR_NORMAL
-ServiceBinary   = %12%\wdffeatured.sys
+ServiceBinary   = %12%\kmdf_toast_featured.sys
 LoadOrderGroup  = Extended Base
 
 
@@ -89,7 +89,7 @@ LoadOrderGroup  = Extended Base
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
-wdffeatured.sys = 1,,
+kmdf_toast_featured.sys = 1,,
 tostrcls.dll    = 1,,
 
 
