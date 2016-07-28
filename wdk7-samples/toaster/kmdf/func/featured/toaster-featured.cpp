@@ -37,6 +37,27 @@ Environment:
 
 ULONG DebugLevel = 3; //unused
 
+class CTest
+{
+public:
+	CTest(const char *s);
+	~CTest();
+};
+
+CTest::CTest(const char *s)
+{
+	KdPrint(("CTest-ctor: %s\n", s));
+}
+CTest::~CTest()
+{
+	KdPrint(("CTest-dtor.\n"));
+}
+
+//CTest g_test("WaHa.");
+	// Cause link error:
+	// toaster-featured.obj : error LNK2019: unresolved external symbol atexit referenced in function "void __cdecl `dynamic initializer for 'g_test''(void)" (??__Eg_test@@YAXXZ)
+
+
 NTSTATUS
 DriverEntry(
     IN PDRIVER_OBJECT  DriverObject,
@@ -70,6 +91,9 @@ Return Value:
 
     KdPrint(("KMDF Toaster Function Driver Sample - Featured version\n"));
     KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
+
+	CTest mytest("waha.");
+	char *ss = new char[100];
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
