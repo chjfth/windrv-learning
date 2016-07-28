@@ -93,7 +93,6 @@ Return Value:
     KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
 	CTest mytest("waha.");
-	char *ss = new char[100];
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
