@@ -108,7 +108,6 @@ Return Value:
                             ToasterEvtDeviceAdd
                             );
 
-    //
     // Create a framework driver object to represent our driver.
     //
     status = WdfDriverCreate(
@@ -134,21 +133,16 @@ ToasterEvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     ToasterEvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of toaster device.
 
 Arguments:
-
-    Driver - Handle to a framework driver object created in DriverEntry
-
+    Driver     - Handle to a framework driver object created in DriverEntry
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     NTSTATUS                              status = STATUS_SUCCESS;
@@ -162,9 +156,7 @@ Return Value:
     WDF_IO_QUEUE_CONFIG                   queueConfig;
     PFDO_DATA                             fdoData;
     WDFQUEUE                              queue;
-
     UNREFERENCED_PARAMETER(Driver);
-
     PAGED_CODE();
 
     KdPrint(("ToasterEvtDeviceAdd called\n"));

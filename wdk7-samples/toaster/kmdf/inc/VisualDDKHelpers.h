@@ -25,6 +25,8 @@ C_ASSERT(sizeof(PHANDLE_VisualDDK_Helper_t) == sizeof(PHANDLE));
 
 //#define HANDLE HANDLE_VisualDDK_Helper_t
 //#define PHANDLE PHANDLE_VisualDDK_Helper_t 
+	// Chj: the above two causes C++'s "implicit conversion of a class pointer to HANDLE" to fail.
+	// so comment them out for now.
 
 #define _NTSTATUS_DEFINED // chj add this fix for .cpp user
 
