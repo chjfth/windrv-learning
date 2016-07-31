@@ -38,42 +38,34 @@ DriverEntry(
     )
 /*++
 Routine Description:
-
     Initialize the call backs structure of Driver Framework.
 
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
 
 Return Value:
-
   NT Status Code
-
 --*/
 {
     WDF_DRIVER_CONFIG   config;
     NTSTATUS            status;
 
-    KdPrint(("Toaster Static Bus Driver Sample - Driver Framework Edition.\n"));
+    KdPrint(("Toaster Static Bus Driver Sample - KMDF Edition.\n"));
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
-    //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
-    // you can override that by specifing one in the Config structure.
+    // you can override that by specifying one in the Config structure.
     //
-
     WDF_DRIVER_CONFIG_INIT(
         &config,
         Bus_EvtDeviceAdd
         );
 
-    //
     // Create a framework driver object to represent our driver.
     //
     status = WdfDriverCreate(DriverObject,
@@ -87,7 +79,6 @@ Return Value:
     }
 
     return status;
-
 }
 
 
@@ -98,21 +89,15 @@ Bus_EvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     Bus_EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of toaster bus.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
-
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_IO_QUEUE_CONFIG        queueConfig;
@@ -122,14 +107,11 @@ Return Value:
     PFDO_DEVICE_DATA           deviceData;
     PNP_BUS_INFORMATION        busInfo;
     WDFQUEUE                   queue;
-
     UNREFERENCED_PARAMETER(Driver);
-
     PAGED_CODE ();
 
     KdPrint(("Bus_EvtDeviceAdd: 0x%p\n", Driver));
 
-    //
     // Initialize all the properties specific to the device.
     // Framework has default values for the one that are not
     // set explicitly here. So please read the doc and make sure
@@ -137,16 +119,14 @@ Return Value:
     //
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
     WdfDeviceInitSetExclusive(DeviceInit, TRUE);
-
-    //
+	//
     // Initialize attributes structure to specify size and accessor function
     // for storing device context.
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, FDO_DEVICE_DATA);
-
     //
     // Create a framework device object. In response to this call, framework
-    // creates a WDM deviceobject.
+    // creates a WDM device-object.
     //
     status = WdfDeviceCreate(&DeviceInit, &attributes, &device);
     if (!NT_SUCCESS(status)) {
@@ -170,7 +150,7 @@ Return Value:
 
     //
     // Configure a default queue so that requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching to goto
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
     // other queues get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
@@ -206,7 +186,7 @@ Return Value:
     //
     // This value is used in responding to the IRP_MN_QUERY_BUS_INFORMATION
     // for the child devices. This is an optional information provided to
-    // uniquely idenitfy the bus the device is connected.
+    // uniquely identify the bus the device is connected.
     //
     busInfo.BusTypeGuid = GUID_DEVCLASS_TOASTER;
     busInfo.LegacyBusType = PNPBus;
@@ -290,7 +270,6 @@ Return Value:
 
         if (sizeof (BUSENUM_PLUGIN_HARDWARE) == plugIn->Size)
          {
-
             length = (InputBufferLength - sizeof (BUSENUM_PLUGIN_HARDWARE))/sizeof(WCHAR);
             //
             // Make sure the IDs is double NULL terminated. TODO:
@@ -305,7 +284,6 @@ Return Value:
             status = Bus_PlugInDevice(hDevice,
                                       plugIn->HardwareIDs,
                                       plugIn->SerialNo);
-
         }
         break;
 
@@ -354,21 +332,17 @@ Return Value:
 
 NTSTATUS
 Bus_PlugInDevice(
-    __in WDFDEVICE  Device,
+    __in WDFDEVICE  Device,     // toaster-bus FDO
     __in PWCHAR     HardwareIds,
     __in ULONG      SerialNo
     )
-
 /*++
-
 Routine Description:
-
     The user application has told us that a new device on the bus has arrived.
 
     We therefore need to create a new PDO, initialize it, add it to the list
     of PDOs for this FDO bus, and then tell Plug and Play that all of this
     happened so that it will start sending prodding IRPs.
-
 --*/
 
 {
@@ -377,7 +351,6 @@ Routine Description:
     WDFDEVICE        hChild;
     PPDO_DEVICE_DATA pdoData;
     PFDO_DEVICE_DATA deviceData;
-
     PAGED_CODE ();
 
     //
@@ -652,9 +625,7 @@ Routine Description:
     KdPrint(("Enumerating %d toaster devices\n", value));
 
     for(i=1; i<= value; i++) {
-        //
         // Value of i is used as serial number.
-        //
         status = Bus_PlugInDevice(Device,
                          BUS_HARDWARE_IDS,
                          i );

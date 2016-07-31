@@ -123,9 +123,7 @@ ToasterEvtDeviceArmWakeFromS0(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceArmWakeFromS0 is called when the Framework arms the device for
     wake from S0.  If there is any device-specific initialization
     that needs to be done to arm internal wake signals, or to route internal
@@ -135,23 +133,18 @@ Routine Description:
     This function is pageable and it will run at PASSIVE_LEVEL.
 
 Arguments:
-
     Device - Handle to a Framework device object.
 
 Return Value:
-
     NTSTATUS - Failure will result in the device remaining in the D0 state.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     PAGED_CODE();
 
     KdPrint(( "--> ToasterEvtDeviceArmWakeFromS0\n"));
 
     KdPrint(( "<-- ToasterEvtDeviceArmWakeFromS0\n"));
-
     return STATUS_SUCCESS;
 }
 
@@ -160,9 +153,7 @@ ToasterEvtDeviceArmWakeFromSx(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceArmWakeFromSx is called when the Framework arms the device for
     wake from Sx.  If there is any device-specific initialization
     that needs to be done to arm internal wake signals, or to route internal
@@ -172,23 +163,18 @@ Routine Description:
     This function is pageable and it will run at PASSIVE_LEVEL.
 
 Arguments:
-
     Device - Handle to a Framework device object.
 
 Return Value:
-
     NTSTATUS - Failure will result in the device remaining in the D0 state.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     PAGED_CODE();
 
     KdPrint(( "--> ToasterEvtDeviceArmWakeFromSx\n"));
 
     KdPrint(( "<-- ToasterEvtDeviceArmWakeFromSx\n"));
-
     return STATUS_SUCCESS;
 }
 
@@ -197,9 +183,7 @@ ToasterEvtDeviceDisarmWakeFromS0(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceDisarmWakeFromS0 reverses anything done in EvtDeviceArmWakeFromS0.
 
     This function is not marked pageable because this function is in the
@@ -209,21 +193,13 @@ Routine Description:
     until the system drivers can service this page fault.
 
 Arguments:
-
     Device - Handle to a Framework device object.
-
-Return Value:
-
-    VOID.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     KdPrint(( "--> ToasterEvtDeviceDisarmWakeFromS0\n"));
 
     KdPrint(( "<-- ToasterEvtDeviceDisarmWakeFromS0\n"));
-
     return ;
 }
 
@@ -232,9 +208,7 @@ ToasterEvtDeviceDisarmWakeFromSx(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceDisarmWakeFromSx reverses anything done in EvtDeviceArmWakeFromSx.
 
     This function will run at PASSIVE_LEVEL.
@@ -246,21 +220,13 @@ Routine Description:
     until the system drivers can service this page fault.
 
 Arguments:
-
     Device - Handle to a Framework device object.
-
-Return Value:
-
-    VOID.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     KdPrint(( "--> ToasterEvtDeviceDisarmWakeFromSx\n"));
 
     KdPrint(( "<-- ToasterEvtDeviceDisarmWakeFromSx\n"));
-
     return ;
 }
 
@@ -269,33 +235,21 @@ ToasterEvtDeviceWakeFromS0Triggered(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceWakeFromS0Triggered will be called whenever the device triggers its
     wake signal after being armed for wake.
 
     This function is pageable and runs at PASSIVE_LEVEL.
 
 Arguments:
-
     Device - Handle to a Framework device object.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     PAGED_CODE();
-
     KdPrint(( "--> ToasterEvtDeviceWakeFromS0Triggered\n"));
 
-
     KdPrint(( "<-- ToasterEvtDeviceWakeFromS0Triggered\n"));
-
 }
 
 VOID
@@ -303,9 +257,7 @@ ToasterEvtDeviceWakeFromSxTriggered(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     EvtDeviceWakeFromSxTriggered will be called whenever the device triggers its
     wake signal after being armed for wake.
 
@@ -320,19 +272,12 @@ Routine Description:
 Arguments:
 
     Device - Handle to a Framework device object.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     KdPrint(( "--> ToasterEvtDeviceWakeFromSxTriggered\n"));
 
     KdPrint(( "<-- ToasterEvtDeviceWakeFromSxTriggered\n"));
-
 }
 
 PCHAR

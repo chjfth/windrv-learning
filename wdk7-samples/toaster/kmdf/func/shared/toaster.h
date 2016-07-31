@@ -46,6 +46,10 @@ typedef struct _FDO_DATA
     BOOLEAN     WmiPowerDeviceEnableRegistered;
 
     TOASTER_INTERFACE_STANDARD BusInterface;
+	//
+	// Chj: 虽然此成员名字叫 "Bus"Interface, 但并不是对应 GUID_DEVINTERFACE_BUSENUM_TOASTER,
+	// 而是对应 GUID_DEVINTERFACE_TOASTER. 此处的 "Bus" 字眼应理解为: 由 bus driver 所创建
+	// 的 PDO 所提供的 interface , 而非针对 bus-devnode 的接口. 
 
 }  FDO_DATA, *PFDO_DATA;
 

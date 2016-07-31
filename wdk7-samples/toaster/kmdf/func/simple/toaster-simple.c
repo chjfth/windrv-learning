@@ -165,8 +165,8 @@ Return Value:
     // WdfIoQueueDispatchParallel means that we are capable of handling
     // all the I/O requests simultaneously and we are responsible for protecting
     // data that could be accessed by these callbacks simultaneously.
-    // A default queue gets all the requests that are not
-    // configured for forwarding using WdfDeviceConfigureRequestDispatching.
+    // A default queue gets all the requests [that are not
+    // configured for forwarding using WdfDeviceConfigureRequestDispatching].
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig,  WdfIoQueueDispatchParallel);
 

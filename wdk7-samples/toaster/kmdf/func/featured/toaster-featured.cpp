@@ -102,9 +102,8 @@ Return Value:
     // config structure. In general xxx_CONFIG_INIT macros are provided to
     // initialize most commonly used members.
     //
-
     WDF_DRIVER_CONFIG_INIT(
-                            &config,
+                            &config, // init this struct
                             ToasterEvtDeviceAdd
                             );
 
@@ -114,8 +113,8 @@ Return Value:
                             DriverObject,
                             RegistryPath,
                             WDF_NO_OBJECT_ATTRIBUTES, // Driver Attributes
-                            &config,          // Driver Config Info
-                            WDF_NO_HANDLE
+                            &config,          // Driver Config Info (input)
+                            WDF_NO_HANDLE   // don't need WDFDRIVER ptr output  
                             );
 
     if (!NT_SUCCESS(status)) {
@@ -139,7 +138,7 @@ Routine Description:
 
 Arguments:
     Driver     - Handle to a framework driver object created in DriverEntry
-    DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
+    DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure. // (WDFDEVICE_INIT is opaque to user)
 
 Return Value:
     NTSTATUS
@@ -161,40 +160,33 @@ Return Value:
 
     KdPrint(("ToasterEvtDeviceAdd called\n"));
 
-    //
     // Initialize the pnpPowerCallbacks structure.  Callback events for PNP
     // and Power are specified here.  If you don't supply any callbacks,
     // the Framework will take appropriate default actions based on whether
     // DeviceInit is initialized to be an FDO, a PDO or a filter device
     // object.
     //
-
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
-
-    //
+	//
     // Register PNP callbacks.
     //
     pnpPowerCallbacks.EvtDevicePrepareHardware = ToasterEvtDevicePrepareHardware;
     pnpPowerCallbacks.EvtDeviceReleaseHardware = ToasterEvtDeviceReleaseHardware;
     pnpPowerCallbacks.EvtDeviceSelfManagedIoInit = ToasterEvtDeviceSelfManagedIoInit;
-
-    //
+	//
     // Register Power callbacks.
     //
     pnpPowerCallbacks.EvtDeviceD0Entry = ToasterEvtDeviceD0Entry;
     pnpPowerCallbacks.EvtDeviceD0Exit = ToasterEvtDeviceD0Exit;
-
-
+	//
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
-    //
     // Register power policy event callbacks so that we would know when to
     // arm/disarm the hardware to handle wait-wake and when the wake event
     // is triggered by the hardware.
     //
     WDF_POWER_POLICY_EVENT_CALLBACKS_INIT(&powerPolicyCallbacks);
-
-    //
+	//
     // This group of three callbacks allows this sample driver to manage
     // arming the device for wake from the S0 or Sx state.  We don't really
     // differentiate between S0 and Sx state..
@@ -205,43 +197,41 @@ Return Value:
     powerPolicyCallbacks.EvtDeviceArmWakeFromSx = ToasterEvtDeviceArmWakeFromSx;
     powerPolicyCallbacks.EvtDeviceDisarmWakeFromSx = ToasterEvtDeviceDisarmWakeFromSx;
     powerPolicyCallbacks.EvtDeviceWakeFromSxTriggered = ToasterEvtDeviceWakeFromSxTriggered;
-
-    //
+	//
     // Register the power policy callbacks.
     //
     WdfDeviceInitSetPowerPolicyEventCallbacks(DeviceInit, &powerPolicyCallbacks);
 
-    //
     // Initialize WDF_FILEOBJECT_CONFIG_INIT struct to tell the
     // framework whether you are interested in handling Create, Close and
     // Cleanup requests that gets genereate when an application or another
     // kernel component opens an handle to the device. If you don't register,
-    // the framework default behaviour would be complete these requests
+    // the framework default behaviour would be: complete these requests
     // with STATUS_SUCCESS. A driver might be interested in registering these
     // events if it wants to do security validation and also wants to maintain
     // per handle (fileobject) context.
     //
-
+	//
     WDF_FILEOBJECT_CONFIG_INIT(
                             &fileConfig,
                             ToasterEvtDeviceFileCreate,
                             ToasterEvtFileClose,
                             WDF_NO_EVENT_CALLBACK // not interested in Cleanup
                             );
-
-    WdfDeviceInitSetFileObjectConfig(DeviceInit,
+	///
+    WdfDeviceInitSetFileObjectConfig(DeviceInit,    
                                        &fileConfig,
                                        WDF_NO_OBJECT_ATTRIBUTES);
+		// 小心: 指定"FILE_OBJECT 特性"跟"设备"的关联, 用的不是 WdfDeviceCreate 出来的设备对象, 
+		// 而是用这个不透明的 DeviceInit , 如何理解?
 
-    //
     // Now specify the size of device extension where we track per device
     // context. Along with setting the context type as shown below, you should also
     // specify the WDF_DECLARE_CONTEXT_TYPE_WITH_NAME in header to specify the
     // accessor function name.
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DATA);
-
-    //
+	///
     // Set a context cleanup routine to cleanup any resources that are not
     // parent to this device. This cleanup will be called in the context of
     // pnp remove-device when the framework deletes the device object.
@@ -258,13 +248,11 @@ Return Value:
         return status;
     }
 
-    //
     // Get the device context by using accessor function specified in
     // the WDF_DECLARE_CONTEXT_TYPE_WITH_NAME macro for FDO_DATA.
     //
     fdoData = ToasterFdoGetData(device);
 
-    //
     // Tell the Framework that this device will need an interface so that
     // application can find our device and talk to it.
     //
@@ -279,18 +267,18 @@ Return Value:
         return status;
     }
 
-    //
     // Register I/O callbacks to tell the framework that you are interested
     // in handling IRP_MJ_READ, IRP_MJ_WRITE, and IRP_MJ_DEVICE_CONTROL requests.
     // In case a specific handler is not specified for one of these,
     // the request will be dispatched to the EvtIoDefault handler, if any.
     // If there is no EvtIoDefault handler, the request will be failed with
     // STATUS_INVALID_DEVICE_REQUEST.
+	//
     // WdfIoQueueDispatchParallel means that we are capable of handling
     // all the I/O request simultaneously and we are responsible for protecting
     // data that could be accessed by these callbacks simultaneously.
     // A default queue gets all the requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching.
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig,
                              WdfIoQueueDispatchParallel); // EvtIoCancel
@@ -310,11 +298,10 @@ Return Value:
         return status;
     }
 
-    //
     // Set the idle power policy to put the device to Dx if the device is not used
     // for the specified IdleTimeout time. Since this is a virtual device we
     // tell the framework that we cannot wake ourself if we sleep in S0. Only
-    // way the device can be brought to D0 is if the device recieves an I/O from
+    // way the device can be brought to D0 is if the device receives an I/O from
     // the system.
     //
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleCannotWakeFromS0);
@@ -325,37 +312,30 @@ Return Value:
         return status;
     }
 
-    //
     // Set the wait-wake policy.
     //
-
     WDF_DEVICE_POWER_POLICY_WAKE_SETTINGS_INIT(&wakeSettings);
     status = WdfDeviceAssignSxWakeSettings(device, &wakeSettings);
     if (!NT_SUCCESS(status)) {
-        //
         // We are probably enumerated on a bus that doesn't support Sx-wake.
-        // Let us not fail the device add just because we aren't able to support
-        // wait-wake. I will let the user of this sample decide how important it's
+        // Let us not [fail the device add just because we aren't able to support
+        // wait-wake]. I will let the user of this sample decide how important it's
         // to support wait-wake for their hardware and return appropriate status.
         //
         KdPrint( ("WdfDeviceAssignSxWakeSettings failed 0x%x\n", status));
         status = STATUS_SUCCESS;
     }
 
-
-    //
     // Finally register all our WMI datablocks with WMI subsystem.
     //
     status = ToasterWmiRegistration(device);
 
-    //
     // Please note that if this event fails or eventually device gets removed
-    // the framework will automatically take care of deregistering with
-    // WMI, detaching and deleting the deviceobject and cleaning up other
+    // the framework will automatically take care of de-registering with
+    // WMI, detaching and deleting the device-object and cleaning up other
     // resources. Framework does most of the resource cleanup during device
     // remove and driver unload.
     //
-
     return status;
 }
 
@@ -366,13 +346,11 @@ ToasterEvtDevicePrepareHardware(
     WDFCMRESLIST   ResourcesTranslated
     )
 /*++
-
 Routine Description:
-
     EvtDevicePrepareHardware event callback performs operations that are
     necessary to make the driver's device operational. The framework calls the
     driver's EvtDevicePrepareHardware callback when the PnP manager sends an
-    IRP_MN_START_DEVICE request to the driver stack.
+    *IRP_MN_START_DEVICE* request to the driver stack.
 
     Specifically, most drivers will use this callback to map resources.  USB
     drivers may use it to get device descriptors, config descriptors and to
@@ -399,9 +377,7 @@ Arguments:
                 device-accessible memory into virtual address space
 
 Return Value:
-
     WDF status code
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -409,7 +385,7 @@ Return Value:
     ULONG i;
     PCM_PARTIAL_RESOURCE_DESCRIPTOR descriptor;
 
-    fdoData = ToasterFdoGetData(Device);
+	fdoData = ToasterFdoGetData(Device);
 
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(ResourcesRaw);
@@ -454,14 +430,10 @@ Return Value:
 
     }
 
-
-    //
     // Fire device arrival event.
-    //
     ToasterFireArrivalEvent(Device);
 
     return status;
-
 }
 
 NTSTATUS
@@ -470,9 +442,7 @@ ToasterEvtDeviceReleaseHardware(
     IN  WDFCMRESLIST ResourcesTranslated
     )
 /*++
-
 Routine Description:
-
     EvtDeviceReleaseHardware is called by the framework whenever the PnP manager
     is revoking ownership of our resources.  This may be in response to either
     IRP_MN_STOP_DEVICE or IRP_MN_REMOVE_DEVICE.  The callback is made before
@@ -492,17 +462,12 @@ Arguments:
                 device-accessible memory into virtual address space
 
 Return Value:
-
     NTSTATUS - Failures will be logged, but not acted on.
-
 --*/
 {
     PFDO_DATA   fdoData;
-
     UNREFERENCED_PARAMETER(ResourcesTranslated);
-
     KdPrint(("ToasterEvtDeviceReleaseHardware called\n"));
-
     PAGED_CODE();
 
     fdoData = ToasterFdoGetData(Device);
@@ -518,10 +483,8 @@ ToasterEvtDeviceSelfManagedIoInit(
     IN  WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
-    EvtDeviceSelfManagedIoInit is called it once for each device,
+    EvtDeviceSelfManagedIoInit is called once for each device,
     after the framework has called the driver's EvtDeviceD0Entry
     callback function for the first time. The framework does not
     call the EvtDeviceSelfManagedIoInit callback function again for
@@ -539,13 +502,10 @@ Routine Description:
     until the system drivers can service this page fault.
 
 Arguments:
-
     Device - Handle to a framework device object.
 
 Return Value:
-
     NTSTATUS - Failures will result in the device stack being torn down.
-
 --*/
 {
     NTSTATUS            status;
@@ -555,12 +515,11 @@ Return Value:
 
     fdoData = ToasterFdoGetData(Device);
 
-    //
     // We will provide an example on how to get a bus-specific direct
     // call interface from a bus driver.
     //
     status = WdfFdoQueryForInterface(Device,
-                                   &GUID_TOASTER_INTERFACE_STANDARD,
+                                   &GUID_TOASTER_INTERFACE_STANDARD, // Chj: 对,这是 toaster 子设备的 interface
                                    (PINTERFACE) &fdoData->BusInterface,
                                    sizeof(TOASTER_INTERFACE_STANDARD),
                                    1,
@@ -569,7 +528,6 @@ Return Value:
     {
         UCHAR powerlevel;
 
-        //
         // Call the direct callback functions to get the property or
         // configuration information of the device.
         //
@@ -578,13 +536,11 @@ Return Value:
         (*fdoData->BusInterface.SetCrispinessLevel)(fdoData->BusInterface.InterfaceHeader.Context, 8);
         (*fdoData->BusInterface.IsSafetyLockEnabled)(fdoData->BusInterface.InterfaceHeader.Context);
 
-        //
         // Provider of this interface may have taken a reference on it.
         // So we must release the interface as soon as we are done using it.
         //
         (*fdoData->BusInterface.InterfaceHeader.InterfaceDereference)
                             ((PVOID)fdoData->BusInterface.InterfaceHeader.Context);
-
 
     } else {
         //
@@ -641,7 +597,6 @@ ToasterEvtDeviceFileCreate (
     IN WDFFILEOBJECT FileObject
     )
 /*++
-
 Routine Description:
 
     The framework calls a driver's EvtDeviceFileCreate callback
@@ -652,23 +607,17 @@ Routine Description:
     that created the IRP_MJ_CREATE request.
 
 Arguments:
-
     Device - Handle to a framework device object.
     FileObject - Pointer to fileobject that represents the open handle.
     CreateParams - Parameters for create
 
 Return Value:
-
    NT status code
-
 --*/
 {
     PFDO_DATA   fdoData;
-
     UNREFERENCED_PARAMETER(FileObject);
-
     KdPrint( ("ToasterEvtDeviceFileCreate %p\n", Device));
-
     PAGED_CODE ();
 
     //
@@ -677,7 +626,6 @@ Return Value:
     fdoData = ToasterFdoGetData(Device);
 
     WdfRequestComplete(Request, STATUS_SUCCESS);
-
     return;
 }
 

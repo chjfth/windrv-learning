@@ -23,7 +23,6 @@ Environment:
 // This guid is used to identify a specific interface in IRP_MN_QUERY_INTERFACE
 // handler.
 //
-
 DEFINE_GUID(GUID_TOASTER_INTERFACE_STANDARD,
         0xe0b27630, 0x5434, 0x11d3, 0xb8, 0x90, 0x0, 0xc0, 0x4f, 0xad, 0x51, 0x71);
 // {E0B27630-5434-11d3-B890-00C04FAD5171}

@@ -1,19 +1,14 @@
 /*++
-
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BusPdo.c
 
 Abstract:
-
     This module handles plug & play calls for the child device (PDO).
 
 Environment:
-
     kernel mode only
-
 --*/
 
 #include "busenum.h"
@@ -28,22 +23,17 @@ ULONG BusEnumDebugLevel;
 
 NTSTATUS
 Bus_CreatePdo(
-    __in WDFDEVICE  Device,
+    __in WDFDEVICE  Device, // toaster bus FDO
     __in PWCHAR     HardwareIds,
     __in ULONG      SerialNo
 )
 /*++
-
 Routine Description:
-
     This routine creates and initialize a PDO.
-
 Arguments:
 
 Return Value:
-
     NT Status code.
-
 --*/
 {
     NTSTATUS                    status;
@@ -145,7 +135,6 @@ Return Value:
 
     WdfPdoInitSetDefaultLocale(pDeviceInit, 0x409);
 
-    //
     // Initialize the attributes to specify the size of PDO device extension.
     // All the state information private to the PDO will be tracked here.
     //
@@ -154,10 +143,8 @@ Return Value:
     status = WdfDeviceCreate(&pDeviceInit, &pdoAttributes, &hChild);
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
-
     }
 
-    //
     // Once the device is created successfully, framework frees the
     // DeviceInit memory and sets the pDeviceInit to NULL. So don't
     // call any WdfDeviceInit functions after that.
@@ -196,16 +183,14 @@ Return Value:
 
     WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
 
-    //
     // Create a custom interface so that other drivers can
     // query (IRP_MN_QUERY_INTERFACE) and use our callbacks directly.
     //
     RtlZeroMemory(&ToasterInterface, sizeof(ToasterInterface));
-
+	//
     ToasterInterface.InterfaceHeader.Size = sizeof(ToasterInterface);
     ToasterInterface.InterfaceHeader.Version = 1;
     ToasterInterface.InterfaceHeader.Context = (PVOID) hChild;
-
     //
     // Let the framework handle reference counting.
     //
@@ -213,11 +198,11 @@ Return Value:
         WdfDeviceInterfaceReferenceNoOp;
     ToasterInterface.InterfaceHeader.InterfaceDereference =
         WdfDeviceInterfaceDereferenceNoOp;
-
+	//
     ToasterInterface.GetCrispinessLevel  = Bus_GetCrispinessLevel;
     ToasterInterface.SetCrispinessLevel  = Bus_SetCrispinessLevel;
     ToasterInterface.IsSafetyLockEnabled = Bus_IsSafetyLockEnabled;
-
+	//
     WDF_QUERY_INTERFACE_CONFIG_INIT(&qiConfig,
                                     (PINTERFACE) &ToasterInterface,
                                     &GUID_TOASTER_INTERFACE_STANDARD,
@@ -229,7 +214,6 @@ Return Value:
     status = WdfDeviceAddQueryInterface(hChild, &qiConfig);
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
-
     }
 
     //
@@ -271,20 +255,15 @@ Bus_GetCrispinessLevel(
     OUT  PUCHAR Level
     )
 /*++
-
 Routine Description:
-
     This routine gets the current crispiness level of the toaster.
 
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
     UNREFERENCED_PARAMETER(ChildDevice);
@@ -307,20 +286,15 @@ Bus_SetCrispinessLevel(
     IN   UCHAR     Level
     )
 /*++
-
 Routine Description:
-
     This routine sets the current crispiness level of the toaster.
 
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
     UNREFERENCED_PARAMETER(ChildDevice);
@@ -336,19 +310,14 @@ Bus_IsSafetyLockEnabled(
     IN   WDFDEVICE ChildDevice
     )
 /*++
-
 Routine Description:
-
     Routine to check whether safety lock is enabled
 
 Arguments:
-
     Context        pointer to  PDO device extension
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
     UNREFERENCED_PARAMETER(ChildDevice);
