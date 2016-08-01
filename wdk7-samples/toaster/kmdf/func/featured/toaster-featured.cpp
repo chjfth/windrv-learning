@@ -732,26 +732,21 @@ ToasterEvtIoWrite (
     size_t        Length
     )
 /*++
-
 Routine Description:
-
     Performs write to the toaster device. This event is called when the
     framework receives IRP_MJ_WRITE requests.
 
 Arguments:
+    Queue -  Handle to the framework queue object that is associated with the I/O request.
 
-    Queue -  Handle to the framework queue object that is associated with the
-            I/O request.
     Request - Handle to a framework request object.
 
-    Lenght - Length of the data buffer associated with the request.
+    Length - Length of the data buffer associated with the request.
                  The default property of the queue is to not dispatch
-                 zero lenght read & write requests to the driver and
+                 zero length read & write requests to the driver and
                  complete is with status success. So we will never get
                  a zero length request.
-
 Return Value:
-
    None
 --*/
 
@@ -859,5 +854,4 @@ Return Value:
     WdfRequestCompleteWithInformation(Request, status, (ULONG_PTR) 0);
 
 }
-
 
