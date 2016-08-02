@@ -58,6 +58,34 @@ CTest::~CTest()
 	// toaster-featured.obj : error LNK2019: unresolved external symbol atexit referenced in function "void __cdecl `dynamic initializer for 'g_test''(void)" (??__Eg_test@@YAXXZ)
 
 
+void ZLbook_cleanup(WDFOBJECT obj)
+{
+	KdPrint(("ZLbook_cleanup()\n"));
+}
+void ZLbook_destroy(WDFOBJECT obj)
+{
+	KdPrint(("ZLbook_destroy()\n"));
+}
+int ZLbook_test()
+{
+	WDF_OBJECT_ATTRIBUTES attr;
+	WDF_OBJECT_ATTRIBUTES_INIT(&attr);
+	attr.EvtCleanupCallback = ZLbook_cleanup;
+	attr.EvtDestroyCallback = ZLbook_destroy;
+
+	WDFOBJECT obj;
+	WdfObjectCreate(&attr, &obj);
+	WdfObjectReference(obj);
+
+	// .TODO
+
+	WdfObjectDelete(obj); // ZLbook_cleanup() is called inside
+
+	WdfObjectDereference(obj); // ZLbook_destroy() is called inside, seems no problem
+	return 0;
+}
+
+
 NTSTATUS
 DriverEntry(
     IN PDRIVER_OBJECT  DriverObject,
@@ -93,6 +121,7 @@ Return Value:
     KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
 	CTest mytest("waha.");
+	ZLbook_test();
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
