@@ -68,20 +68,33 @@ void ZLbook_destroy(WDFOBJECT obj)
 }
 int ZLbook_test()
 {
+	WDFOBJECT obj;
 	WDF_OBJECT_ATTRIBUTES attr;
+
+	// case 1: WdfObjectDelete() destroy the object
+
+	WDF_OBJECT_ATTRIBUTES_INIT(&attr);
+	attr.EvtCleanupCallback = ZLbook_cleanup;
+	attr.EvtDestroyCallback = ZLbook_destroy;
+	WdfObjectCreate(&attr, &obj);
+	WdfObjectDelete(obj); // ZLbook_cleanup() + ZLbook_destroy() is called inside
+	obj = NULL;
+
+	// case 2: WdfObjectDereference() destroy the object 
+
 	WDF_OBJECT_ATTRIBUTES_INIT(&attr);
 	attr.EvtCleanupCallback = ZLbook_cleanup;
 	attr.EvtDestroyCallback = ZLbook_destroy;
 
-	WDFOBJECT obj;
 	WdfObjectCreate(&attr, &obj);
 	WdfObjectReference(obj);
-
-	// .TODO
-
+	WdfObjectReference(obj);
+	// do something
 	WdfObjectDelete(obj); // ZLbook_cleanup() is called inside
 
+	WdfObjectDereference(obj);
 	WdfObjectDereference(obj); // ZLbook_destroy() is called inside, seems no problem
+
 	return 0;
 }
 
@@ -778,12 +791,10 @@ Arguments:
 Return Value:
    None
 --*/
-
 {
     NTSTATUS    status;
     ULONG_PTR bytesWritten =0;
     WDFMEMORY memory;
-
     UNREFERENCED_PARAMETER(Queue);
 
     KdPrint(("ToasterEvtIoWrite. Request: 0x%p, Queue: 0x%p\n",
