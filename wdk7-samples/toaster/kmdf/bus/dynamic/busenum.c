@@ -60,11 +60,11 @@ Return Value:
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
     //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
-    // you can override that by specifing one in the Config structure.
+    // you can override that by specifying one in the Config structure.
     //
 
     WDF_DRIVER_CONFIG_INIT(
@@ -172,8 +172,8 @@ Return Value:
 
     //
     // This function pointer will be called when the framework needs to compare
-    // two identificaiton descriptions.  If left NULL a call to RtlCompareMemory
-    // will be used to compare two identificaiton descriptions.
+    // two identification descriptions.  If left NULL a call to RtlCompareMemory
+    // will be used to compare two identification descriptions.
     //
     config.EvtChildListIdentificationDescriptionCompare =
                                 Bus_EvtChildListIdentificationDescriptionCompare;
@@ -214,7 +214,7 @@ Return Value:
 
     //
     // Configure a default queue so that requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching to goto
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
     // other queues get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
@@ -454,7 +454,7 @@ Routine Description:
 
     //
     // Call the framework to add this child to the childlist. This call
-    // will internaly call our DescriptionCompare callback to check
+    // will internally call our DescriptionCompare callback to check
     // whether this device is a new device or existing device. If
     // it's a new device, the framework will call DescriptionDuplicate to create
     // a copy of this description in nonpaged pool.
