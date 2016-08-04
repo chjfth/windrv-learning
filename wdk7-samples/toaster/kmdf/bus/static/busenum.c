@@ -1,21 +1,16 @@
 /*++
-
 Copyright (c) 2003  Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BUSENUM.C
 
 Abstract:
-
     This module contains routines to handle the function driver
     aspect of the bus driver. This sample is functionally
     equivalent to the WDM toaster bus driver.
 
 Environment:
-
     kernel mode only
-
 --*/
 
 #include "busenum.h"
@@ -28,7 +23,6 @@ Environment:
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
 #endif
-
 
 
 NTSTATUS
@@ -94,8 +88,9 @@ Routine Description:
     represent a new instance of toaster bus.
 
 Arguments:
-    Driver - Handle to a framework driver object created in DriverEntry
+    Driver - Handle to a framework driver object created in DriverEntry.
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
+
 Return Value:
     NTSTATUS
 --*/
@@ -421,26 +416,19 @@ Routine Description:
 
 NTSTATUS
 Bus_UnPlugDevice(
-    WDFDEVICE   Device,
+    WDFDEVICE   Device, // the FDO
     ULONG       SerialNo
     )
 /*++
-
 Routine Description:
-
     The application has told us a device has departed from the bus.
 
     We therefore need to flag the PDO as no longer present
     and then tell Plug and Play about it.
 
-Arguments:
-
-
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
-
 --*/
 
 {
@@ -449,7 +437,6 @@ Returns:
     BOOLEAN          plugOutAll;
     WDFDEVICE        hChild;
     NTSTATUS         status = STATUS_INVALID_PARAMETER;
-
     PAGED_CODE ();
 
     plugOutAll = (0 == SerialNo) ? TRUE : FALSE;
@@ -459,11 +446,11 @@ Returns:
     WdfFdoLockStaticChildListForIteration(Device);
 
     while ((hChild = WdfFdoRetrieveNextStaticChild(Device,
-                            hChild, WdfRetrieveAddedChildren)) != NULL) {
-
+                            hChild, WdfRetrieveAddedChildren)) != NULL) 
+	{
         if (plugOutAll) {
 
-            status = WdfPdoMarkMissing(hChild);
+            status = WdfPdoMarkMissing(hChild); // differ to Bus_EjectDevice
             if(!NT_SUCCESS(status)) {
                 KdPrint(("WdfPdoMarkMissing failed 0x%x\n", status));
                 break;
@@ -493,32 +480,24 @@ Returns:
     if (found) {
         status = STATUS_SUCCESS;
     }
-
     return status;
 }
 
 NTSTATUS
 Bus_EjectDevice(
-    WDFDEVICE   Device,
+    WDFDEVICE   Device,  // the FDO
     ULONG       SerialNo
     )
 
 /*++
-
 Routine Description:
-
     The user application has told us to eject the device from the bus.
     In a real situation the driver gets notified by an interrupt when the
     user presses the Eject button on the device.
 
-Arguments:
-
-
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
-
 --*/
 
 {
@@ -526,7 +505,6 @@ Returns:
     BOOLEAN          ejectAll;
     WDFDEVICE        hChild;
     NTSTATUS         status = STATUS_INVALID_PARAMETER;
-
     PAGED_CODE ();
 
     //
@@ -539,14 +517,14 @@ Returns:
 
     while ((hChild = WdfFdoRetrieveNextStaticChild(Device,
                                        hChild,
-                                       WdfRetrieveAddedChildren)) != NULL) {
-
+                                       WdfRetrieveAddedChildren)) != NULL) 
+	{
         pdoData = PdoGetData(hChild);
 
         if (ejectAll || SerialNo == pdoData->SerialNo) {
 
             status = STATUS_SUCCESS;
-            WdfPdoRequestEject(hChild);
+            WdfPdoRequestEject(hChild);    // differ to Bus_UnPlugDevice
             if (!ejectAll) {
                 break;
             }
@@ -554,7 +532,6 @@ Returns:
     }
 
     WdfFdoUnlockStaticChildListFromIteration(Device);
-
     return status;
 }
 
@@ -564,7 +541,6 @@ Bus_DoStaticEnumeration(
     )
 /*++
 Routine Description:
-
     The routine enables you to statically enumerate child devices
     during start instead of running the enum.exe/notify.exe to
     enumerate toaster devices.
@@ -578,9 +554,7 @@ Routine Description:
                         NumberOfToasters:REG_DWORD:2
 
     You can also configure this value in the Toaster Bus Inf file.
-
 --*/
-
 {
     WDFKEY      hKey = NULL;
     NTSTATUS    status;

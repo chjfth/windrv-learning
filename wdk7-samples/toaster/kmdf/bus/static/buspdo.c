@@ -51,10 +51,8 @@ Return Value:
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_ID_LEN);
 
     KdPrint(("BusEnum: Entered Bus_CreatePdo\n"));
-
     PAGED_CODE();
 
-    //
     // Allocate a WDFDEVICE_INIT structure and set the properties
     // so that we can create a device object for the child.
     //
@@ -65,24 +63,21 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // Set DeviceType
-    //
     WdfDeviceInitSetDeviceType(pDeviceInit, FILE_DEVICE_BUS_EXTENDER);
 
-    //
     // Provide DeviceID, HardwareIDs, CompatibleIDs and InstanceId
-    //
-    RtlInitUnicodeString(&deviceId,HardwareIds);
+
+	RtlInitUnicodeString(&deviceId,HardwareIds);
 
     status = WdfPdoInitAssignDeviceID(pDeviceInit, &deviceId);
+		// deviceId sample:
+		// {B85B7C50-6A01-11d2-B841-00C04FAD5171}\MsToaster
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
     }
 
-    //
-    // Note same string  is used to initialize hardware id too
-    //
+    // Note same string is used to initialize hardware id too
     status = WdfPdoInitAddHardwareID(pDeviceInit, &deviceId);
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
@@ -103,7 +98,11 @@ Return Value:
         goto Cleanup;
     }
 
-    //
+	// Chj note: When toaster device is added with `enum -p 7`, 
+	// Win7 devmgmt.msc shows Device Instance Path as
+	//	{B85B7C50-6A01-11D2-B841-00C04FAD5171}\MSTOASTER\1&79F5D87&0&07
+	// -- note that the trailing '07' matches `buffer` value.
+
     // Provide a description about the device. This text is usually read from
     // the device. In the case of USB device, this text comes from the string
     // descriptor. This text is displayed momentarily by the PnP manager while
