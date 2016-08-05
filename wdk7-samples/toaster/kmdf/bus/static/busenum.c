@@ -128,7 +128,6 @@ Return Value:
         return status;
     }
 
-    //
     // Get the device context.
     //
     deviceData = FdoGetData(device);
@@ -143,10 +142,9 @@ Return Value:
         return status;
     }
 
-    //
-    // Configure a default queue so that requests that are not
+    // Configure a default queue so that requests [that are not
     // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
-    // other queues get dispatched here.
+    // other queues] get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
         &queueConfig,
@@ -165,7 +163,6 @@ Return Value:
         return status;
     }
 
-    //
     // Create device interface for this device. The interface will be
     // enabled by the framework when we return from StartDevice successfully.
     //
@@ -207,16 +204,12 @@ Bus_EvtIoDeviceControl(
     IN size_t       InputBufferLength,
     IN ULONG        IoControlCode
     )
-
 /*++
 Routine Description:
-
   Handle user mode PlugIn, UnPlug and device Eject requests.
 
 Arguments:
-
-    Queue - Handle to the framework queue object that is associated
-            with the I/O request.
+    Queue - Handle to the framework queue object that is associated with the I/O request.
 
     Request - Handle to a framework request object. This one represents
               the IRP_MJ_DEVICE_CONTROL IRP received by the framework.
@@ -228,11 +221,8 @@ Arguments:
                         if an input buffer is available.
     IoControlCode - Driver-defined or system-defined I/O control code (IOCTL)
                     that is associated with the request.
-
 Return Value:
-
    VOID
-
 --*/
 {
     NTSTATUS                 status = STATUS_INVALID_PARAMETER;
@@ -254,17 +244,17 @@ Return Value:
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
         status = WdfRequestRetrieveInputBuffer (Request,
-                                    sizeof (BUSENUM_PLUGIN_HARDWARE) +
-                                        (sizeof(UNICODE_NULL) * 2), // 2 for double NULL termination (MULTI_SZ)
-                                    &plugIn,
-                                    &length);
+            sizeof (BUSENUM_PLUGIN_HARDWARE) +
+                (sizeof(UNICODE_NULL) * 2), // 2 for double NULL termination (MULTI_SZ)
+            &plugIn,
+            &length);
         if( !NT_SUCCESS(status) ) {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
         if (sizeof (BUSENUM_PLUGIN_HARDWARE) == plugIn->Size)
-         {
+        {
             length = (InputBufferLength - sizeof (BUSENUM_PLUGIN_HARDWARE))/sizeof(WCHAR);
             //
             // Make sure the IDs is double NULL terminated. TODO:
@@ -339,7 +329,6 @@ Routine Description:
     of PDOs for this FDO bus, and then tell Plug and Play that all of this
     happened so that it will start sending prodding IRPs.
 --*/
-
 {
     NTSTATUS         status = STATUS_SUCCESS;
     BOOLEAN          unique = TRUE;
@@ -348,7 +337,6 @@ Routine Description:
     PFDO_DEVICE_DATA deviceData;
     PAGED_CODE ();
 
-    //
     // First make sure that we don't already have another device with the
     // same serial number.
     // Framework creates a collection of all the child devices we have
@@ -358,7 +346,6 @@ Routine Description:
     deviceData = FdoGetData(Device);
     hChild = NULL;
 
-    //
     // We need an additional lock to synchronize addition because
     // WdfFdoLockStaticChildListForIteration locks against anyone immediately
     // updating the static child list (the changes are put on a queue until the
@@ -373,7 +360,7 @@ Routine Description:
     // We must use a passive level lock because you can only call WdfDeviceCreate
     // at PASSIVE_LEVEL.
     //
-    WdfWaitLockAcquire(deviceData->ChildLock, NULL);
+    WdfWaitLockAcquire(deviceData->ChildLock, NULL);    // 够狠，真要加两道锁
     WdfFdoLockStaticChildListForIteration(Device);
 
     while ((hChild = WdfFdoRetrieveNextStaticChild(Device,
@@ -386,11 +373,10 @@ Routine Description:
         //
         pdoData = PdoGetData(hChild);
 
-        //
         // It's okay to plug in another device with the same serial number
-        // as long as the previous one is in a surprise-removed state. The
-        // previous one would be in that state after the device has been
-        // physically removed, if somebody has an handle open to it.
+        // as long as the previous one is in a surprise-removed state. 
+        // The previous one would be in that state [after the device has been
+        // physically removed, if somebody has an handle open to it].
         //
         if (SerialNo == pdoData->SerialNo) {
             unique = FALSE;
@@ -400,11 +386,9 @@ Routine Description:
     }
 
     if (unique) {
-        //
         // Create a new child device.  It is OK to create and add a child while
         // the list locked for enumeration.  The enumeration lock applies only
         // to enumeration, not addition or removal.
-        //
         status = Bus_CreatePdo(Device, HardwareIds, SerialNo);
     }
 
@@ -416,7 +400,7 @@ Routine Description:
 
 NTSTATUS
 Bus_UnPlugDevice(
-    WDFDEVICE   Device, // the FDO
+    WDFDEVICE   Device, // self FDO
     ULONG       SerialNo
     )
 /*++
@@ -430,7 +414,6 @@ Returns:
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
 --*/
-
 {
     PPDO_DEVICE_DATA pdoData;
     BOOLEAN          found = FALSE;
@@ -485,10 +468,9 @@ Returns:
 
 NTSTATUS
 Bus_EjectDevice(
-    WDFDEVICE   Device,  // the FDO
+    WDFDEVICE   Device,  // self FDO
     ULONG       SerialNo
     )
-
 /*++
 Routine Description:
     The user application has told us to eject the device from the bus.
@@ -499,7 +481,6 @@ Returns:
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
 --*/
-
 {
     PPDO_DEVICE_DATA pdoData;
     BOOLEAN          ejectAll;
@@ -607,6 +588,4 @@ Routine Description:
 
     return status;
 }
-
-
 

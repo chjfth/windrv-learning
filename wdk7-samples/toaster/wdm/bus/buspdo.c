@@ -149,7 +149,7 @@ Routine Description:
         // Plug and Play manager that it's missing.
         //
 		// Chj: 分两种情况进行处理。
-		// 第一种: toaster 子设备被 enum -p 1 强行删除.
+		// 第一种: toaster 子设备被 enum -p 1 强行删除, 或被 surprise-remove.
 		// 第二种：在 devmgmt.msc 里头禁用(disable) toaster 子设备。
 		// if/else 代码块修剪过，更容易看清两条平行的分支, 但并未改变原始写法的逻辑。
 		

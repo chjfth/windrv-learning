@@ -206,7 +206,6 @@ Return Value:
                                     (PINTERFACE) &ToasterInterface,
                                     &GUID_TOASTER_INTERFACE_STANDARD,
                                     NULL);
-    //
     // If you have multiple interfaces, you can call WdfDeviceAddQueryInterface
     // multiple times to add additional interfaces.
     //
@@ -215,7 +214,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // Add this device to the FDO's collection of children.
     // After the child device is added to the static collection successfully,
     // driver must call WdfPdoMarkMissing to get the device deleted. It
@@ -231,10 +229,8 @@ Return Value:
 Cleanup:
     KdPrint(("BusEnum: Bus_CreatePdo failed %x\n", status));
 
-    //
-    // Call WdfDeviceInitFree if you encounter an error before the
-    // device is created. Once the device is created, framework
-    // NULLs the pDeviceInit value.
+    // Call WdfDeviceInitFree if you encounter an error before the device is created. 
+	// Once the device is created successfully, framework NULLs the pDeviceInit value.
     //
     if (pDeviceInit != NULL) {
         WdfDeviceInitFree(pDeviceInit);
