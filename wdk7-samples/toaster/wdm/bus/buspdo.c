@@ -55,7 +55,7 @@ Routine Description:
     // NB: Because we are a bus enumerator, we have no one to whom we could
     // defer these irps.  Therefore we do not pass them down but merely return them.
     //
-
+	
     switch (IrpStack->MinorFunction) 
 	{{
     case IRP_MN_START_DEVICE:
@@ -148,10 +148,16 @@ Routine Description:
         // We will delete the PDO only after we have reported to the
         // Plug and Play manager that it's missing.
         //
+		// Chj: 分两种情况进行处理。
+		// 第一种: toaster 子设备被 enum -p 1 强行删除.
+		// 第二种：在 devmgmt.msc 里头禁用(disable) toaster 子设备。
+		// if/else 代码块修剪过，更容易看清两条平行的分支, 但并未改变原始写法的逻辑。
 		
-        if (DeviceData->ReportedMissing) {
-            PFDO_DEVICE_DATA fdoData;
+        if (DeviceData->ReportedMissing) 
+		{
+			// toaster 子设备被删除，需要同时销毁 PDO 
 
+            PFDO_DEVICE_DATA fdoData;
             SET_NEW_PNP_STATE(DeviceData, Deleted);
 
             // Remove the PDO from the list and decrement the count of PDO.
@@ -171,23 +177,20 @@ Routine Description:
 
             // Free up resources associated with PDO and delete it.
             status = Bus_DestroyPdo(DeviceObject, DeviceData);
-            break;
         }
+		else
+		{
+			// 设备管理器中 *disable* 子设备，将执行此处代码，此情况下不销毁 PDO 。
+			// 正因为不删除 PDO ，设备管理器中才能继续显示那个设备节点，只不过显示为 disable 的样子，
+			// --在 WinXP 中是在设备节点图标上覆盖一个小红叉，Win7 是覆盖一个用圆圈圈起的朝下箭头。
 
-        if (DeviceData->Present) {
-            // When the device is disabled, the PDO transitions from
-            // RemovePending to NotStarted. We shouldn't delete
-            // the PDO because a) the device is still present on the bus,
+			ASSERT(DeviceData->Present); // chj clarify
+            // When the device is *disabled* , the PDO transitions from
+            // RemovePending to NotStarted. We shouldn't delete the PDO because
+            // a) the device is still present on the bus,
             // b) we haven't reported missing to the PnP manager.
             //
             SET_NEW_PNP_STATE(DeviceData, NotStarted);
-            status = STATUS_SUCCESS;
-
-			// Chj: Q: Bus_DestroyPdo 不调用就走掉了？ 当前 DeviceData 的 PDO 还有机会被删除吗？
-
-        } else {
-			// Chj: 既然这个 else 是死胡同，为什么不将此句调到 if(DeviceData->Present) 之前？
-            ASSERT(DeviceData->Present);
             status = STATUS_SUCCESS;
         }
         break;

@@ -587,6 +587,8 @@ Routine Description:
             break;
         }
 
+		// === 下头都是用来应答 BusRelations 的 ===
+
         // Tell the plug and play system about all the PDOs.
         //
         // There might also be device relations below and above this FDO,
@@ -636,7 +638,7 @@ Routine Description:
 		// 另外, 末尾那个 -1 好像写错了, 应该是先减一再 *sizeof(PDEVICE_OBJECT) .
 		// A: oldRelations 不是指"本次拔插变动之前"的 bus-relation, 而是"Dstack中上一层driver"
 		// (说白了就是一个 upper-filter driver)已经准备好的一份 bus-relation 信息;
-		// prevcount 意思也不是"本次变动之前子设备数", 而是"上一层driver已经准备好的子设备数";
+		// prevcount 意思也不是"本次变动之前子设备数", 而是"Dstack 中上一层driver已经准备好的子设备数";
 		// 因此, 我们自己这层准备的子设备数要追加进去. 
 		// 前几页注释文字 "propagate the relations from the upper drivers" 就是说这个意思。
 		// 当然, oldRelation 和 prevcount 取名不佳，叫 existingRelations 会更好.
@@ -684,7 +686,10 @@ Routine Description:
             if (pdoData->Present) {
                 relations->Objects[prevcount] = pdoData->Self;
                 ObReferenceObject (pdoData->Self);
-					// Chj Q: 此处到底为什么要增加 refcount ?
+					// Chj Q: 此处到底为什么要增加 .PointerCount ?
+					// A: 具体原因未悟出。只不过 WDK chm 的 IRP_MN_QUERY_DEVICE_RELATIONS 明确
+					// 要求我们对于返回（我们返回给 Windows）的每一个 PDO 进行 ObReferenceObject,
+					// Windows 拿到这些 PDO 后会自动对它们进行 dereference 。
                 prevcount++;
             } else {
                 pdoData->ReportedMissing = TRUE;
@@ -940,7 +945,7 @@ Routine Description:
     - Complete any requests queued in the driver.
     
 	- If the device is still attached to the system, then complete the request and return.
-		(Chj: "still attached to the system" 这种情况的处理体现在哪里？)
+		(Chj Q: "still attached to the system" 这种情况的处理体现在哪里？)
     - Otherwise, cleanup device specific allocations, memory, events...
     
 	- Call IoDeleteDevice.
@@ -1220,7 +1225,7 @@ Returns:
             Bus_KdPrint (FdoData, BUS_DBG_IOCTL_INFO,
                           ("Plugged out %d\n", pdoData->SerialNo));
 
-            pdoData->Present = FALSE;
+            pdoData->Present = FALSE; // this will be detected in Bus_FDO_PnP.IRP_MN_QUERY_DEVICE_RELATIONS.BusRelations
             found = TRUE;
             if (!plugOutAll) {
                 break;
