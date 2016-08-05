@@ -1669,7 +1669,7 @@ Return Value Description:
 
     PIO_WORKITEM            item;
     PWORKER_THREAD_CONTEXT  context;
-	PFDO_DATA fdoData = (PFDO_DATA)DeviceObject->DeviceExtension;; // 此变量无用, 仅方便调试器查看 fdoData
+	PFDO_DATA fdoData = (PFDO_DATA)DeviceObject->DeviceExtension; (void)fdoData; // 此变量无用, 仅方便调试器查看 fdoData
 
     // Allocate memory for worker thread context. The PWORKER_THREAD_CONTEXT data
     // type is defined in Power.h. ToasterQueuePassiveLevelPowerCallbackWorker later
@@ -2276,7 +2276,7 @@ Return Value Description:
     PIO_STACK_LOCATION  stack = IoGetCurrentIrpStackLocation(SIrp);
     SYSTEM_POWER_STATE  systemState = stack->Parameters.Power.State.SystemState;
 	
-	PFDO_DATA fdoData = (PFDO_DATA) DeviceObject->DeviceExtension; // 此句无用, 只是为了调试器看 fdoData 方便.
+	PFDO_DATA fdoData = (PFDO_DATA) DeviceObject->DeviceExtension; (void)fdoData; // 此句无用, 只是为了调试器看 fdoData 方便.
 		// Chj: 对于现实的硬件设备, 可能需要参考 fdoData->DeviceCaps 里头的 DeviceState[] 等信息
 		// 来选择一个最合适的 Dx 状态. 比如, Toaster bus 报告的电源映射项之一是 S1->D1 , 那么
 		// System-power 要切换为 S1 时, FDO 可以选 D1(most-powered) 或 D3 .

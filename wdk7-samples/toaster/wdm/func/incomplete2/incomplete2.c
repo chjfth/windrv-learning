@@ -997,8 +997,8 @@ Return Value Description:
     STATUS_SUCCESS to indicate that the create handle operation succeeded.
 --*/
 {
-	IO_STACK_LOCATION *stack = IoGetCurrentIrpStackLocation(Irp); // chj test
     PFDO_DATA    fdoData;
+	IO_STACK_LOCATION *stack = IoGetCurrentIrpStackLocation(Irp); (void)stack; // chj test
     PAGED_CODE();
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
