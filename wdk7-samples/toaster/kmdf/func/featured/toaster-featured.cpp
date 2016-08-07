@@ -727,9 +727,9 @@ Arguments:
     Request - Handle to a framework request object.
 
     Length - Length of the data buffer associated with the request.
-             The default property of the queue is to not dispatch
-             zero length read & write requests to the driver and
-             complete is with status success. So we will never get
+             The default property of the queue is to [not dispatch
+             zero length read & write requests to the driver] and
+             [complete it with status success]. So we will never get
              a zero length request.
 
 Return Value:
@@ -739,10 +739,8 @@ Return Value:
     NTSTATUS    status;
     ULONG_PTR bytesCopied =0;
     WDFMEMORY memory;
-
     UNREFERENCED_PARAMETER(Length);
     UNREFERENCED_PARAMETER(Queue);
-
     PAGED_CODE();
 
     KdPrint(("ToasterEvtIoRead: Request: 0x%p, Queue: 0x%p\n",
@@ -759,7 +757,6 @@ Return Value:
     }
 
     WdfRequestCompleteWithInformation(Request, status, bytesCopied);
-
 }
 
 VOID
