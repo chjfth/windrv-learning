@@ -48,7 +48,7 @@ Routine Description:
     Handle requests from the Plug & Play system for the devices on the BUS
 --*/
 {
-    NTSTATUS                status;
+    NTSTATUS                status = 0;
     PAGED_CODE ();
 
     //
@@ -275,9 +275,11 @@ Routine Description:
         // The PnP Manager sends this IRP to a device
         // stack so filter and function drivers can adjust the
         // resources required by the device, if appropriate.
-        //break;
+		//break;
+        status = 0x1111; // debug
 
-    //case IRP_MN_QUERY_PNP_DEVICE_STATE:
+    case IRP_MN_QUERY_PNP_DEVICE_STATE:
+		status = 0x2222; // debug
         //
         // OPTIONAL for bus drivers.
         // The PnP Manager sends this IRP after the drivers for
@@ -286,15 +288,18 @@ Routine Description:
         // driver for the device calls IoInvalidateDeviceState.
         // break;
 
-    //case IRP_MN_READ_CONFIG:
-    //case IRP_MN_WRITE_CONFIG:
+    case IRP_MN_READ_CONFIG:
+		status = 0x3333; // debug
+    case IRP_MN_WRITE_CONFIG:
+		status = 0x4444; // debug
         //
         // Bus drivers for buses with configuration space must handle
         // this request for their child devices. Our devices don't
         // have a config space.
         // break;
 
-    //case IRP_MN_SET_LOCK:
+    case IRP_MN_SET_LOCK:
+		status = 0x5555; // debug
         //
         // Our device is not a lockable device
         // so we don't support this Irp.

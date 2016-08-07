@@ -699,7 +699,7 @@ Updated Routine Description:
             // ToasterDispatchIoctl set DontDisplayinUI to TRUE when it processed
             // IOCTL_DONT_DISPLAY_UI_IN_DEVICE. ToasterDispatchIoctl then called
             // IoInvalidateDeviceState, which causes the system to send
-            // IRP_MN_QUERY_PNP_DEVICE_STATE.  // Chj: 注意前头两句是过去时.
+            // IRP_MN_QUERY_PNP_DEVICE_STATE.  // Chj: 注意前两句是过去时.
 			// When ToasterDispatchPnP completes IRP_MN_QUERY_PNP_DEVICE_STATE,
             // (then we tweak it in .Information) , then the hardware instance is no longer
             // displayed in the Device Manager unless the "Show hidden devices" menu

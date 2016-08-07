@@ -30,7 +30,6 @@ Bus_CreatePdo(
 /*++
 Routine Description:
     This routine creates and initialize a PDO.
-Arguments:
 
 Return Value:
     NT Status code.
@@ -154,34 +153,33 @@ Return Value:
 
     pdoData->SerialNo = SerialNo;
 
-    //
     // Set some properties for the child device.
     //
     WDF_DEVICE_PNP_CAPABILITIES_INIT(&pnpCaps);
     pnpCaps.Removable         = WdfTrue;
     pnpCaps.EjectSupported    = WdfTrue;
     pnpCaps.SurpriseRemovalOK = WdfTrue;
-
+	//
     pnpCaps.Address  = SerialNo;
     pnpCaps.UINumber = SerialNo;
-
+	//
     WdfDeviceSetPnpCapabilities(hChild, &pnpCaps);
 
     WDF_DEVICE_POWER_CAPABILITIES_INIT(&powerCaps);
-
+	//
     powerCaps.DeviceD1 = WdfTrue;
     powerCaps.WakeFromD1 = WdfTrue;
     powerCaps.DeviceWake = PowerDeviceD1;
-
+	//
     powerCaps.DeviceState[PowerSystemWorking]   = PowerDeviceD0;
     powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
     powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemShutdown] = PowerDeviceD3;
-
+	//
     WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
-
+	
     // Create a custom interface so that other drivers can
     // query (IRP_MN_QUERY_INTERFACE) and use our callbacks directly.
     //
