@@ -462,7 +462,7 @@ Return Value:
     // member at its default value of 0xFFFFFFFF. In this example
     // the location address is same as instance id.
     //
-    deviceCapabilities->Address = DeviceData->SerialNo;
+    deviceCapabilities->Address = DeviceData->SerialNo;    // + 10; // chj test
 
     // UINumber specifies a number associated with the device that can
     // be displayed in the user interface.
@@ -551,7 +551,7 @@ Return Value:
            status = STATUS_INSUFFICIENT_RESOURCES;
            break;
         }
-        RtlStringCchPrintfW(buffer, length/sizeof(WCHAR), L"%02d", DeviceData->SerialNo);
+        RtlStringCchPrintfW(buffer, length/sizeof(WCHAR), L"%02d", DeviceData->SerialNo /*+20*/); // chj test
         Bus_KdPrint_Cont (DeviceData, BUS_DBG_PNP_INFO,
                      ("\tInstanceID: %ws\n", buffer));
         Irp->IoStatus.Information = (ULONG_PTR) buffer;

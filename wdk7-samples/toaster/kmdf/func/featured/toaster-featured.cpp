@@ -570,7 +570,7 @@ Return Value:
 		// Chj: WdfFdoQueryForInterface 内部向“自身下层driver(PPObject)”发送 IRP_MN_QUERY_INTERFACE, 阻塞着等待完成.
 		//
 		// Chj: 此处查询的是 toaster 子设备的 interface, 但此接口不是由 toaster 子设备的 FDO driver code 来实现的，
-		// 而是由 toaster 子设备的 PDO driver code 来实现， 这个 PDO driver code 实现于 toaster bus driver 。 
+		// 而是由 toaster 子设备的 PDO driver code 来实现， 这个 child PDO code 实现于 toaster bus driver 。 
 		// 见 buspdo.c, Bus_CreatePdo() -> WdfDeviceAddQueryInterface() 调用处。
     if(NT_SUCCESS(status))
     {

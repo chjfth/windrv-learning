@@ -98,7 +98,7 @@ Return Value:
     }
 
 	// Chj note: When toaster device is added with `enum -p 7`, 
-	// Win7 devmgmt.msc shows Device Instance Path as
+	// Win7 devmgmt.msc shows Device Instance Path something like 
 	//	{B85B7C50-6A01-11D2-B841-00C04FAD5171}\MSTOASTER\1&79F5D87&0&07
 	// -- note that the trailing '07' matches `buffer` value.
 
@@ -224,7 +224,7 @@ Return Value:
 
     return status;
 
-Cleanup:
+Cleanup: // Cleanup on failure.
     KdPrint(("BusEnum: Bus_CreatePdo failed %x\n", status));
 
     // Call WdfDeviceInitFree if you encounter an error before the device is created. 
