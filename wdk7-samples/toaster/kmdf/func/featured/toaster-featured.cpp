@@ -323,7 +323,7 @@ Return Value:
     // configure-forwarded using WdfDeviceConfigureRequestDispatching.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig,
-                             WdfIoQueueDispatchParallel); // EvtIoCancel
+                             WdfIoQueueDispatchParallel);
 
     queueConfig.EvtIoRead = ToasterEvtIoRead;
     queueConfig.EvtIoWrite = ToasterEvtIoWrite;
