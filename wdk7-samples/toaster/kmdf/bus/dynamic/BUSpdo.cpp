@@ -2,7 +2,7 @@
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-    BusPdo.c
+    BUSpdo.cpp
 
 Abstract:
     This module handles plug & play calls for the child device (PDO).
@@ -70,7 +70,7 @@ Return Value:
     dst->SerialNo = src->SerialNo;
     dst->CchHardwareIds = src->CchHardwareIds;
 
-	safeMultResult = dst->CchHardwareIds*sizeof(WCHAR); // chj: I think I can do this, no problem.
+	safeMultResult = dst->CchHardwareIds*sizeof(WCHAR); // chj: I think using this is ok.
 		/*
 			status = RtlSizeTMult(dst->CchHardwareIds,
 										  sizeof(WCHAR),

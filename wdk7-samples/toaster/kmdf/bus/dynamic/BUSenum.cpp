@@ -2,7 +2,7 @@
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-    BUSENUM.C
+    BUSenum.cpp
 
 Abstract:
     This module contains routines to handle the function driver
@@ -240,7 +240,7 @@ Return Value:
     //
     // This value is used in responding to the IRP_MN_QUERY_BUS_INFORMATION
     // for the child devices. This is an optional information provided to
-    // uniquely idenitfy the bus the device is connected.
+    // uniquely idenitify the bus the device is connected.
     //
     busInfo.BusTypeGuid = GUID_DEVCLASS_TOASTER;
     busInfo.LegacyBusType = PNPBus;
