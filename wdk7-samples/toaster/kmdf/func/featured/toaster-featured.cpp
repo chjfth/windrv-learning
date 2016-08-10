@@ -566,7 +566,8 @@ Return Value:
 		sizeof(TOASTER_INTERFACE_STANDARD),
 		1,
 		NULL);// InterfaceSpecific Data
-		// Chj: WdfFdoQueryForInterface 内部向 toaster-bus 发送 IRP_MN_QUERY_INTERFACE, 阻塞着等待完成.
+		//
+		// Chj: WdfFdoQueryForInterface 内部向“自身下层driver(PPObject)”发送 IRP_MN_QUERY_INTERFACE, 阻塞着等待完成.
 		//
 		// Chj: 此处查询的是 toaster 子设备的 interface, 但此接口不是由 toaster 子设备的 FDO driver code 来实现的，
 		// 而是由 toaster 子设备的 PDO driver code 来实现， 这个 PDO driver code 实现于 toaster bus driver 。 
