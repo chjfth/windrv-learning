@@ -1,19 +1,14 @@
 /*++
-
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BusPdo.c
 
 Abstract:
-
     This module handles plug & play calls for the child device (PDO).
 
 Environment:
-
     kernel mode only
-
 --*/
 
 #include "busenum.h"
@@ -74,13 +69,17 @@ Return Value:
 
     dst->SerialNo = src->SerialNo;
     dst->CchHardwareIds = src->CchHardwareIds;
-    status = RtlSizeTMult(dst->CchHardwareIds,
-                                  sizeof(WCHAR),
-                                  &safeMultResult
-                                  );
-    if(!NT_SUCCESS(status)){
-        return status;
-    }
+
+	safeMultResult = dst->CchHardwareIds*sizeof(WCHAR); // chj: I think I can do this, no problem.
+		/*
+			status = RtlSizeTMult(dst->CchHardwareIds,
+										  sizeof(WCHAR),
+										  &safeMultResult
+										  );
+			if(!NT_SUCCESS(status)){
+				return status;
+			}
+		*/
 
     dst->HardwareIds = (PWCHAR) ExAllocatePoolWithTag(
         NonPagedPool,
@@ -425,26 +424,22 @@ Return Value:
 
 BOOLEAN
 Bus_GetCrispinessLevel(
-    IN   WDFDEVICE ChildDevice,
+    IN   void * Context, // WDFDEVICE ChildDevice,
     OUT  PUCHAR Level
     )
 /*++
-
 Routine Description:
-
     This routine gets the current crispiness level of the toaster.
 
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
+	WDFDEVICE ChildDevice = (WDFDEVICE)Context;
     UNREFERENCED_PARAMETER(ChildDevice);
 
     //
@@ -461,26 +456,22 @@ Return Value:
 
 BOOLEAN
 Bus_SetCrispinessLevel(
-    IN   WDFDEVICE ChildDevice,
+    IN   void * Context, // WDFDEVICE ChildDevice,
     IN   UCHAR Level
     )
 /*++
-
 Routine Description:
-
     This routine sets the current crispiness level of the toaster.
 
 Arguments:
-
     Context        pointer to  PDO device extension
     Level          crispiness level of the device
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
+	WDFDEVICE ChildDevice = (WDFDEVICE)Context;
     UNREFERENCED_PARAMETER(ChildDevice);
     UNREFERENCED_PARAMETER(Level);
 
@@ -491,24 +482,20 @@ Return Value:
 
 BOOLEAN
 Bus_IsSafetyLockEnabled(
-    IN   WDFDEVICE ChildDevice
+	IN   void * Context // WDFDEVICE ChildDevice,
     )
 /*++
-
 Routine Description:
-
     Routine to check whether safety lock is enabled
 
 Arguments:
-
     Context        pointer to  PDO device extension
 
 Return Value:
-
     TRUE or FALSE
-
 --*/
 {
+	WDFDEVICE ChildDevice = (WDFDEVICE)Context;
     UNREFERENCED_PARAMETER(ChildDevice);
 
     KdPrint(("IsSafetyLockEnabled\n"));

@@ -56,8 +56,8 @@ Return Value:
     NTSTATUS            status;
     WDFDRIVER driver;
 
-    KdPrint(("WDF Toaster Bus Driver Sample Dynamic Version.\n"));
-    KdPrint(("Built %s %s\n", __DATE__, __TIME__));
+    KdPrint(("KMDF Toaster-bus Driver(dynamic version).\n"));
+    KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
     //
     // Initialize driver config to control the attributes that
@@ -336,9 +336,8 @@ Return Value:
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
         status = WdfRequestRetrieveInputBuffer (Request,
-                                    sizeof (BUSENUM_PLUGIN_HARDWARE) +
-                                    (sizeof(UNICODE_NULL) * 2), // 2 for double NULL termination (MULTI_SZ)
-                                    &plugIn, &length);
+                     sizeof (BUSENUM_PLUGIN_HARDWARE) + (sizeof(UNICODE_NULL) * 2), // 2 for double NULL termination (MULTI_SZ)
+                     (void**)&plugIn, &length);
         if( !NT_SUCCESS(status) ) {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
@@ -372,7 +371,7 @@ Return Value:
 
         status = WdfRequestRetrieveInputBuffer( Request,
                                                 sizeof(BUSENUM_UNPLUG_HARDWARE),
-                                                &unPlug,
+                                                (void**)&unPlug,
                                                 &length );
         if( !NT_SUCCESS(status) ) {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
@@ -392,7 +391,7 @@ Return Value:
 
         status = WdfRequestRetrieveInputBuffer (Request,
                                                 sizeof (BUSENUM_EJECT_HARDWARE),
-                                                &eject, &length);
+                                                (void**)&eject, &length);
         if( !NT_SUCCESS(status) ) {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;

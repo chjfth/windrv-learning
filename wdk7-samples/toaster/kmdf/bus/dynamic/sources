@@ -20,9 +20,9 @@ NTTARGETFILE1=$(OBJ_PATH)\$(O)\$(INF_NAME).inf
 PASS1_BINPLACE=$(NTTARGETFILE1)
 
 
-SOURCES= busenum.rc \
-         busenum.c \
-         buspdo.c \
+SOURCES= BUSenum.rc \
+         BUSenum.cpp \
+         BUSpdo.cpp \
          wmi.c
 
 TARGET_DESTINATION=wdf

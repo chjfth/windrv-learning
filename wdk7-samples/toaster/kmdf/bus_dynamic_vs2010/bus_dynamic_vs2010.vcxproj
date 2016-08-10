@@ -215,12 +215,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\bus\dynamic\BUSenum.c" />
-    <ClCompile Include="..\bus\dynamic\BUSpdo.c" />
+    <ClCompile Include="..\bus\dynamic\BUSenum.cpp" />
+    <ClCompile Include="..\bus\dynamic\BUSpdo.cpp" />
     <ClCompile Include="..\bus\dynamic\WMI.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\bus\dynamic\busenum.h" />
+    <ClInclude Include="..\bus\dynamic\BUSenum.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\bus\dynamic\BUSenum.mof">

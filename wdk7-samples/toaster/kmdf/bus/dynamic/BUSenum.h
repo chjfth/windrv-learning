@@ -1,33 +1,38 @@
 /*++
-
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     busenum.h
 
 Abstract:
-
     This module contains the common private declarations
     for the Toaster Bus enumerator.
 
 Environment:
-
     kernel mode only
-
 --*/
+
+#ifndef BUSENUM_H
+#define BUSENUM_H
+
+#ifdef __cplusplus
+extern"C"{
+#endif
+
+#include <VisualDDKHelpers.h>
+
 
 #include <ntddk.h>
 #include <wdf.h>
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
-#include <ntintsafe.h>
+
+//#include <ntintsafe.h> // only for RtlSizeTMult()
+	// Chj: When <VisualDDKHelpers.h> is present above, this causes NTSTATUS redefinition.
+
 #include <initguid.h>
 #include "driver.h"
 #include "public.h"
-
-#ifndef BUSENUM_H
-#define BUSENUM_H
 
 extern ULONG BusEnumDebugLevel;
 
@@ -185,13 +190,13 @@ Bus_DoStaticEnumeration(
 
 BOOLEAN
 Bus_GetCrispinessLevel(
-    IN   WDFDEVICE ChildDevice,
+    IN   void *Context, //WDFDEVICE ChildDevice,
     OUT  PUCHAR Level
     );
 
 BOOLEAN
 Bus_SetCrispinessLevel(
-    IN   WDFDEVICE ChildDevice,
+	IN   void *Context, //WDFDEVICE ChildDevice,
     OUT  UCHAR Level
     );
 
@@ -213,5 +218,9 @@ EVT_WDF_WMI_INSTANCE_SET_ITEM Bus_EvtStdDataSetItem;
 EVT_WDF_WMI_INSTANCE_SET_INSTANCE Bus_EvtStdDataSetInstance;
 EVT_WDF_WMI_INSTANCE_QUERY_INSTANCE Bus_EvtStdDataQueryInstance;
 
+#ifdef __cplusplus
+} // extern"C"{
 #endif
+
+#endif // BUSENUM_H
 
