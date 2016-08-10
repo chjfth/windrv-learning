@@ -191,7 +191,7 @@ Return Value:
     //
     // Let the framework handle reference counting.
     //
-    ToasterInterface.InterfaceHeader.InterfaceReference =
+    ToasterInterface.InterfaceHeader.InterfaceReference =10000000
         WdfDeviceInterfaceReferenceNoOp;
     ToasterInterface.InterfaceHeader.InterfaceDereference =
         WdfDeviceInterfaceDereferenceNoOp;
@@ -252,7 +252,7 @@ Routine Description:
     This routine gets the current crispiness level of the toaster.
 
 Arguments:
-    Context        pointer to  PDO device extension
+    Context        pointer to  PDO device extension    // chj: This comment is wrong, copied from WDM version missing update.
     Level          crispiness level of the device
 
 Return Value:
