@@ -1,21 +1,16 @@
 /*++
-
 Copyright (c) Microsoft Corporation All Rights Reserved
 
 Module Name:
-
     BUSENUM.C
 
 Abstract:
-
-    This module contains routies to handle the function driver
+    This module contains routines to handle the function driver
     aspect of the bus driver. This sample is functionally
     equivalent to the WDM toaster bus driver.
 
 Environment:
-
     kernel mode only
-
 --*/
 
 #include "busenum.h"
@@ -36,20 +31,14 @@ DriverEntry(
     )
 /*++
 Routine Description:
-
     Initialize the call backs structure of Driver Framework.
 
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
-
 Return Value:
-
   NT Status Code
-
 --*/
 {
     WDF_DRIVER_CONFIG   config;
@@ -86,7 +75,6 @@ Return Value:
     }
 
     return status;
-
 }
 
 
@@ -97,21 +85,16 @@ Bus_EvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     Bus_EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of toaster bus.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_CHILD_LIST_CONFIG      config;
@@ -751,5 +734,4 @@ Routine Description:
 
     return status;
 }
-
 

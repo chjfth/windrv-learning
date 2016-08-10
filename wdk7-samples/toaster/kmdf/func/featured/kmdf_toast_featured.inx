@@ -74,7 +74,7 @@ HKR,,"BeepCount",0x00010003,4
 ;-------------- Service installation
 
 [Toaster_Device.NT.Services]
-AddService = wdffeatured, %SPSVCINST_ASSOCSERVICE%, wdffeatured_Service_Inst
+AddService = toastk_featured, %SPSVCINST_ASSOCSERVICE%, wdffeatured_Service_Inst
 
 [wdffeatured_Service_Inst]
 DisplayName     = %Toaster.SVCDESC%
@@ -114,7 +114,7 @@ WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
 [Toaster_Device.NT.Wdf]
-KmdfService              = wdffeatured, wdffeatured_wdfsect
+KmdfService              = toastk_featured, wdffeatured_wdfsect
 
 [wdffeatured_wdfsect]
 KmdfLibraryVersion       = $KMDFVERSION$
