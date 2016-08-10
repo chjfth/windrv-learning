@@ -1,4 +1,4 @@
-TARGETNAME=dynambus
+TARGETNAME=BusDynamic
 TARGETTYPE=DRIVER
 
 
@@ -8,7 +8,7 @@ INCLUDES=$(INCLUDES);..\..\inc\
 
 KMDF_VERSION_MAJOR=1
 
-INF_NAME=dynambus
+INF_NAME=BusDynamic
 
 TARGETLIBS=$(TARGETLIBS) \
            $(DDK_LIB_PATH)\ntstrsafe.lib
