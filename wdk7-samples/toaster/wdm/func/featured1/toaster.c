@@ -765,19 +765,15 @@ Updated Routine Description:
 
 
 
-
 NTSTATUS
 ToasterCreate (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
-
 /*++
-
 Updated Routine Description:
     ToasterCreate calls ToasterGetStandardInterface to demonstrate how to return a
     direct-call interface to the underlying bus driver.
-
 --*/
 {
     PFDO_DATA    fdoData;
@@ -846,26 +842,27 @@ Updated Routine Description:
         // PnP notification for device removal to dereference and stop using the interface.
         //
         if (busInterface.InterfaceDereference != NULL) {
+			// Chj: 此处代码仅是演示“获取与释放” toaster bus interface 的写法，
+			// busInterface 并不留给后头的代码使用，因此此处就将其释放了。
+			// 此接口返回前就已经被 bus driver 增加了一个 reference 了，增加 reference 的语句
+			// 不是在 Windows 框架中，而是明写在 Bus_PDO_QueryInterface() 中, 即 Bus_InterfaceReference(DeviceData); 。
             (*busInterface.InterfaceDereference)((PVOID)busInterface.Context);
         }
     }
 
     //
     // We don't want to fail Create just because we weren't able to get the
-    // direct-call interface. If this driver is loaded on top of a bus other
-    // than toaster, ToasterGetStandardInterface will return an error.
+    // direct-call interface. 
+	// If this driver is loaded on top of a bus other than "toaster bus",
+    // ToasterGetStandardInterface() will return an error.
     //
 
     status = STATUS_SUCCESS;
-
     Irp->IoStatus.Information = 0;
-
     Irp->IoStatus.Status = status;
-
     IoCompleteRequest (Irp, IO_NO_INCREMENT);
 
     ToasterIoDecrement(fdoData);
-
     return status;
 }
 
@@ -1983,22 +1980,22 @@ New Routine Description:
     down the device stack to be processed by the bus driver.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject] // here, the toaster-bus device-object
     DeviceObject represents the target device object to query for the direct-call
     interface.
 
-    BusInterface
+    [BusInterface]
     BusInterface represents the interface exported by the underlying bus driver.
     The members of this pointer are filled out correctly if the bus driver
     successfully receives and processes the custom IRP.
 
 Return Value Description:
-    ToasterGetStandardInterface returns STATUS_INSUFFICIENT_RESOURCES if it cannot
-    allocate memory for the custom IRP. ToasterGetStandardInterface returns
-    STATUS_NOT_SUPPORTED if the bus driver fails to receive and process the custom
-    IRP. Otherwise, ToasterGetStandardInterface returns the status of how the bus
-    driver processed the custom IRP.
-
+    - ToasterGetStandardInterface returns STATUS_INSUFFICIENT_RESOURCES if it cannot
+      allocate memory for the custom IRP. 
+	- ToasterGetStandardInterface returns STATUS_NOT_SUPPORTED if the bus driver fails to 
+	  receive and process the custom IRP. 
+	- Otherwise, ToasterGetStandardInterface returns the status of how the bus
+      driver processed the custom IRP.
 --*/
 {
     KEVENT event;
@@ -2010,21 +2007,18 @@ Return Value Description:
 
     ToasterDebugPrint(TRACE, "ToasterGetBusStandardInterface entered.\n");
 
-    //
     // Initialize a kernel event to an unsignaled state. The event blocks the thread
     // that processes ToasterGetStandardInterface from returning to the caller until
     // the system signals the event when the bus driver completes the custom IRP.
     //
     KeInitializeEvent( &event, NotificationEvent, FALSE );
 
-    //
     // Get a pointer to the device object at top of the device stack which contains
     // DeviceObject. IoGetAttachedDeviceReference increments the reference count on
-    // DeviceObject.
+    // DeviceObject.  (needs ObDereferenceObject() later)
     //
     targetObject = IoGetAttachedDeviceReference( DeviceObject );
 
-    //
     // Allocate an IRP to be processed synchronously by the underlying bus driver.
     // Pass IRP_MN_PNP as the major function code for the custom IRP. The system
     // dispatches the IRP to the bus driver's DispatchPnP routine when
@@ -2041,14 +2035,12 @@ Return Value Description:
                                         NULL,
                                         &event,
                                         &ioStatusBlock );
-
     if (NULL == irp)
     {
         status = STATUS_INSUFFICIENT_RESOURCES;
         goto End;
     }
 
-    //
     // Get a pointer to the IRP's parameters from their location on the device stack.
     // ToasterGetStandardInterface calls IoGetNextIrpStackLocation to get a pointer
     // to the parameters for the next lower driver because that is the driver the
@@ -2057,9 +2049,7 @@ Return Value Description:
     //
     irpStack = IoGetNextIrpStackLocation( irp );
 
-    //
-    // Specify the minor function code for the custom IRP for the bus driver to
-    // process.
+    // Specify the minor function code for the custom IRP for the bus driver to process.
     //
     irpStack->MinorFunction = IRP_MN_QUERY_INTERFACE;
 
@@ -2071,19 +2061,14 @@ Return Value Description:
     irpStack->Parameters.QueryInterface.InterfaceType =
                         (LPGUID) &GUID_TOASTER_INTERFACE_STANDARD;
 
-    //
     // Initialize the remaining members of the custom IRP before passing the IRP down
     // the device stack.
     //
     irpStack->Parameters.QueryInterface.Size = sizeof(TOASTER_INTERFACE_STANDARD);
-
     irpStack->Parameters.QueryInterface.Version = 1;
-
     irpStack->Parameters.QueryInterface.Interface = (PINTERFACE) BusInterface;
-
     irpStack->Parameters.QueryInterface.InterfaceSpecificData = NULL;
 
-    //
     // Initialize the status of the custom IRP to an error in case the bus driver
     // does not receive or successfully process the IRP. That is, assume the bus
     // driver is not going to process the IRP, so initialize the IRP with an error
@@ -2092,16 +2077,15 @@ Return Value Description:
     //
     irp->IoStatus.Status = STATUS_NOT_SUPPORTED;
 
-    //
-    // Pass the custom IRP to the driver at the top of the device stack. The drivers
+    // Pass the custom IRP to the （bus) driver at the top of the device stack. The drivers
     // in the device stack pass down unhandled IRPs, including the custom IRP until
     // it reaches the underlying bus driver where the interface is obtained.
     //
     status = IoCallDriver( targetObject, irp );
+		// chj: Will call into buspdo.c Bus_PDO_QueryInterface()
 
     if (STATUS_PENDING == status)
     {
-        //
         // If the bus driver marked the IRP as pending, then suspend the thread that
         // is processing ToasterGetStandardInterface until the system signals the
         // kernel event initialized earlier.
@@ -2113,9 +2097,7 @@ Return Value Description:
         //
         KeWaitForSingleObject( &event, Executive, KernelMode, FALSE, NULL );
 
-        //
         // Copy the status of the custom IRP to return to the caller.
-        //
         status = ioStatusBlock.Status;
     }
 
@@ -2125,7 +2107,6 @@ Return Value Description:
     }
 
 End:
-    //
     // Decrement the outstanding reference count of the device object at the top of
     // the device stack. The reference count to that device object was incremented
     // earlier when ToasterGetStandardInterface called IoGetAttachedDeviceReference.

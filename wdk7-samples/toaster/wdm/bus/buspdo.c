@@ -1068,8 +1068,9 @@ Return Value:
 
    irpStack = IoGetCurrentIrpStackLocation(Irp);
    interfaceType = (GUID *) irpStack->Parameters.QueryInterface.InterfaceType;
-   if (IsEqualGUID(interfaceType, (PVOID) &GUID_TOASTER_INTERFACE_STANDARD)) {
-
+   
+   if (IsEqualGUID(interfaceType, (PVOID) &GUID_TOASTER_INTERFACE_STANDARD)) 
+   {
       if (irpStack->Parameters.QueryInterface.Size <
                     sizeof(TOASTER_INTERFACE_STANDARD)
                     && irpStack->Parameters.QueryInterface.Version != 1) {

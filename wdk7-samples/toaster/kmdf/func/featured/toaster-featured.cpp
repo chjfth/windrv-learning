@@ -560,12 +560,13 @@ Return Value:
     // We will provide an example on how to get a bus-specific direct
     // call interface from a bus driver.
     //
-    status = WdfFdoQueryForInterface(Device,
-                                   &GUID_TOASTER_INTERFACE_STANDARD, // Chj: 对,这是 toaster 子设备的 interface
-                                   (PINTERFACE) &fdoData->BusInterface,
-                                   sizeof(TOASTER_INTERFACE_STANDARD),
-                                   1,
-                                   NULL);// InterfaceSpecific Data
+	status = WdfFdoQueryForInterface(Device,
+		&GUID_TOASTER_INTERFACE_STANDARD, // Chj: 这是 toaster-bus interface
+		(PINTERFACE) &fdoData->BusInterface,
+		sizeof(TOASTER_INTERFACE_STANDARD),
+		1,
+		NULL);// InterfaceSpecific Data
+		// Chj: WdfFdoQueryForInterface 内部向 toaster-bus 发送 IRP_MN_QUERY_INTERFACE, 阻塞着等待完成.
     if(NT_SUCCESS(status))
     {
         UCHAR powerlevel;
