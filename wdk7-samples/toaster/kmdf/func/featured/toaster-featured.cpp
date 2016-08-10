@@ -640,7 +640,6 @@ ToasterEvtDeviceFileCreate (
     )
 /*++
 Routine Description:
-
     The framework calls a driver's EvtDeviceFileCreate callback
     when the framework receives an IRP_MJ_CREATE request.
     The system sends this request when a user application opens the
@@ -676,25 +675,22 @@ VOID
 ToasterEvtFileClose (
     IN WDFFILEOBJECT    FileObject
     )
-
 /*++
-
 Routine Description:
-
-   EvtFileClose is called when all the handles represented by the FileObject
-   is closed and all the references to FileObject is removed. This callback
+   EvtFileClose is called when [all the handles represented by the FileObject
+   is closed and all the references to FileObject is removed]. This callback
    may get called in an arbitrary thread context instead of the thread that
-   called CloseHandle. If you want to delete any per FileObject context that
-   must be done in the context of the user thread that made the Create call,
-   you should do that in the EvtDeviceCleanp callback.
+   called CloseHandle. 
+   
+   If you want to delete any per FileObject context , that
+   must be done in the context of the user thread that made the Create call, i.e.
+   you should do that in the EvtDeviceCleanp callback(not in this "close" callback).
 
 Arguments:
-
     FileObject - Pointer to fileobject that represents the open handle.
 
 Return Value:
-
-
+	VOID
 --*/
 {
     PFDO_DATA    fdoData;
