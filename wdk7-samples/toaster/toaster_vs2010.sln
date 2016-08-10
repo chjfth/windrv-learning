@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toast_simple", "kmdf\f
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toast_featured", "kmdf\func_featured_vs2010\func_featured_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-2016CCCC0021}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_bus_dynamic", "kmdf\bus_dynamic_vs2010\bus_dynamic_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-2016CCCC0011}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -89,6 +91,14 @@ Global
 		{AAE14642-CB46-449B-B30F-2016CCCC0021}.Release|Win32.Build.0 = Release|Win32
 		{AAE14642-CB46-449B-B30F-2016CCCC0021}.Release|x64.ActiveCfg = Release|x64
 		{AAE14642-CB46-449B-B30F-2016CCCC0021}.Release|x64.Build.0 = Release|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Debug|Win32.Build.0 = Debug|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Debug|x64.ActiveCfg = Debug|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Debug|x64.Build.0 = Debug|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|Win32.ActiveCfg = Release|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|Win32.Build.0 = Release|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|x64.ActiveCfg = Release|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
