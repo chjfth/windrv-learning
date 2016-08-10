@@ -535,27 +535,21 @@ Updated Routine Description:
                 "IoSetDeviceInterfaceState failed: 0x%x\n", status);
         }
 
-        //
         // Return the hardware resources that ToasterStartDevice used earlier to
         // start the hardware instance when ToasterDispatchPnP processed
         // IRP_MN_START_DEVICE.
         //
         ToasterReturnResources(DeviceObject);
 
-        //
         // Deregister with WMI. The function driver registered to be a WMI provider
         // earlier in ToasterStartDevice called ToasterWmiRegistration.
         //
         ToasterWmiDeRegistration(fdoData);
 
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
         ToasterIoDecrement(fdoData);
-
         return status;
 
    case IRP_MN_REMOVE_DEVICE:
@@ -575,14 +569,12 @@ Updated Routine Description:
                         "IoSetDeviceInterfaceState failed: 0x%x\n", status);
             }
 
-            //
             // Return the hardware resources that ToasterStartDevice used earlier to
             // start the hardware instance when ToasterDispatchPnP processed
             // IRP_MN_START_DEVICE.
             //
             ToasterReturnResources(DeviceObject);
 
-            //
             // Deregister with WMI. The function driver registered to be a WMI provider
             // earlier in ToasterStartDevice called ToasterWmiRegistration.
             //
@@ -590,7 +582,6 @@ Updated Routine Description:
         }
 
         requestCount = ToasterIoDecrement (fdoData);
-
         ASSERT(requestCount > 0);
 
         requestCount = ToasterIoDecrement (fdoData);
@@ -603,17 +594,12 @@ Updated Routine Description:
                 NULL);
 
         Irp->IoStatus.Status = STATUS_SUCCESS;
-
         IoSkipCurrentIrpStackLocation (Irp);
-
         status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
         IoDetachDevice (fdoData->NextLowerDriver);
-
         RtlFreeUnicodeString(&fdoData->InterfaceName);
-
         IoDeleteDevice (fdoData->Self);
-
         return status;
 
     case IRP_MN_QUERY_CAPABILITIES:
