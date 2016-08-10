@@ -191,7 +191,7 @@ Return Value:
     //
     // Let the framework handle reference counting.
     //
-    ToasterInterface.InterfaceHeader.InterfaceReference =10000000
+    ToasterInterface.InterfaceHeader.InterfaceReference =
         WdfDeviceInterfaceReferenceNoOp;
     ToasterInterface.InterfaceHeader.InterfaceDereference =
         WdfDeviceInterfaceDereferenceNoOp;
