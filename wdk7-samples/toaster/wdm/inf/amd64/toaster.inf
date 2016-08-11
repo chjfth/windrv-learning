@@ -86,7 +86,7 @@ tostrcls.dll = 1,,
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "Microsoft"
+MSFT = "MicrosoftDemo"
 StdMfg = "(Standard system devices)"
 ClassName = "Toaster"
 DiskId1 = "Toaster Device Installation Disk #1"
