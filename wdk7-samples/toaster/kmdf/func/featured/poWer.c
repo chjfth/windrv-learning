@@ -46,7 +46,7 @@ Routine Description:
     EvtDeviceD0Entry callback when the Power manager sends an
     IRP_MN_SET_POWER-DevicePower request to the driver stack. The Power manager
     sends this request when the power policy manager of this device stack
-    (probaby the FDO) requests a change in D-state by calling PoRequestPowerIrp.
+    (probably the FDO) requests a change in D-state by calling PoRequestPowerIrp.
 
     This function is not marked pageable because this function is in the
     device power up path. When a function is marked pagable and the code
@@ -55,18 +55,13 @@ Routine Description:
     until the system drivers can service this page fault.
 
 Arguments:
-
     Device - handle to a framework device object.
-
     RecentPowerState - WDF_POWER_DEVICE_STATE-typed enumerator that identifies the
-                device power state that the device was in before this transition
-                to D0.
+             device power state that the device was in before this transition to D0.
 
 Return Value:
-
     NTSTATUS    - A failure here will indicate a fatal error in the driver.
                   The Framework will attempt to tear down the stack.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
@@ -85,24 +80,20 @@ ToasterEvtDeviceD0Exit(
     )
 /*++
 Routine Description:
-
     EvtDeviceD0Entry event is called to program the device to goto
     D1, D2 or D3, which are the low-power states. The framework calls the
     driver's EvtDeviceD0Exit callback when the Power manager sends an
     IRP_MN_SET_POWER-DevicePower request to the driver stack. The Power manager
     sends this request when the power policy manager of this device stack
-    (probaby the FDO) requests a change in D-state by calling PoRequestPowerIrp.
+    (probably the FDO) requests a change in D-state by calling PoRequestPowerIrp.
 
 Arguments:
-
     Device - handle to a framework device object.
-
     DeviceState - WDF_POWER_DEVICE_STATE-typed enumerator that identifies the
                 device power state that the power policy owner (probably the
                 FDO) has decided is appropriate.
 
 Return Value:
-
     NTSTATUS    - A failure here will indicate a fatal error in the driver.
                   The Framework will attempt to tear down the stack.
 --*/
