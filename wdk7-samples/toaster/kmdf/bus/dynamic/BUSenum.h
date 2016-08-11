@@ -71,7 +71,7 @@ typedef struct _TOASTER_BUS_WMI_STD_DATA {
 } TOASTER_BUS_WMI_STD_DATA, * PTOASTER_BUS_WMI_STD_DATA;
 
 //
-// The goal of the identification and address description abstractions is that enough
+// The goal of the *identification* and *address description* abstractions is that enough
 // information is stored for a discovered device so that when it appears on the bus,
 // the framework (with the help of the driver writer) can determine if it is a new or
 // existing device.  The identification and address descriptions are opaque structures
@@ -82,16 +82,16 @@ typedef struct _TOASTER_BUS_WMI_STD_DATA {
 // contains device IDs along with any serial or slot numbers.
 // For some buses (like USB and PCI), the identification of the device is sufficient to
 // address the device on the bus; in these instances there is no need for a separate
-// address description.  Once reported, the identification description remains static
+// address description.  Once reported, the *identification description* remains static
 // for the lifetime of the device.  For example, the identification description that the
 // PCI bus driver would use for a child would contain the vendor ID, device ID,
 // subsystem ID, revision, and class for the device. This sample uses only identification
 // description.
-// On other busses (like 1394 and auto LUN SCSI), the device is assigned a dynamic
+// On other buses (like 1394 and auto LUN SCSI), the device is assigned a dynamic
 // address by the hardware (which may reassigned and updated periodically); in these
-// instances the driver will use the address description to encapsulate this dynamic piece
-// of data.    For example in a 1394 driver, the address description would contain the
-// device's current generation count while the identification description would contain
+// instances the driver will use the *address description* to encapsulate this dynamic piece
+// of data.    For example in a 1394 driver, the *address description* would contain the
+// device's current generation count while the *identification description* would contain
 // vendor name, model name, unit spec ID, and unit software version.
 //
 typedef struct _PDO_IDENTIFICATION_DESCRIPTION
@@ -99,7 +99,7 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER Header; // should contain this header
 
     //
-    // Unique serail number of the device on the bus
+    // Unique serial number of the device on the bus
     //
     ULONG SerialNo;
 
@@ -114,7 +114,7 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 //
 typedef struct _PDO_DEVICE_DATA
 {
-    // Unique serail number of the device on the bus
+    // Unique serial number of the device on the bus
 
     ULONG SerialNo;
 

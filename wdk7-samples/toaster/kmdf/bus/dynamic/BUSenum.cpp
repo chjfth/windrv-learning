@@ -48,20 +48,17 @@ Return Value:
     KdPrint(("KMDF Toaster-bus Driver(dynamic version).\n"));
     KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
-    //
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
     // you can override that by specifying one in the Config structure.
     //
-
     WDF_DRIVER_CONFIG_INIT(
         &config,
         Bus_EvtDeviceAdd
         );
 
-    //
     // Create a framework driver object to represent our driver.
     //
     status = WdfDriverCreate(DriverObject,
@@ -105,14 +102,11 @@ Return Value:
     PNP_BUS_INFORMATION        busInfo;
     PFDO_DEVICE_DATA           deviceData;
     WDFQUEUE                   queue;
-
     UNREFERENCED_PARAMETER(Driver);
-
     PAGED_CODE ();
 
     KdPrint(("Bus_EvtDeviceAdd: 0x%p\n", Driver));
 
-    //
     // Initialize all the properties specific to the device.
     // Framework has default values for the one that are not
     // set explicitly here. So please read the doc and make sure
@@ -127,9 +121,8 @@ Return Value:
     // all the PNP and Power IRPs.
     //
 
-
-    //
-    // WDF_ DEVICE_LIST_CONFIG describes how the framework should handle
+	// == NEW in BusDynamic ==
+    // WDF_DEVICE_LIST_CONFIG describes how the framework should handle
     // dynamic child enumeration on behalf of the driver writer.
     // Since we are a bus driver, we need to specify identification description
     // for our child devices. This description will serve as the identity of our
@@ -141,7 +134,7 @@ Return Value:
                                 sizeof(PDO_IDENTIFICATION_DESCRIPTION),
                                 Bus_EvtDeviceListCreatePdo // callback to create a child device.
                                 );
-    //
+
     // This function pointer will be called when the framework needs to copy a
     // identification description from one location to another.  An implementation
     // of this function is only necessary if the description contains description

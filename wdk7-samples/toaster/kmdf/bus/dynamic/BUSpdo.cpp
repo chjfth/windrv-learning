@@ -27,9 +27,7 @@ Bus_EvtChildListIdentificationDescriptionDuplicate(
     PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER DestinationIdentificationDescription
     )
 /*++
-
 Routine Description:
-
     It is called when the framework needs to make a copy of a description.
     This happens when a request is made to create a new child device by
     calling WdfChildListAddOrUpdateChildDescriptionAsPresent.
@@ -49,15 +47,12 @@ Arguments:
     DestinationIdentificationDescription - Created by the framework in nonpaged pool.
 
 Return Value:
-
     NT Status code.
-
 --*/
 {
     PPDO_IDENTIFICATION_DESCRIPTION src, dst;
     size_t safeMultResult;
     NTSTATUS status;
-
     UNREFERENCED_PARAMETER(DeviceList);
 
     src = CONTAINING_RECORD(SourceIdentificationDescription,
@@ -84,7 +79,7 @@ Return Value:
     dst->HardwareIds = (PWCHAR) ExAllocatePoolWithTag(
         NonPagedPool,
         safeMultResult,
-        BUS_TAG);
+        BUS_TAG); // Bus_EvtChildListIdentificationDescriptionCleanup() will ExFreePool this.
 
     if (dst->HardwareIds == NULL) {
         return STATUS_INSUFFICIENT_RESOURCES;
@@ -104,9 +99,7 @@ Bus_EvtChildListIdentificationDescriptionCompare(
     PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER SecondIdentificationDescription
     )
 /*++
-
 Routine Description:
-
     It is called when the framework needs to compare one description with another.
     Typically this happens whenever a request is made to add a new child device.
     If this function is left unspecified, RtlCompareMemory will be used to compare the
@@ -117,17 +110,13 @@ Routine Description:
     (basically any other WDFCHILDLIST api)
 
 Arguments:
-
     DeviceList - Handle to the default WDFCHILDLIST created by the framework.
 
 Return Value:
-
    TRUE or FALSE.
-
 --*/
 {
     PPDO_IDENTIFICATION_DESCRIPTION lhs, rhs;
-
     UNREFERENCED_PARAMETER(DeviceList);
 
     lhs = CONTAINING_RECORD(FirstIdentificationDescription,
@@ -146,26 +135,20 @@ Bus_EvtChildListIdentificationDescriptionCleanup(
     PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER IdentificationDescription
     )
 /*++
-
 Routine Description:
-
     It is called to free up any memory resources allocated as part of the description.
     This happens when a child device is unplugged or ejected from the bus.
     Memory for the description itself will be freed by the framework.
 
 Arguments:
-
     DeviceList - Handle to the default WDFCHILDLIST created by the framework.
 
     IdentificationDescription - Description of the child being deleted
 
 Return Value:
-
-
 --*/
 {
     PPDO_IDENTIFICATION_DESCRIPTION pDesc;
-
 
     UNREFERENCED_PARAMETER(DeviceList);
 
@@ -187,14 +170,11 @@ Bus_EvtDeviceListCreatePdo(
     PWDFDEVICE_INIT ChildInit
     )
 /*++
-
 Routine Description:
-
     Called by the framework in response to Query-Device relation when
     a new PDO for a child device needs to be created.
 
 Arguments:
-
     DeviceList - Handle to the default WDFCHILDLIST created by the framework as part
                         of FDO.
 
