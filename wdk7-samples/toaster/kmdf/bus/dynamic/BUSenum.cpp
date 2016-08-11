@@ -16,7 +16,7 @@ Environment:
 #include "busenum.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text (INIT, DriverEntry)
+//#pragma alloc_text (INIT, DriverEntry) // after commenting out, still LNK4078 warning
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
 #pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
@@ -121,7 +121,8 @@ Return Value:
     // all the PNP and Power IRPs.
     //
 
-	// == NEW in BusDynamic ==
+	// == NEW in BusDynamic == >>>
+
     // WDF_DEVICE_LIST_CONFIG describes how the framework should handle
     // dynamic child enumeration on behalf of the driver writer.
     // Since we are a bus driver, we need to specify identification description
@@ -146,14 +147,13 @@ Return Value:
     config.EvtChildListIdentificationDescriptionDuplicate =
                                 Bus_EvtChildListIdentificationDescriptionDuplicate;
 
-    //
     // This function pointer will be called when the framework needs to compare
     // two identification descriptions.  If left NULL a call to RtlCompareMemory
     // will be used to compare two identification descriptions.
     //
     config.EvtChildListIdentificationDescriptionCompare =
                                 Bus_EvtChildListIdentificationDescriptionCompare;
-    //
+
     // This function pointer will be called when the framework needs to free a
     // identification description.  An implementation of this function is only
     // necessary if the description contains dynamically allocated memory
@@ -171,19 +171,19 @@ Return Value:
                                          &config,
                                          WDF_NO_OBJECT_ATTRIBUTES);
 
-    //
+	// == NEW in BusDynamic == <<<
+
     // Initialize attributes structure to specify size and accessor function
     // for storing device context.
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DEVICE_DATA);
-
     //
     // Create a framework device object. In response to this call, framework
     // creates a WDM deviceobject and attach to the PDO.
     //
     status = WdfDeviceCreate(&DeviceInit, &fdoAttributes, &device);
 
-    if (!NT_SUCCESS(status)) {
+	if (!NT_SUCCESS(status)) {
         KdPrint(("Error creating device 0x%x\n", status));
         return status;
     }
@@ -204,18 +204,14 @@ Return Value:
                                &queueConfig,
                                WDF_NO_OBJECT_ATTRIBUTES,
                                &queue );
-
     if (!NT_SUCCESS(status)) {
         KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
         return status;
     }
 
-    //
     // Get the device context.
-    //
     deviceData = FdoGetData(device);
 
-    //
     // Create device interface for this device. The interface will be
     // enabled by the framework when we return from StartDevice successfully.
     // Clients of this driver will open this interface and send ioctls.
@@ -233,7 +229,7 @@ Return Value:
     //
     // This value is used in responding to the IRP_MN_QUERY_BUS_INFORMATION
     // for the child devices. This is an optional information provided to
-    // uniquely idenitify the bus the device is connected.
+    // uniquely identify the bus the device is connected.
     //
     busInfo.BusTypeGuid = GUID_DEVCLASS_TOASTER;
     busInfo.LegacyBusType = PNPBus;
@@ -246,10 +242,7 @@ Return Value:
         return status;
     }
 
-    //
-    // Check the registry to see if we need to enumerate child devices during
-    // start.
-    //
+    // Check the registry to see if we need to enumerate child devices during start.
     status = Bus_DoStaticEnumeration(device);
 
     return status;
@@ -264,16 +257,12 @@ Bus_EvtIoDeviceControl(
     IN size_t       InputBufferLength,
     IN ULONG        IoControlCode
     )
-
 /*++
 Routine Description:
-
   Handle user mode PlugIn, UnPlug and device Eject requests.
 
 Arguments:
-
-    Queue - Handle to the framework queue object that is associated
-            with the I/O request.
+    Queue - Handle to the framework queue object that is associated with the I/O request.
 
     Request - Handle to a framework request object. This one represents
               the IRP_MJ_DEVICE_CONTROL IRP received by the framework.
@@ -285,11 +274,6 @@ Arguments:
                         if an input buffer is available.
     IoControlCode - Driver-defined or system-defined I/O control code (IOCTL)
                     that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     NTSTATUS                 status = STATUS_INVALID_PARAMETER;
@@ -298,10 +282,7 @@ Return Value:
     PBUSENUM_PLUGIN_HARDWARE plugIn = NULL;
     PBUSENUM_UNPLUG_HARDWARE unPlug = NULL;
     PBUSENUM_EJECT_HARDWARE  eject  = NULL;
-
-
     UNREFERENCED_PARAMETER(OutputBufferLength);
-
     PAGED_CODE ();
 
     hDevice = WdfIoQueueGetDevice(Queue);
@@ -395,26 +376,19 @@ Bus_PlugInDevice(
     __in size_t          CchHardwareIds,
     __in ULONG           SerialNo
     )
-
 /*++
-
 Routine Description:
-
     The user application has told us that a new device on the bus has arrived.
 
     We therefore create a description structure in stack, fill in information about
     the child device and call WdfChildListAddOrUpdateChildDescriptionAsPresent
     to add the device.
-
 --*/
-
 {
     PDO_IDENTIFICATION_DESCRIPTION description;
     NTSTATUS         status;
-
     PAGED_CODE ();
 
-    //
     // Initialize the description with the information about the newly
     // plugged in device.
     //
@@ -459,27 +433,21 @@ Bus_UnPlugDevice(
     ULONG       SerialNo
     )
 /*++
-
 Routine Description:
-
     The application has told us a device has departed from the bus.
 
     We therefore need to flag the PDO as no longer present.
 
 Arguments:
 
-
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the removal was unsuccessful
 
 --*/
-
 {
     NTSTATUS       status;
     WDFCHILDLIST   list;
-
     PAGED_CODE ();
 
     list = WdfFdoGetDefaultChildList(Device);
@@ -498,7 +466,7 @@ Returns:
         // returned, all previously reported children associated with this will be
         // marked as potentially missing.  A call to either
         // WdfChildListUpdateChildDescriptionAsPresent  or
-        // WdfChildListMarkAllChildDescriptionsPresent will mark all previuosly
+        // WdfChildListMarkAllChildDescriptionsPresent will mark all previously
         // reported missing children as present.  If any children currently
         // present are not reported present by calling
         // WdfChildListUpdateChildDescriptionAsPresent at the time of
@@ -521,7 +489,7 @@ Returns:
         description.SerialNo = SerialNo;
         //
         // WdfFdoUpdateChildDescriptionAsMissing indicates to the framework that a
-        // child device that was previuosly detected is no longe present on the bus.
+        // child device that was previously detected is no long present on the bus.
         // This API can be called by itself or after a call to WdfChildListBeginScan.
         // After this call has returned, the framework will invalidate the device
         // relations for the FDO associated with the list and report the changes.
@@ -529,11 +497,9 @@ Returns:
         status = WdfChildListUpdateChildDescriptionAsMissing(list,
                                                               &description.Header);
         if (status == STATUS_NO_SUCH_DEVICE) {
-            //
             // serial number didn't exist. Remap it to a status that user
             // application can understand when it gets translated to win32
             // error code.
-            //
             status = STATUS_INVALID_PARAMETER;
         }
     }
@@ -546,30 +512,22 @@ Bus_EjectDevice(
     WDFDEVICE   Device,
     ULONG       SerialNo
     )
-
 /*++
-
 Routine Description:
-
     The user application has told us to eject the device from the bus.
     In a real situation the driver gets notified by an interrupt when the
     user presses the Eject button on the device.
 
 Arguments:
 
-
 Returns:
-
     STATUS_SUCCESS upon successful removal from the list
     STATUS_INVALID_PARAMETER if the ejection was unsuccessful
-
 --*/
-
 {
     WDFDEVICE        hChild;
     NTSTATUS         status = STATUS_INVALID_PARAMETER;
     WDFCHILDLIST     list;
-
     PAGED_CODE ();
 
     list = WdfFdoGetDefaultChildList(Device);

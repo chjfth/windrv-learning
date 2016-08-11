@@ -175,22 +175,18 @@ Routine Description:
     a new PDO for a child device needs to be created.
 
 Arguments:
-    DeviceList - Handle to the default WDFCHILDLIST created by the framework as part
-                        of FDO.
+    DeviceList - Handle to the default WDFCHILDLIST created by the framework as part of FDO.
 
-    IdentificationDescription - Decription of the new child device.
+    IdentificationDescription - Description of the new child device.
 
     ChildInit - It's a opaque structure used in collecting device settings
                     and passed in as a parameter to CreateDevice.
 
 Return Value:
-
     NT Status code.
-
 --*/
 {
     PPDO_IDENTIFICATION_DESCRIPTION pDesc;
-
     PAGED_CODE();
 
     pDesc = CONTAINING_RECORD(IdentificationDescription,
@@ -212,17 +208,13 @@ Bus_CreatePdo(
     __in ULONG           SerialNo
     )
 /*++
-
 Routine Description:
-
     This routine creates and initialize a PDO.
 
 Arguments:
 
 Return Value:
-
     NT Status code.
-
 --*/
 {
     NTSTATUS                    status;
@@ -237,31 +229,23 @@ Return Value:
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Toaster Bus 0");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
-
     PAGED_CODE();
-
     UNREFERENCED_PARAMETER(Device);
 
     KdPrint(("Entered Bus_CreatePdo\n"));
 
-    //
     // Set DeviceType
-    //
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
 
-    //
     // Provide DeviceID, HardwareIDs, CompatibleIDs and InstanceId
-    //
-    RtlInitUnicodeString(&deviceId, HardwareIds);
 
+    RtlInitUnicodeString(&deviceId, HardwareIds);
     status = WdfPdoInitAssignDeviceID(DeviceInit, &deviceId);
     if (!NT_SUCCESS(status)) {
         return status;
     }
 
-    //
     // NOTE: same string  is used to initialize hardware id too
-    //
     status = WdfPdoInitAddHardwareID(DeviceInit, &deviceId);
     if (!NT_SUCCESS(status)) {
         return status;
@@ -276,14 +260,19 @@ Return Value:
     if (!NT_SUCCESS(status)) {
         return status;
     }
-
-    status = WdfPdoInitAssignInstanceID(DeviceInit, &buffer);
+    status = WdfPdoInitAssignInstanceID(DeviceInit, &buffer); // instance id, like "01", "02" ...
     if (!NT_SUCCESS(status)) {
         return status;
     }
 
-    //
-    // Provide a description about the device. This text is usually read from
+	//
+	// Chj note: When toaster device is added with `enum -p 7`, 
+	// Win7 devmgmt.msc shows Device Instance Path something like 
+	//	{B85B7C50-6A01-11D2-B841-00C04FAD5171}\MSTOASTER\1&79F5D87&0&07
+	// -- note that the trailing '07' matches `buffer` value.
+
+
+	// Provide a description about the device. This text is usually read from
     // the device. In the case of USB device, this text comes from the string
     // descriptor. This text is displayed momentarily by the PnP manager while
     // it's looking for a matching INF. If it finds one, it uses the Device
@@ -292,12 +281,11 @@ Return Value:
     // precedence over the DeviceDesc from the INF file.
     //
     status = RtlUnicodeStringPrintf( &buffer,
-                                     L"Microsoft_Eliyas_Toaster_%02d",
+                                     L"Microsoft_Eliyas_Toaster_%02d on BusDynamic",
                                      SerialNo );
     if (!NT_SUCCESS(status)) {
         return status;
     }
-
     //
     // You can call WdfPdoInitAddDeviceText multiple times, adding device
     // text for multiple locales. When the system displays the text, it
@@ -313,7 +301,6 @@ Return Value:
     if (!NT_SUCCESS(status)) {
         return status;
     }
-
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
 
     //
@@ -327,39 +314,37 @@ Return Value:
         return status;
     }
 
-    //
     // Get the device context.
     //
     pdoData = PdoGetData(hChild);
-
+	//
     pdoData->SerialNo = SerialNo;
 
-    //
     // Set some properties for the child device.
     //
     WDF_DEVICE_PNP_CAPABILITIES_INIT(&pnpCaps);
     pnpCaps.Removable         = WdfTrue;
     pnpCaps.EjectSupported    = WdfTrue;
     pnpCaps.SurpriseRemovalOK = WdfTrue;
-
+	//
     pnpCaps.Address  = SerialNo;
     pnpCaps.UINumber = SerialNo;
-
+	//
     WdfDeviceSetPnpCapabilities(hChild, &pnpCaps);
 
     WDF_DEVICE_POWER_CAPABILITIES_INIT(&powerCaps);
-
+	//
     powerCaps.DeviceD1 = WdfTrue;
     powerCaps.WakeFromD1 = WdfTrue;
     powerCaps.DeviceWake = PowerDeviceD1;
-
-    powerCaps.DeviceState[PowerSystemWorking]   = PowerDeviceD1;
+	//
+    powerCaps.DeviceState[PowerSystemWorking]   = PowerDeviceD1; // (?) BusStat was PowerDeviceD0 here.
     powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
-    powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD2;
-    powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD2;
+    powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD2; // new: D2
+    powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD2; // new: D2
     powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemShutdown]  = PowerDeviceD3;
-
+	//
     WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
 
     //
