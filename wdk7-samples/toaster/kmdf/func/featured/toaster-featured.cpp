@@ -348,6 +348,7 @@ Return Value:
     //
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleCannotWakeFromS0);
     idleSettings.IdleTimeout = 60000; // 60 secs idle timeout
+	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
     status = WdfDeviceAssignS0IdleSettings(device, &idleSettings);
     if (!NT_SUCCESS(status)) {
         KdPrint( ("WdfDeviceAssignS0IdleSettings failed 0x%x\n", status));

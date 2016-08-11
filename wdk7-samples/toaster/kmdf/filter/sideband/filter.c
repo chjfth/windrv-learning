@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -26,12 +25,8 @@ Abstract:
     the filter attaches to so that it can provide a direct sideband communication 
     with the usermode application. The KbFilter driver demonstrates that approach.
 
-    
-
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "filter.h"
@@ -577,7 +572,7 @@ Return Value:
 
     PAGED_CODE();
 
-    KdPrint(("Ioctl recieved into filter control object.\n"));
+    KdPrint(("Ioctl received into filter control object.\n"));
 
     WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
 
