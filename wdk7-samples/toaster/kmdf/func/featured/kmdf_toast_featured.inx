@@ -4,7 +4,7 @@
 ;
 ;Module Name:
 ;
-;    TOASTER.INF
+;    kmdf_toast_featured.inf
 ;
 ;Abstract:
 ;    INF file for installing toaster device drivers
@@ -121,7 +121,7 @@ KmdfLibraryVersion       = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE   = 0x00000002
-MSFT                     = "MicrosoftDemo"
+MSFT                     = "MicrosoftDemo (kmdf_toast_featured)"
 StdMfg                   = "(Standard system devices)"
 ClassName                = "Toaster"
 DiskId1                  = "Toaster Device Installation Disk #1"

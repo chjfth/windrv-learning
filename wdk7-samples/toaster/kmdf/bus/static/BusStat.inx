@@ -104,7 +104,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "MicrosoftDemo"
+MSFT = "MicrosoftDemo (kmdf BusStat)"
 StdMfg = "(Standard system devices)"
 DiskId1 = "Toaster Static Bus Installation Disk #1"
 ToasterBusStat.DeviceDesc = "Toaster Static Bus Enumerator"
