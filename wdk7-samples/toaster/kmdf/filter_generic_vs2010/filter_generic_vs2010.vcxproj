@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AAE14642-CB46-449B-B30F-2016CCCC0020}</ProjectGuid>
+    <ProjectGuid>{FEDED036-A6C0-4F41-997B-D67B9E8E2631}</ProjectGuid>
     <ProjectName>kmdf_filter_generic</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -228,6 +228,10 @@
       <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SuppressStartupBanner>
       <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SuppressStartupBanner>
       <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</SuppressStartupBanner>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>

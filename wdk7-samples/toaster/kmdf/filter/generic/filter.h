@@ -21,17 +21,21 @@ Environment:
 
 --*/
 
+#ifndef NOW_COMPILING_RC
+
 #include <ntddk.h>
 #include <wdf.h>
 #include <wdmsec.h> // for SDDLs
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
 
+#endif // NOW_COMPILING_RC
+
 #if !defined(_FILTER_H_)
 #define _FILTER_H_
 
 
-#define DRIVERNAME "Generic.sys: "
+#define DRIVERNAME "GeneriC.sys: "
 
 //
 // Change the following define to 1 if you want to forward

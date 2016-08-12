@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toast_featured", "kmdf
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_bus_dynamic", "kmdf\bus_dynamic_vs2010\bus_dynamic_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-2016CCCC0011}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_filter_generic", "kmdf\filter_generic_vs2010\filter_generic_vs2010.vcxproj", "{FEDED036-A6C0-4F41-997B-D67B9E8E2631}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -99,6 +101,14 @@ Global
 		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|Win32.Build.0 = Release|Win32
 		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|x64.ActiveCfg = Release|x64
 		{AAE14642-CB46-449B-B30F-2016CCCC0011}.Release|x64.Build.0 = Release|x64
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Debug|Win32.Build.0 = Debug|Win32
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Debug|x64.ActiveCfg = Debug|x64
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Debug|x64.Build.0 = Debug|x64
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Release|Win32.ActiveCfg = Release|Win32
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Release|Win32.Build.0 = Release|Win32
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Release|x64.ActiveCfg = Release|x64
+		{FEDED036-A6C0-4F41-997B-D67B9E8E2631}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
