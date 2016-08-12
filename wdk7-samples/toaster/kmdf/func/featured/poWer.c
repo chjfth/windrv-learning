@@ -49,7 +49,7 @@ Routine Description:
     (probably the FDO) requests a change in D-state by calling PoRequestPowerIrp.
 
     This function is not marked pageable because this function is in the
-    device power up path. When a function is marked pagable and the code
+    device power up path. When a function is marked pageable and the code
     section is paged out, it will generate a page fault which could impact
     the fast resume behavior because the client driver will have to wait
     until the system drivers can service this page fault.
@@ -255,7 +255,7 @@ Routine Description:
     This function runs at PASSIVE_LEVEL.
 
     This function is not marked pageable because this function is in the
-    device power up path. When a function is marked pagable and the code
+    device power up path. When a function is marked pageable and the code
     section is paged out, it will generate a page fault which could impact
     the fast resume behavior because the client driver will have to wait
     until the system drivers can service this page fault.
