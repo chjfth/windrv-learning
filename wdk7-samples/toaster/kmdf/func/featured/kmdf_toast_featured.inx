@@ -18,7 +18,7 @@ Signature   = "$WINDOWS NT$"
 Class       = TOASTER
 ClassGuid   = {B85B7C50-6A01-11d2-B841-00C04FAD5171}
 Provider    = %MSFT%
-DriverVer   = 06/16/1999,5.00.2064
+DriverVer   = 08/01/2016,1.10.0000
 CatalogFile = KmdfSamples.cat
 
 
