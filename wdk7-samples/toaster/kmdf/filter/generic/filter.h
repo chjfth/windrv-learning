@@ -50,8 +50,7 @@ typedef struct _FILTER_EXTENSION
     // More context data here
 
 }FILTER_EXTENSION, *PFILTER_EXTENSION;
-
-
+//
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FILTER_EXTENSION,
                                         FilterGetData)
 
