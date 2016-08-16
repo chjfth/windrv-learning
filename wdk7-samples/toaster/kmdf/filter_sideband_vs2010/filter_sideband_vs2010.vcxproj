@@ -53,7 +53,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>kmdf_toast_filter</TargetName>
+    <TargetName>kmdf_toast_sideband</TargetName>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -64,7 +64,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>kmdf_toast_filter</TargetName>
+    <TargetName>kmdf_toast_sideband</TargetName>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -215,12 +215,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\filter\sideband\filter.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\filter\sideband\filter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\filter\sideband\filter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\filter\sideband\filter.rc">
@@ -235,26 +233,26 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\filter\kmdf_toast_filter.inx">
+    <CustomBuild Include="..\filter\kmdf_toast_sideband.inx">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">set SDK_INC_PATH=$(WDKPATH)\inc\api
-copy ..\filter\kmdf_toast_filter.inx $(TargetDir)kmdf_toast_filter.inf
-stampinf -f $(TargetDir)kmdf_toast_filter.inf -a x86 -k 1.9</Command>
+copy ..\filter\kmdf_toast_sideband.inx $(TargetDir)kmdf_toast_sideband.inf
+stampinf -f $(TargetDir)kmdf_toast_sideband.inf -a x86 -k 1.9</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Translating .inx to .inf ...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">set SDK_INC_PATH=$(WDKPATH)\inc\api
-copy ..\filter\kmdf_toast_filter.inx $(TargetDir)kmdf_toast_filter.inf
-stampinf -f $(TargetDir)kmdf_toast_filter.inf -a AMD64 -k 1.9</Command>
+copy ..\filter\kmdf_toast_sideband.inx $(TargetDir)kmdf_toast_sideband.inf
+stampinf -f $(TargetDir)kmdf_toast_sideband.inf -a AMD64 -k 1.9</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Translating .inx to .inf ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kmdf_toast_filter.inf</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kmdf_toast_filter.inf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kmdf_toast_sideband.inf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kmdf_toast_sideband.inf</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">set SDK_INC_PATH=$(WDKPATH)\inc\api
-copy ..\filter\kmdf_toast_filter.inx $(TargetDir)kmdf_toast_filter.inf
-stampinf -f $(TargetDir)kmdf_toast_filter.inf -a x86 -k 1.9</Command>
+copy ..\filter\kmdf_toast_sideband.inx $(TargetDir)kmdf_toast_sideband.inf
+stampinf -f $(TargetDir)kmdf_toast_sideband.inf -a x86 -k 1.9</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">set SDK_INC_PATH=$(WDKPATH)\inc\api
-copy ..\filter\kmdf_toast_filter.inx $(TargetDir)kmdf_toast_filter.inf
-stampinf -f $(TargetDir)kmdf_toast_filter.inf -a AMD64 -k 1.9</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kmdf_toast_filter.inf</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kmdf_toast_filter.inf</Outputs>
+copy ..\filter\kmdf_toast_sideband.inx $(TargetDir)kmdf_toast_sideband.inf
+stampinf -f $(TargetDir)kmdf_toast_sideband.inf -a AMD64 -k 1.9</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kmdf_toast_sideband.inf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kmdf_toast_sideband.inf</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

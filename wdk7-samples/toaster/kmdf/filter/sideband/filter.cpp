@@ -51,7 +51,6 @@ WDFWAITLOCK     FilterDeviceCollectionLock;
 // Since there is one control-device for all instances of the device the
 // filter is attached to, we will store the device handle in a global variable.
 //
-
 WDFDEVICE       ControlDevice = NULL;
 
 #ifdef ALLOC_PRAGMA
@@ -66,35 +65,29 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
-
     Installable driver initialization entry point.
     This entry point is called directly by the I/O system.
 
 Arguments:
-
     DriverObject - pointer to the driver object
 
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     WDF_DRIVER_CONFIG   config;
     NTSTATUS            status;
     WDFDRIVER   hDriver;
 
-    KdPrint(("Toaster SideBand Filter Driver Sample - Driver Framework Edition.\n"));
-    KdPrint(("Built %s %s\n", __DATE__, __TIME__));
+    KdPrint(("Toaster SideBand Filter Driver Sample(KMDF)on.\n"));
+    KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
-    //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
@@ -102,13 +95,11 @@ Return Value:
     // config structure. In general xxx_CONFIG_INIT macros are provided to
     // initialize most commonly used members.
     //
-
     WDF_DRIVER_CONFIG_INIT(
         &config,
         FilterEvtDeviceAdd
     );
 
-    //
     // Create a framework driver object to represent our driver.
     //
     status = WdfDriverCreate(DriverObject,
@@ -120,14 +111,12 @@ Return Value:
         KdPrint( ("WdfDriverCreate failed with status 0x%x\n", status));
     }
 
-    //
     // Since there is only one control-device for all the instances
     // of the physical device, we need an ability to get to particular instance
     // of the device in our FilterEvtIoDeviceControlForControl. For that we
     // will create a collection object and store filter device objects.        
     // The collection object has the driver object as a default parent.
     //
-
     status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
                                 &FilterDeviceCollection);
     if (!NT_SUCCESS(status))
@@ -136,10 +125,8 @@ Return Value:
         return status;
     }
 
-    //
     // The wait-lock object has the driver object as a default parent.
-    //
-
+    // (chj: will be deleted along with the driver-object)
     status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
                                 &FilterDeviceCollectionLock);
     if (!NT_SUCCESS(status))
@@ -147,7 +134,6 @@ Return Value:
         KdPrint( ("WdfWaitLockCreate failed with status 0x%x\n", status));
         return status;
     }
-
     return status;
 }
 
@@ -159,7 +145,6 @@ FilterEvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. Here you can query the device properties
     using WdfFdoInitWdmGetPhysicalDevice/IoGetDeviceProperty and based
@@ -169,15 +154,11 @@ Routine Description:
     a framework device.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;
@@ -186,12 +167,10 @@ Return Value:
     WDFDEVICE               device;
     ULONG                   serialNo;
     ULONG                   returnSize;
-
     PAGED_CODE ();
-
     UNREFERENCED_PARAMETER(Driver);
 
-    //
+    // [Sideband new]
     // Get some property of the device you are about to attach and check
     // to see if that's the one you are interested. For demonstration
     // we will get the UINumber of the device. The bus driver reports the
@@ -206,30 +185,24 @@ Return Value:
         KdPrint(("Failed to get the property of PDO: 0x%p\n", DeviceInit));
     }
 
-    //
     // Tell the framework that you are filter driver. Framework
-    // takes care of inherting all the device flags & characterstics
+    // takes care of inheriting all the device flags & characteristics
     // from the lower device you are attaching to.
     //
     WdfFdoInitSetFilter(DeviceInit);
 
-    //
-    // Specify the size of device extension where we track per device
-    // context.
-    //
-
+    // Specify the size of device extension where we track per device context.
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, FILTER_EXTENSION);
-
     //
     // We will just register for cleanup notification because we have to
     // delete the control-device when the last instance of the device goes
-    // away. If we don't delete, the driver wouldn't get unloaded automatcially
+    // away. If we don't delete, the driver wouldn't get unloaded automatically
     // by the PNP subsystem.
     //
     deviceAttributes.EvtCleanupCallback = FilterEvtDeviceContextCleanup;
 
     //
-    // Create a framework device object.This call will inturn create
+    // Create a framework device object.This call will in turn create
     // a WDM deviceobject, attach to the lower stack and set the
     // appropriate flags and attributes.
     //
@@ -256,7 +229,6 @@ Return Value:
     }
     WdfWaitLockRelease(FilterDeviceCollectionLock);
 
-    //
     // Create a control device
     //
     status = FilterCreateControlDevice(device);
@@ -275,29 +247,24 @@ Return Value:
 
 VOID
 FilterEvtDeviceContextCleanup(
-    IN WDFDEVICE Device
+    IN WDFOBJECT wdfobject
     )
 /*++
-
 Routine Description:
-
    EvtDeviceRemove event callback must perform any operations that are
    necessary before the specified device is removed. The framework calls
    the driver's EvtDeviceRemove callback when the PnP manager sends
    an IRP_MN_REMOVE_DEVICE request to the driver stack.
 
 Arguments:
-
     Device - Handle to a framework device object.
 
 Return Value:
-
     WDF status code
-
 --*/
 {
+	WDFDEVICE Device = (WDFDEVICE)wdfobject;
     ULONG   count;
-
     PAGED_CODE();
 
     KdPrint(("Entered FilterEvtDeviceContextCleanup\n"));
@@ -308,7 +275,6 @@ Return Value:
 
     if(count == 1)
     {
-         //
          // We are the last instance. So let us delete the control-device
          // so that driver can unload when the FilterDevice is deleted.
          // We absolutely have to do the deletion of control device with
@@ -330,9 +296,7 @@ FilterCreateControlDevice(
     WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     This routine is called to create a control deviceobject so that application
     can talk to the filter driver directly instead of going through the entire
     device stack. This kind of control device object is useful if the filter
@@ -346,13 +310,10 @@ Routine Description:
     last instance gets removed.
 
 Arguments:
-
     Device - Handle to a filter device object.
 
 Return Value:
-
     WDF status code
-
 --*/
 {
     PWDFDEVICE_INIT             pInit = NULL;
@@ -364,7 +325,6 @@ Return Value:
     WDFQUEUE                    queue;
     DECLARE_CONST_UNICODE_STRING(ntDeviceName, NTDEVICE_NAME_STRING) ;
     DECLARE_CONST_UNICODE_STRING(symbolicLinkName, SYMBOLIC_NAME_STRING) ;
-
     PAGED_CODE();
 
     //
@@ -390,7 +350,6 @@ Return Value:
     KdPrint(("Creating Control Device\n"));
 
     //
-    //
     // In order to create a control device, we first need to allocate a
     // WDFDEVICE_INIT structure and set all properties.
     //
@@ -398,13 +357,11 @@ Return Value:
                             WdfDeviceGetDriver(Device),
                             &SDDL_DEVOBJ_SYS_ALL_ADM_RWX_WORLD_RW_RES_R
                             );
-
     if (pInit == NULL) {
         status = STATUS_INSUFFICIENT_RESOURCES;
         goto Error;
     }
 
-    //
     // Set exclusive to false so that more than one app can talk to the
     // control device simultaneously.
     //
@@ -416,7 +373,6 @@ Return Value:
         goto Error;
     }
 
-    //
     // Specify the size of device context
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&controlAttributes,
@@ -432,7 +388,6 @@ Return Value:
     // Create a symbolic link for the control object so that usermode can open
     // the device.
     //
-
     status = WdfDeviceCreateSymbolicLink(controlDevice,
                                 &symbolicLinkName);
 
@@ -444,7 +399,6 @@ Return Value:
     // Configure the default queue associated with the control device object
     // to be Serial so that request passed to EvtIoDeviceControl are serialized.
     //
-
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,
                              WdfIoQueueDispatchSequential);
 
@@ -464,8 +418,8 @@ Return Value:
     }
 
     //
-    // Control devices must notify WDF when they are done initializing.   I/O is
-    // rejected until this call is made.
+    // Control devices must notify WDF when they are done initializing.   
+    // I/O is rejected until this call is made.
     //
     WdfControlFinishInitializing(controlDevice);
 
@@ -496,23 +450,17 @@ FilterDeleteControlDevice(
     WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
-    This routine deletes the control by doing a simple dereference.
+    This routine deletes the control device by doing a simple dereference(Delete?).
 
 Arguments:
-
     Device - Handle to a framework filter device object.
 
 Return Value:
-
     WDF status code
-
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-
     PAGED_CODE();
 
     KdPrint(("Deleting Control Device\n"));
@@ -533,40 +481,28 @@ FilterEvtIoDeviceControl(
     )
 /*++
 Routine Description:
-
     This event is called when the framework receives IRP_MJ_DEVICE_CONTROL
     requests from the system.
 
 Arguments:
-
-    Queue - Handle to the framework queue object that is associated
-            with the I/O request.
+    Queue - Handle to the framework queue object that is associated with the I/O request.
     Request - Handle to a framework request object.
-
     OutputBufferLength - length of the request's output buffer,
                         if an output buffer is available.
     InputBufferLength - length of the request's input buffer,
                         if an input buffer is available.
-
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     ULONG               i;
     ULONG               noItems;
     WDFDEVICE           hFilterDevice;
     PFILTER_EXTENSION   filterExt;
-
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
     UNREFERENCED_PARAMETER(IoControlCode);
-
     PAGED_CODE();
 
     KdPrint(("Ioctl received into filter control object.\n"));
@@ -577,11 +513,11 @@ Return Value:
 
     for(i=0; i<noItems ; i++) {
 
-        hFilterDevice = WdfCollectionGetItem(FilterDeviceCollection, i);
+        hFilterDevice = (WDFDEVICE)WdfCollectionGetItem(FilterDeviceCollection, i);
 
         filterExt = FilterGetData(hFilterDevice);
 
-        KdPrint(("Serial No: %d\n", filterExt->SerialNo));
+        KdPrint(("filter.cpp: Serial No: %d\n", filterExt->SerialNo));
     }
 
     WdfWaitLockRelease(FilterDeviceCollectionLock);

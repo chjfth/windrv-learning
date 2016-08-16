@@ -29,6 +29,12 @@ Environment:
 #define _FILTER_H_
 
 
+#ifdef __cplusplus
+extern"C"{
+#endif
+
+
+
 #define DRIVERNAME "SideBand.sys: "
 
 
@@ -68,5 +74,9 @@ FilterDeleteControlDevice(
     WDFDEVICE Device
     );
 
+#ifdef __cplusplus
+} // extern"C"{
 #endif
+
+#endif // _FILTER_H_
 

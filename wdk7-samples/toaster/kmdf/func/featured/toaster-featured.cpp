@@ -827,35 +827,23 @@ ToasterEvtIoDeviceControl(
     )
 /*++
 Routine Description:
-
     This event is called when the framework receives IRP_MJ_DEVICE_CONTROL
     requests from the system.
 
 Arguments:
-
-    Queue - Handle to the framework queue object that is associated
-            with the I/O request.
+    Queue - Handle to the framework queue object that is associated with the I/O request.
     Request - Handle to a framework request object.
-
     OutputBufferLength - length of the request's output buffer,
                         if an output buffer is available.
     InputBufferLength - length of the request's input buffer,
                         if an input buffer is available.
-
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     NTSTATUS             status= STATUS_SUCCESS;
     WDF_DEVICE_STATE     deviceState;
     WDFDEVICE            hDevice = WdfIoQueueGetDevice(Queue);
-
-
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
@@ -863,8 +851,8 @@ Return Value:
 
     PAGED_CODE();
 
-    switch (IoControlCode) {
-
+    switch (IoControlCode) 
+	{{
     case IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE:
         //
         // This is just an example on how to hide your device in the
@@ -881,7 +869,7 @@ Return Value:
 
     default:
         status = STATUS_INVALID_DEVICE_REQUEST;
-    }
+	}}
 
     //
     // Complete the Request.

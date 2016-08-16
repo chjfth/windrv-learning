@@ -1,23 +1,17 @@
-
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     filter.c
 
 Abstract:
-
     This module shows how to a write a generic filter driver.
 
 Environment:
-
     Kernel mode
 
 Revision History:
@@ -46,7 +40,6 @@ Revision History:
 // app to have private interaction with the filter driver. Read KB Q262305
 // for more information.
 //
-
 #ifdef IOCTL_INTERFACE
 
 #ifdef ALLOC_PRAGMA
