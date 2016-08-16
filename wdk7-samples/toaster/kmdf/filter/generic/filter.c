@@ -19,6 +19,8 @@ Environment:
     Kernel mode
 --*/
 
+#define FORWARD_REQUEST_WITH_COMPLETION 1 // 1 to run more code
+
 #include "filter.h"
 
 #ifdef ALLOC_PRAGMA
@@ -186,20 +188,20 @@ Arguments:
     PFILTER_EXTENSION               filterExt;
     NTSTATUS                        status = STATUS_SUCCESS;
     WDFDEVICE                       device;
-
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-    KdPrint(("Entered FilterEvtIoDeviceControl\n"));
+	// MEMO: this can be triggered by `toaste.exe -h` .
+
+    KdPrint(("<tid=%p>Entered FilterEvtIoDeviceControl\n", PsGetCurrentThreadId()));
 
     device = WdfIoQueueGetDevice(Queue);
     filterExt = FilterGetData(device);
 
     switch (IoControlCode) {
-
-    //
-    // Put your cases for handling IOCTLs here
-    //
+		//
+		// Put your cases for handling IOCTLs here
+		//
     }
     
     if (!NT_SUCCESS(status)) {
@@ -207,10 +209,9 @@ Arguments:
         return;
     }
 
-    //
     // Forward the request down. WdfDeviceGetIoTarget returns the default target, 
 	// which represents the device attached to us below in the stack.
-    //
+
 #if FORWARD_REQUEST_WITH_COMPLETION
     //
     // Use this routine to forward a request if you are interested in post
@@ -312,9 +313,14 @@ Arguments:
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Context);
 
+	KdPrint(("<tid=%p>In filter.c CompletionRoutine\n", PsGetCurrentThreadId()));
+		// This tid is seen to be the same as that in FilterEvtIoDeviceControl().
+		// But can this be different under some special circumstances?
+
     WdfRequestComplete(Request, CompletionParams->IoStatus.Status);
 
     return;
 }
 
 #endif //FORWARD_REQUEST_WITH_COMPLETION
+

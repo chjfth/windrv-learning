@@ -41,7 +41,7 @@ Environment:
 // Change the following define to 1 if you want to forward
 // the request with a completion routine.
 //
-#define FORWARD_REQUEST_WITH_COMPLETION 0
+//#define FORWARD_REQUEST_WITH_COMPLETION 0 // chj: define this in filter.c
 
 
 typedef struct _FILTER_EXTENSION
