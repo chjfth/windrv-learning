@@ -1,6 +1,8 @@
 #include <windows.h>
-#include <filter.h>
 #include <ntverp.h>
+
+#define NOW_COMPILING_RC // "filter.h" will check this macro to get rid of unnecessary #includes .
+#include "filter.h"
 
 #define VER_FILETYPE                VFT_DRV
 #define VER_FILESUBTYPE             VFT2_DRV_SYSTEM

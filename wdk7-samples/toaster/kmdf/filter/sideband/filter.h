@@ -1,31 +1,29 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     filter.h
 
 Abstract:
-
     Contains structure definitions and function prototypes for sideband filter driver.
 
 Environment:
-
     Kernel mode
-
 --*/
+
+#ifndef NOW_COMPILING_RC
 
 #include <ntddk.h>
 #include <wdf.h>
 #include <wdmsec.h> // for SDDLs
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
+
+#endif // NOW_COMPILING_RC
 
 #if !defined(_FILTER_H_)
 #define _FILTER_H_

@@ -1,17 +1,14 @@
 /*++
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     filter.c
 
 Abstract:
-
     This module shows how to a write a sideband filter driver. The driver creates
     a control device object, which represents a legacy non-Plug and Play device or 
     control interface through which a Plug and Play driver receives so-called 
