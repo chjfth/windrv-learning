@@ -1,20 +1,15 @@
 /*++
-
 Copyright (c) Microsoft Corporation
 
 Module Name:
-
     waitmask.c
 
 Abstract:
-
     This module contains the code that is very specific to get/set/wait
     on event mask operations in the serial driver
 
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "precomp.h"

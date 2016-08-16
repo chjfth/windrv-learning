@@ -1,21 +1,15 @@
 /*++
-
 Copyright (c) Microsoft Corporation
 
 Module Name:
-
     ioctl.c
 
 Abstract:
-
     This module contains the ioctl dispatcher as well as a couple
-    of routines that are generally just called in response to
-    ioctl calls.
+    of routines that are generally just called in response to ioctl calls.
 
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "precomp.h"
@@ -241,26 +235,18 @@ SerialSetLineControl(
     IN WDFINTERRUPT  Interrupt,
     IN PVOID         Context
     )
-
 /*++
-
 Routine Description:
-
-    This routine is used to set the buad rate of the device.
+    This routine is used to set the baud rate of the device. (wrong comment? baud rate?)
 
 Arguments:
-
     Context - Pointer to the device extension.
 
 Return Value:
-
     This routine always returns FALSE.
-
 --*/
-
 {
     PSERIAL_DEVICE_EXTENSION Extension = Context;
-
     UNREFERENCED_PARAMETER(Interrupt);
 
     WRITE_LINE_CONTROL(Extension,
@@ -277,23 +263,17 @@ SerialGetModemUpdate(
     IN WDFINTERRUPT  Interrupt,
     IN PVOID         Context
     )
-
 /*++
-
 Routine Description:
-
     This routine is simply used to call the interrupt level routine
     that handles modem status update.
 
 Arguments:
-
     Context - Pointer to a structure that contains a pointer to
               the device extension and a pointer to a ulong.
 
 Return Value:
-
     This routine always returns FALSE.
-
 --*/
 
 {
@@ -1279,7 +1259,6 @@ Return Value:
 
             reqContext->SystemBuffer = buffer;
 
-            //
             // We have to allocate the memory for the new
             // buffer while we're still in the context of the
             // caller.  We don't even try to protect this
@@ -1288,12 +1267,9 @@ Return Value:
             // we will know for sure is when we actually try
             // to do the resize.
             //
-
             if (Rs->InSize <= Extension->BufferSize) {
-
                 Status = STATUS_SUCCESS;
                 break;
-
             }
 
             reqContext->Type3InputBuffer =
@@ -1419,10 +1395,7 @@ Return Value:
 
             reqContext->SystemBuffer = buffer;
 
-            //
-            // Either start this request or put it on the
-            // queue.
-            //
+            // Either start this request or put it on the queue.
 
             SerialDbgPrintEx(TRACE_LEVEL_VERBOSE, DBG_IOCTLS, "Starting or queuing wait mask request"
                              "%p\n", Request);
@@ -1480,8 +1453,7 @@ Return Value:
             }
 
             //
-            // Check to make sure that the mask only has
-            // 0 or the other appropriate values.
+            // Check to make sure that the mask only has 0 or the other appropriate values.
             //
 
             Mask = *((ULONG *)(buffer));
@@ -1501,10 +1473,7 @@ Return Value:
 
             reqContext->SystemBuffer = buffer;
 
-            //
-            // Either start this request or put it on the
-            // queue.
-            //
+            // Either start this request or put it on the queue.
 
             SerialStartOrQueue(
                        Extension,

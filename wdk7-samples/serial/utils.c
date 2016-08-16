@@ -726,16 +726,13 @@ Return Value:
     }
 
     if (IsQueueEmpty(QueueToExamine) &&  !(*CurrentOpRequest)) {
-
         //
         // There were no current operation.  Mark this one as
         // current and start it up.
         //
-
         *CurrentOpRequest = Request;
 
-        Starter(Extension);
-
+		Starter(Extension);
         return;
 
     } else {
@@ -764,7 +761,6 @@ SerialEvtCanceledOnQueue(
     IN WDFQUEUE   Queue,
     IN WDFREQUEST Request
     )
-
 /*++
 
 Routine Description:
@@ -1676,16 +1672,11 @@ SerialGetDivisorFromBaud(
                         IN LONG DesiredBaud,
                         OUT PSHORT AppropriateDivisor
                         )
-
 /*++
-
 Routine Description:
-
-    This routine will determine a divisor based on an unvalidated
-    baud rate.
+    This routine will determine a divisor based on an unvalidated baud rate.
 
 Arguments:
-
     ClockRate - The clock input to the controller.
 
     DesiredBaud - The baud rate for whose divisor we seek.
@@ -1696,15 +1687,12 @@ Arguments:
     supported.
 
 Return Value:
-
     This function will return STATUS_SUCCESS if the baud is supported.
     If the value is not supported it will return a status such that
     NT_ERROR(Status) == FALSE.
-
 --*/
 
 {
-
    NTSTATUS status = STATUS_SUCCESS;
    SHORT calculatedDivisor;
    ULONG denominator;
@@ -1719,8 +1707,6 @@ Return Value:
    ULONG maxRemain42 = 42336;
    ULONG maxRemain80 = 80000;
    ULONG maxRemain;
-
-
 
    //
    // Reject any non-positive bauds.
@@ -1765,36 +1751,25 @@ Return Value:
          calculatedDivisor++;
       }
 
-
       //
       // Only let the remainder calculations effect us if
       // the baud rate is > 9600.
       //
 
       if (DesiredBaud >= 9600) {
-
-         //
          // If the remainder is less than the maximum remainder (wrt
          // the ClockRate) or the remainder + the maximum remainder is
-         // greater than or equal to the ClockRate then assume that the
-         // baud is ok.
-         //
+         // greater than or equal to the ClockRate then assume that the baud is ok.
 
          if ((remainder >= maxRemain) && ((remainder+maxRemain) < ClockRate)) {
             calculatedDivisor = -1;
          }
-
       }
 
-      //
-      // Don't support a baud that causes the denominator to
-      // be larger than the clock.
-      //
+      // Don't support a baud that causes the denominator to be larger than the clock.
 
       if (denominator > ClockRate) {
-
          calculatedDivisor = -1;
-
       }
 
       //
@@ -1839,18 +1814,14 @@ Return Value:
       }
 
       *AppropriateDivisor = calculatedDivisor;
-
    }
 
 
    if (*AppropriateDivisor == -1) {
-
       status = STATUS_INVALID_PARAMETER;
-
    }
 
    return status;
-
 }
 
 

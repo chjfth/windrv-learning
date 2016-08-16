@@ -1244,7 +1244,6 @@ typedef struct _SERIAL_DEVICE_EXTENSION {
     //
     WDFTIMER XoffCountTimer;
 
-    //
     // This timer is used to invoke a dpc one character time
     // after the timer is set.  That dpc will be used to check
     // whether we should lower the RTS line if we are doing
@@ -1256,22 +1255,13 @@ typedef struct _SERIAL_DEVICE_EXTENSION {
     // WMI Information
     //
 
-    //
     // WMI Comm Data
-    //
-
     SERIAL_WMI_COMM_DATA WmiCommData;
 
-    //
     // WMI HW Data
-    //
-
     SERIAL_WMI_HW_DATA WmiHwData;
 
-    //
     // WMI Performance Data
-    //
-
     SERIAL_WMI_PERF_DATA WmiPerfData;
 
 } SERIAL_DEVICE_EXTENSION,*PSERIAL_DEVICE_EXTENSION;
