@@ -1296,21 +1296,12 @@ Return Value:
 
             }
 
-            try {
-
-                reqContext->Type3InputBuffer =
-                    ExAllocatePoolWithQuotaTag(
-                        NonPagedPool,
-                        Rs->InSize,
-                        POOL_TAG
-                        );
-
-            } except (EXCEPTION_EXECUTE_HANDLER) {
-
-                reqContext->Type3InputBuffer = NULL;
-                Status = GetExceptionCode();
-
-            }
+            reqContext->Type3InputBuffer =
+                ExAllocatePoolWithQuotaTag(
+                    NonPagedPool | (POOL_TYPE)POOL_QUOTA_FAIL_INSTEAD_OF_RAISE, // according to wdk10's sample update
+                    Rs->InSize,
+                    POOL_TAG
+                    );
 
             if (!reqContext->Type3InputBuffer) {
 

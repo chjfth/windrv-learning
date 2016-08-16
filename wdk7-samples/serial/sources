@@ -1,4 +1,4 @@
-TARGETNAME=wdfserial
+TARGETNAME=kmdf_serial
 TARGETTYPE=DRIVER
 
 
