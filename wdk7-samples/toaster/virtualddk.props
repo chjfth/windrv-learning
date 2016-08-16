@@ -21,7 +21,7 @@
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WdfDriverEntry.lib;WdfLdr.lib;wmilib.lib;ntoskrnl.lib;hal.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib</AdditionalDependencies>
+      <AdditionalDependencies>WdfDriverEntry.lib;WdfLdr.lib;wmilib.lib;ntoskrnl.lib;hal.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib;wdmsec.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">int64.lib;exsup.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(WDKPATH)\lib\wdf\kmdf\i386\1.9;$(WDKPATH)\lib\wxp\i386;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
