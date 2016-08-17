@@ -562,28 +562,20 @@ SerialEvtIoDeviceControl(
     IN size_t       InputBufferLength,
     IN ULONG        IoControlCode
     )
-
 /*++
-
 Routine Description:
-
     This routine provides the initial processing for all of the
     Ioctrls for the serial device.
 
 Arguments:
-
     Request - Pointer to the WDFREQUEST for the current request
 
 Return Value:
-
     The function value is the final status of the call
-
 --*/
-
 {
     //
-    // The status that gets returned to the caller and
-    // set in the Request.
+    // The status that gets returned to the caller and/ set in the Request.
     //
     NTSTATUS Status;
 

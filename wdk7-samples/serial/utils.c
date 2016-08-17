@@ -646,10 +646,8 @@ SerialStartOrQueue(
     )
 
 /*++
-
 Routine Description:
-
-    This routine is used to either start or queue any requst
+    This routine is used to either start or queue any request
     that can be queued in the driver.
 
 Arguments:
@@ -664,16 +662,13 @@ Arguments:
 
     CurrentOpRequest - Pointer to a pointer to the request the is current
                    for the queue.  The pointer pointed to will be
-                   set with to Request if what CurrentOpRequest points to
-                   is NULL.
+                   set with to Request if what CurrentOpRequest points to is NULL.
 
     Starter - The routine to call if the queue is empty.
 
 Return Value:
-
-
+	VOID
 --*/
-
 {
 
     NTSTATUS status;

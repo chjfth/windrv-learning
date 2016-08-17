@@ -1,20 +1,15 @@
 /*++
-
 Copyright (c) 1991, 1992, 1993 - 1997 Microsoft Corporation
 
 Module Name:
-
     immediat.c
 
 Abstract:
-
     This module contains the code that is very specific to transmit
     immediate character operations in the serial driver
 
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "precomp.h"
