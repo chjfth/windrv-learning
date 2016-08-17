@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation
 
 Module Name:
@@ -16,9 +15,7 @@ Abstract:
     2) Enumeration of Non PNP serial devices that are not detected by BIOS
                     (IO address range 0x2F0-0x2F7 using IRQ 9)
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "precomp.h"
@@ -73,14 +70,10 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
-
-    The entry point that the system point calls to initialize
-    any driver.
+    The entry point that the system point calls to initialize any driver.
 
 Arguments:
-
     DriverObject - Just what it says,  really of little use
     to the driver itself, it is something that the IO system
     cares more about.
@@ -89,11 +82,8 @@ Arguments:
     in the current control set of the registry.
 
 Return Value:
-
     Always STATUS_SUCCESS
-
 --*/
-
 {
     WDF_DRIVER_CONFIG config;
     WDFDRIVER hDriver;
@@ -138,20 +128,16 @@ Return Value:
         return status;
     }
 
-    //
     // Call to find out default values to use for all the devices that the
     // driver controls, including whether or not to break on entry.
     //
-
     SerialGetConfigDefaults(&driverDefaults, hDriver);
 
-    //
     // Break on entry if requested via registry
     //
     if (driverDefaults.ShouldBreakOnEntry) {
         DbgBreakPoint();
     }
-
 
     return status;
 }
@@ -163,17 +149,10 @@ SerialEvtDriverContextCleanup(
     )
 /*++
 Routine Description:
-
     Free all the resources allocated in DriverEntry.
 
 Arguments:
-
     Driver - handle to a WDF Driver object.
-
-Return Value:
-
-    VOID.
-
 --*/
 {
     UNREFERENCED_PARAMETER(Driver);

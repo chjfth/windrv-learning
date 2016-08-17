@@ -47,26 +47,18 @@ SerialPurgeRequests(
     IN WDFQUEUE QueueToClean,
     IN WDFREQUEST *CurrentOpRequest
     )
-
 /*++
-
 Routine Description:
-
     This function is used to cancel all queued and the current irps
     for reads or for writes. Called at DPC level.
 
 Arguments:
-
     QueueToClean - A pointer to the queue which we're going to clean out.
-
     CurrentOpRequest - Pointer to a pointer to the current request.
 
 Return Value:
-
     None.
-
 --*/
-
 {
     NTSTATUS status;
     PREQUEST_CONTEXT reqContext;
@@ -74,10 +66,8 @@ Return Value:
     WdfIoQueuePurge(QueueToClean, WDF_NO_EVENT_CALLBACK, WDF_NO_CONTEXT);
 
     //
-    // The queue is clean.  Now go after the current if
-    // it's there.
+    // The queue is clean.  Now go after the current if it's there.
     //
-
     if (*CurrentOpRequest) {
 
         PFN_WDF_REQUEST_CANCEL CancelRoutine;
@@ -105,26 +95,18 @@ SerialFlushRequests(
     IN WDFQUEUE QueueToClean,
     IN WDFREQUEST *CurrentOpRequest
     )
-
 /*++
-
 Routine Description:
-
     This function is used to cancel all queued and the current irps
     for reads or for writes. Called at DPC level.
 
 Arguments:
-
     QueueToClean - A pointer to the queue which we're going to clean out.
-
     CurrentOpRequest - Pointer to a pointer to the current request.
 
 Return Value:
-
     None.
-
 --*/
-
 {
     SerialPurgeRequests(QueueToClean,  CurrentOpRequest);
 

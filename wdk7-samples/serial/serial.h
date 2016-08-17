@@ -485,7 +485,7 @@ typedef struct _SERIAL_FIRMWARE_DATA {
 #define SERIAL_DEF_XOFF 0x13
 
 //
-// Reasons that recption may be held up.
+// Reasons that reception may be held up.
 //
 #define SERIAL_RX_DTR       ((ULONG)0x01)
 #define SERIAL_RX_XOFF      ((ULONG)0x02)
@@ -554,63 +554,54 @@ VOID
     );
 
 typedef struct _SERIAL_DEVICE_EXTENSION {
-    //
+
     // WDF device handle
     //
     WDFDEVICE WdfDevice;
-    //
+
     // Points to the device object that contains
     // this device extension.
     //
     PDEVICE_OBJECT DeviceObject;
-    //
+
     // We keep a pointer around to our device name for dumps
-    // and for creating "external" symbolic links to this
-    // device.
+    // and for creating "external" symbolic links to this device.
     //
     UNICODE_STRING DeviceName;
-    //
+
+
     // Pointer to the driver object
     //
-
     PDRIVER_OBJECT DriverObject;
 
-    //
     // Records whether we actually created the symbolic link name
     // at driver load time.  If we didn't create it, we won't try
     // to destroy it when we unload.
     //
     BOOLEAN CreatedSymbolicLink;
 
-    //
     // Records whether we actually created an entry in SERIALCOMM
     // at driver load time.  If we didn't create it, we won't try
     // to destroy it when the device is removed.
     //
     BOOLEAN CreatedSerialCommEntry;
 
-    //
     // Did we update system count for serial ports
     //
     BOOLEAN    IsSystemConfigInfoUpdated;
 
-    //
     // Should we expose external interfaces?
     //
     ULONG SkipNaming;
 
-    //
     // Support the TI TL16C550C and TL16C550CI auto flow control
     //
-
     ULONG TL16C550CAFC;
 
-    //
-    // Detect removed hardware in intterrupt routine flag
+    // Detect removed hardware in interrupt routine flag
     //
     ULONG UartRemovalDetect;
 
-    //
     // We keep track of whether the somebody has the device currently
     // opened with a simple boolean.  We need to know this so that
     // spurious interrupts from the device (especially during initialization)

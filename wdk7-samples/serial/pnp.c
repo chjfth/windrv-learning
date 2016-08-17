@@ -1794,7 +1794,6 @@ SerialReadSymName(
     UNICODE_STRING value;
     UNICODE_STRING valueName;
     USHORT requiredLength;
-
     PAGED_CODE();
 
     value.Buffer = RegName;
@@ -1811,10 +1810,7 @@ SerialReadSymName(
         //
         // Fetch PortName which contains the suggested REG_SZ symbolic name.
         //
-
-
         RtlInitUnicodeString(&valueName, L"PortName");
-
         status = WdfRegistryQueryUnicodeString (hKey,
                           &valueName,
                           &requiredLength,
@@ -1824,7 +1820,6 @@ SerialReadSymName(
             //
             // This is for PCMCIA which currently puts the name under Identifier.
             //
-
             RtlInitUnicodeString(&valueName, L"Identifier");
             status = WdfRegistryQueryUnicodeString (hKey,
                                   &valueName,
@@ -1859,11 +1854,8 @@ SerialReadSymName(
 
 NTSTATUS
 SerialDoExternalNaming(IN PSERIAL_DEVICE_EXTENSION PDevExt)
-
 /*++
-
 Routine Description:
-
     This routine will be used to create a symbolic link
     to the driver name in the given object directory.
 
@@ -1871,15 +1863,8 @@ Routine Description:
     this device - IF we could create the symbolic link.
 
 Arguments:
-
     Extension - Pointer to the device extension.
-
-Return Value:
-
-    None.
-
 --*/
-
 {
     NTSTATUS status = STATUS_SUCCESS;
     WCHAR pRegName[SYMBOLIC_NAME_LENGTH];
@@ -1887,7 +1872,6 @@ Return Value:
     WDFSTRING stringHandle = NULL;
     WDF_OBJECT_ATTRIBUTES attributes;
     DECLARE_UNICODE_STRING_SIZE(symbolicLinkName,SYMBOLIC_NAME_LENGTH ) ;
-
     PAGED_CODE();
 
     WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
@@ -1902,7 +1886,6 @@ Return Value:
         goto SerialDoExternalNamingError;
     }
 
-    //
     // Since we are storing the buffer pointer of the string handle in our
     // extension, we will hold onto string handle until the device is deleted.
     //
@@ -1977,7 +1960,7 @@ Return Value:
 
     return status;
 
-    SerialDoExternalNamingError:;
+SerialDoExternalNamingError:;
 
     //
     // Clean up error conditions
@@ -2000,32 +1983,20 @@ Return Value:
 
 VOID
 SerialUndoExternalNaming(IN PSERIAL_DEVICE_EXTENSION Extension)
-
 /*++
-
 Routine Description:
-
     This routine will be used to delete a symbolic link
     to the driver name in the given object directory.
 
     It will also delete an entry in the device map for
     this device if the symbolic link had been created.
-
 Arguments:
-
     Extension - Pointer to the device extension.
-
-Return Value:
-
-    None.
-
 --*/
 
 {
-
    NTSTATUS status;
    PWCHAR   deviceName = Extension->DeviceName.Buffer;
-
    PAGED_CODE();
 
    SerialDbgPrintEx(TRACE_LEVEL_INFORMATION, DBG_PNP,
@@ -2035,7 +2006,6 @@ Return Value:
    //
    // Maybe there is nothing for us to do
    //
-
    if (Extension->SkipNaming) {
       return;
    }
@@ -2044,7 +2014,6 @@ Return Value:
    // We're cleaning up here.  One reason we're cleaning up
    // is that we couldn't allocate space for the NtNameOfPort.
    //
-
    if ((deviceName !=  NULL)  && Extension->CreatedSerialCommEntry) {
 
       status = RtlDeleteRegistryValue(RTL_REGISTRY_DEVICEMAP,
@@ -2055,7 +2024,6 @@ Return Value:
          SerialDbgPrintEx(TRACE_LEVEL_ERROR, DBG_PNP,
                           "Couldn't delete value entry %ws\n",
                           deviceName);
-
       }
    }
 }
@@ -2063,19 +2031,14 @@ Return Value:
 VOID
 SerialPurgePendingRequests(PSERIAL_DEVICE_EXTENSION pDevExt)
 /*++
-
 Routine Description:
-
    This routine completes any irps pending for the passed device object.
 
 Arguments:
-
     PDevObj - Pointer to the device object whose irps must die.
 
 Return Value:
-
     VOID
-
 --*/
 {
     NTSTATUS status;
@@ -2086,7 +2049,6 @@ Return Value:
     //
     // Then cancel all the reads and writes.
     //
-
     SerialPurgeRequests(pDevExt->WriteQueue,  &pDevExt->CurrentWriteRequest);
 
     SerialPurgeRequests(pDevExt->ReadQueue,  &pDevExt->CurrentReadRequest);
@@ -2094,19 +2056,16 @@ Return Value:
     //
     // Next get rid of purges.
     //
-
     SerialPurgeRequests(pDevExt->PurgeQueue,  &pDevExt->CurrentPurgeRequest);
 
     //
     // Get rid of any mask operations.
     //
-
     SerialPurgeRequests( pDevExt->MaskQueue,   &pDevExt->CurrentMaskRequest);
 
     //
     // Now get rid of pending wait mask request.
     //
-
     if (pDevExt->CurrentWaitRequest) {
 
         status = SerialClearCancelRoutine(pDevExt->CurrentWaitRequest, TRUE );
@@ -2128,7 +2087,6 @@ SerialDoesPortExist(
                    IN ULONG ForceFifo,
                    IN ULONG LogFifo
                    )
-
 /*++
 
 Routine Description:
@@ -2262,7 +2220,7 @@ Return Value:
 
    }
 
-   AllDone: ;
+AllDone: ;
 
 
    //
@@ -2274,7 +2232,7 @@ Return Value:
 
       //
       // Well, we think it's a serial device.  Absolutely
-      // positively, prevent interrupts from occuring.
+      // positively, prevent interrupts from occurring.
       //
       // We disable all the interrupt enable bits, and
       // push down all the lines in the modem control
