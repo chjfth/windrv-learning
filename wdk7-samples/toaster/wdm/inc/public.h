@@ -86,7 +86,7 @@ DEFINE_GUID (TOASTER_NOTIFY_DEVICE_ARRIVAL_EVENT,
 #define __PUBLIC_H
 
 #define BUS_HARDWARE_IDS L"{B85B7C50-6A01-11d2-B841-00C04FAD5171}\\MsToaster\0"
-#define BUS_HARDWARE_IDS_LENGTH sizeof (BUS_HARDWARE_IDS)
+#define BUS_HARDWARE_IDS_LENGTH sizeof (BUS_HARDWARE_IDS) // =100
 
 #define BUSENUM_COMPATIBLE_IDS L"{B85B7C50-6A01-11d2-B841-00C04FAD5171}\\MsCompatibleToaster\0"
 #define BUSENUM_COMPATIBLE_IDS_LENGTH sizeof(BUSENUM_COMPATIBLE_IDS)
@@ -108,13 +108,13 @@ DEFINE_GUID (TOASTER_NOTIFY_DEVICE_ARRIVAL_EVENT,
 #pragma warning(disable:4200)
 typedef struct _BUSENUM_PLUGIN_HARDWARE
 {
-    // sizeof (struct _BUSENUM_HARDWARE)
+    // sizeof(struct _BUSENUM_HARDWARE) = 8 , confirmed on VS2010
     //
     __in ULONG Size;                          
     
     // Unique serial number of the device to be enumerated.
     // Enumeration will be failed if another device on the 
-    // bus has the same serail number.
+    // bus has the same serial number.
 	//
     __in ULONG SerialNo;
     
@@ -124,6 +124,7 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     __in  WCHAR   HardwareIDs[]; 
                                                                         
 } BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
+
 #pragma warning(default:4200)
 typedef struct _BUSENUM_UNPLUG_HARDWARE
 {
