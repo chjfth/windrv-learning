@@ -718,7 +718,7 @@ Return Value:
         // We don't know how long the request will be in the
         // queue.  If it gets cancelled while waiting in the queue, we will
         // be notified by EvtCanceledOnQueue callback so that we can readjust
-        // the lenght or free the buffer.
+        // the length or free the buffer.
         //
         reqContext->Extension = Extension; // We need this in the destroy callback
 
