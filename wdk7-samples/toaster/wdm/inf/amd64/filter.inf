@@ -91,7 +91,7 @@ DevUpper.sys  = 1,,
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "MicrosoftDemo"
+MSFT = "MicrosoftDemo _f_"
 StdMfg = "(Standard system devices)"
 ClassName = "Toaster"
 
