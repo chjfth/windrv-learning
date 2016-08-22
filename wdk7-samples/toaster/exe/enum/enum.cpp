@@ -61,6 +61,9 @@ main(
     SP_DEVICE_INTERFACE_DATA    deviceInterfaceData;
 	bool err = false;
 
+	BUSENUM_PLUGIN_HARDWARE bh = {0};
+	bh.SerialNo = 8;
+
     bPlugIn = bUnplug = bEject = FALSE;
 
     if(argc <3) {
