@@ -376,8 +376,8 @@ Arguments:
 
 NTSTATUS
 Bus_PlugInDevice(
-    __in WDFDEVICE       Device,
-    __in PWCHAR          HardwareIds,
+    __in WDFDEVICE       Device,	   // bus-driver fdo, i.e. bus-device fdo
+    __in PWCHAR          HardwareIds,  // child-device pdo's hardware-ids
     __in size_t          CchHardwareIds,
     __in ULONG           SerialNo
     )

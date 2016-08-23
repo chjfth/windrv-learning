@@ -221,6 +221,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\bus\dynamic\BUSenum.h" />
+    <ClInclude Include="..\inc\driver.h" />
+    <ClInclude Include="..\inc\public.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\bus\dynamic\BUSenum.mof">
