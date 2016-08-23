@@ -20,6 +20,30 @@ ULONG BusEnumDebugLevel;
 #pragma alloc_text(PAGE, Bus_EvtDeviceListCreatePdo)
 #endif
 
+void
+Bus_EvtChildListIdentificationDescriptionCopy(
+	WDFCHILDLIST DeviceList,
+	PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER SourceIdentificationDescription,
+	PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER DestinationIdentificationDescription
+	)
+{	
+	
+	// Chj test: see when this callback is triggered.
+	// But not seeing it triggered yet.
+	
+	UNREFERENCED_PARAMETER(DeviceList);
+
+	PPDO_IDENTIFICATION_DESCRIPTION src, dst;
+	src = CONTAINING_RECORD(SourceIdentificationDescription,
+		PDO_IDENTIFICATION_DESCRIPTION,
+		Header);
+	dst = CONTAINING_RECORD(DestinationIdentificationDescription,
+		PDO_IDENTIFICATION_DESCRIPTION,
+		Header);
+
+	RtlCopyMemory(dst, src, src->Header.IdentificationDescriptionSize);
+}
+
 NTSTATUS
 Bus_EvtChildListIdentificationDescriptionDuplicate(
     WDFCHILDLIST DeviceList,

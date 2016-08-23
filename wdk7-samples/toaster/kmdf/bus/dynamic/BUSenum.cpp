@@ -147,6 +147,11 @@ Return Value:
     config.EvtChildListIdentificationDescriptionDuplicate =
                                 Bus_EvtChildListIdentificationDescriptionDuplicate;
 
+	// Chj test:
+	config.EvtChildListIdentificationDescriptionCopy =
+		Bus_EvtChildListIdentificationDescriptionCopy;
+
+
     // This function pointer will be called when the framework needs to compare
     // two identification descriptions.  If left NULL a call to RtlCompareMemory
     // will be used to compare two identification descriptions.
