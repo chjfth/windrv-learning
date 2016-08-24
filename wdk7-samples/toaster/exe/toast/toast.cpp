@@ -270,9 +270,12 @@ PrintToasterDeviceInfo()
     BOOL            fFound=FALSE;
 
     // get a list of all devices of class 'GUID_DEVCLASS_TOASTER'
-    hdi = SetupDiGetClassDevs(&GUID_DEVCLASS_TOASTER, NULL, NULL,
-                                            DIGCF_PRESENT);
-
+#if 1
+    hdi = SetupDiGetClassDevs(&GUID_DEVCLASS_TOASTER, NULL, NULL, DIGCF_PRESENT);
+#else
+	// chj: this is also ok
+	hdi = SetupDiGetClassDevs(&GUID_DEVINTERFACE_TOASTER, NULL, NULL, DIGCF_DEVICEINTERFACE|DIGCF_PRESENT);
+#endif
     if (INVALID_HANDLE_VALUE != hdi)
     {
 
