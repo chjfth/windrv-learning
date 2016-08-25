@@ -19,7 +19,9 @@ Environment:
     Kernel mode
 --*/
 
-#include "toaster.h"
+#include "../func/shared/toaster.h"
+
+#define TPREFIX "[T1]"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
@@ -29,7 +31,7 @@ Environment:
 #pragma alloc_text (PAGE, ToasterEvtIoDeviceControl)
 #endif
 
-
+#if 0 // merged
 NTSTATUS
 DriverEntry(
     IN PDRIVER_OBJECT  DriverObject,
@@ -60,7 +62,7 @@ Return Value:
     NTSTATUS            status = STATUS_SUCCESS;
     WDF_DRIVER_CONFIG   config;
 
-    KdPrint(("\n\nToaster Function Driver Sample - KMDF Edition.\n"));
+    KdPrint(("\n\n" TPREFIX "Kmdf Toaster-simple DriverEntry().\n"));
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
     // Initialize driver config to control the attributes that
@@ -92,7 +94,7 @@ Return Value:
 
     return status;
 }
-
+#endif 
 
 NTSTATUS
 ToasterEvtDeviceAdd(
@@ -122,7 +124,7 @@ Return Value:
     UNREFERENCED_PARAMETER(Driver);
     PAGED_CODE();
 
-    KdPrint((">ToasterEvtDeviceAdd\n"));
+    KdPrint((TPREFIX ">ToasterEvtDeviceAdd\n"));
 
     // Initialize attributes and a context area for the device object.
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DATA);
@@ -133,7 +135,7 @@ Return Value:
     //
     status = WdfDeviceCreate(&DeviceInit, &fdoAttributes, &hDevice);
     if (!NT_SUCCESS(status)) {
-        KdPrint( ("WdfDeviceCreate failed with status code 0x%x\n", status));
+        KdPrint( (TPREFIX "WdfDeviceCreate failed with status code 0x%x\n", status));
         return status;
     }
 
@@ -151,7 +153,7 @@ Return Value:
              );
 
     if (!NT_SUCCESS (status)) {
-        KdPrint( ("WdfDeviceCreateDeviceInterface failed 0x%x\n", status));
+        KdPrint( (TPREFIX "WdfDeviceCreateDeviceInterface failed 0x%x\n", status));
         return status;
     }
 
@@ -183,11 +185,11 @@ Return Value:
 
     if (!NT_SUCCESS (status)) {
 
-        KdPrint( ("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint( (TPREFIX "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
-	KdPrint(("<ToasterEvtDeviceAdd\n"));
+	KdPrint((TPREFIX "<ToasterEvtDeviceAdd\n"));
     return status;
 }
 
@@ -224,7 +226,7 @@ Return Value:
     UNREFERENCED_PARAMETER(Length);
     PAGED_CODE();
 
-    KdPrint(( "ToasterEvtIoRead: Request: 0x%p, Queue: 0x%p\n",
+    KdPrint((TPREFIX "ToasterEvtIoRead: Request: 0x%p, Queue: 0x%p\n",
                                     Request, Queue));
 
     // Get the request memory and perform read operation here
@@ -272,7 +274,7 @@ Return Value:
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Length);
 
-    KdPrint(("ToasterEvtIoWrite. Request: 0x%p, Queue: 0x%p\n",
+    KdPrint((TPREFIX "ToasterEvtIoWrite. Request: 0x%p, Queue: 0x%p\n",
                                 Request, Queue));
     PAGED_CODE();
 
@@ -332,7 +334,7 @@ Return Value:
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-    KdPrint(("ToasterEvtIoDeviceControl called\n"));
+    KdPrint((TPREFIX "ToasterEvtIoDeviceControl called\n"));
 
     PAGED_CODE();
 

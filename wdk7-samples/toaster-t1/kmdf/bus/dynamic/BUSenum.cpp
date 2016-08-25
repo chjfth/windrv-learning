@@ -56,7 +56,7 @@ Return Value:
     //
     WDF_DRIVER_CONFIG_INIT(
         &config,
-        Bus_EvtDeviceAdd
+        shared_EvtDeviceAdd
         );
 
     // Create a framework driver object to represent our driver.
@@ -74,6 +74,37 @@ Return Value:
     return status;
 }
 
+NTSTATUS
+shared_EvtDeviceAdd(
+	IN WDFDRIVER        Driver,
+	IN PWDFDEVICE_INIT  DeviceInit
+	)
+{
+	WCHAR hwid[64] = {0};
+	ULONG retbytes = 0;
+	NTSTATUS status = WdfFdoInitQueryProperty(DeviceInit, DevicePropertyHardwareID,
+		sizeof(hwid), hwid, &retbytes);
+	if(NT_SUCCESS(status)) 
+	{
+		KdPrint(("shared_EvtDeviceAdd. hareware-id=%ws\n", hwid)); // only get first hwid
+
+		if(_wcsicmp(hwid, L"chjbus")==0)
+		{
+			return Bus_EvtDeviceAdd(Driver, DeviceInit);
+		}
+		else // if(_wcsicmp(hwid, L"NLS_VBUS")==0)
+		{
+			return ToasterEvtDeviceAdd(Driver, DeviceInit);
+		}
+
+		return STATUS_UNSUCCESSFUL;
+	}
+	else 
+	{
+		return STATUS_UNSUCCESSFUL;
+	}
+
+}
 
 NTSTATUS
 Bus_EvtDeviceAdd(

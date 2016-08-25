@@ -49,7 +49,7 @@ tostrcls.dll
 [Standard.NTamd64]
 ; DisplayName       		Section           DeviceId
 ; -----------       		-------           --------
-%ToasterDevice.DeviceDesc%=Toaster_Device, {b85b7c50-6a01-11d2-b841-00c04fad5171}\MsToaster
+%ToasterDevice.DeviceDesc%=Toaster_Device, Bot\MsToaster
 
 [Toaster_Device.NT]
 CopyFiles=Toaster_Device.NT.Copy

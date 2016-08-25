@@ -43,11 +43,11 @@ BusDynamic.sys  = 1,,
 ;
 ; These are the toaster bus pnp ids
 ;
-%ToasterDynamicBus.DeviceDesc%=ToasterDynamicBus_Device, root\BusDynamic
+%ToasterDynamicBus.DeviceDesc%=ToasterDynamicBus_Device, chjbus
 
 ; For XP and later
 [Standard.NT$ARCH$]
-%ToasterDynamicBus.DeviceDesc%=ToasterDynamicBus_Device, root\BusDynamic
+%ToasterDynamicBus.DeviceDesc%=ToasterDynamicBus_Device, chjbus
 
 [ToasterDynamicBus_Device.NT]
 CopyFiles=Drivers_Dir

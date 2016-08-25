@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AAE14642-CB46-449B-B30F-2016CCCC0011}</ProjectGuid>
-    <ProjectName>kmdf_bus_dynamic</ProjectName>
+    <ProjectName>chj_bus_dynamic</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,7 +53,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>BusDynamic</TargetName>
+    <TargetName>ChjBusDynamic</TargetName>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -64,7 +64,7 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
-    <TargetName>BusDynamic</TargetName>
+    <TargetName>ChjBusDynamic</TargetName>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -218,9 +218,11 @@
     <ClCompile Include="..\bus\dynamic\BUSenum.cpp" />
     <ClCompile Include="..\bus\dynamic\BUSpdo.cpp" />
     <ClCompile Include="..\bus\dynamic\WMI.c" />
+    <ClCompile Include="..\func\simple\toaster-simple.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\bus\dynamic\BUSenum.h" />
+    <ClInclude Include="..\func\shared\toaster.h" />
     <ClInclude Include="..\inc\driver.h" />
     <ClInclude Include="..\inc\public.h" />
   </ItemGroup>
