@@ -36,7 +36,9 @@ Revision History:
 #define USAGE  \
 "Usage: Toast <-h> {-h option causes the device to hide from Device Manager UI}\n"
 
-BOOL PrintToasterDeviceInfo();
+enum findmethod_st { find_setupclass=0, find_ifaceclass=1 };
+
+BOOL PrintToasterDeviceInfo(findmethod_st);
 
 INT __cdecl
 main(
@@ -73,10 +75,16 @@ main(
     //
     // Print a list of devices of Toaster Class
     //
-    if(!PrintToasterDeviceInfo())
+	printf("Try finding toaster devices by device-setup-class...\n");
+    if(!PrintToasterDeviceInfo(find_setupclass))
     {
-        printf("No toaster devices present\n");
-        return 0;
+		printf("Try finding toaster devices by device-interface-class...\n");
+
+		if(!PrintToasterDeviceInfo(find_ifaceclass))
+		{
+			printf("No toaster devices present.\n");
+			return 0;
+		}
     }
 
     //
@@ -257,7 +265,7 @@ main(
 
 
 BOOL
-PrintToasterDeviceInfo()
+PrintToasterDeviceInfo(findmethod_st fm)
 {
     HDEVINFO        hdi;
     DWORD           dwIndex=0;
@@ -270,12 +278,11 @@ PrintToasterDeviceInfo()
     BOOL            fFound=FALSE;
 
     // get a list of all devices of class 'GUID_DEVCLASS_TOASTER'
-#if 1
-    hdi = SetupDiGetClassDevs(&GUID_DEVCLASS_TOASTER, NULL, NULL, DIGCF_PRESENT);
-#else
-	// chj: this is also ok
-	hdi = SetupDiGetClassDevs(&GUID_DEVINTERFACE_TOASTER, NULL, NULL, DIGCF_DEVICEINTERFACE|DIGCF_PRESENT);
-#endif
+	if(fm==find_setupclass)
+		hdi = SetupDiGetClassDevs(&GUID_DEVCLASS_TOASTER, NULL, NULL, DIGCF_PRESENT);
+	else
+		hdi = SetupDiGetClassDevs(&GUID_DEVINTERFACE_TOASTER, NULL, NULL, DIGCF_DEVICEINTERFACE|DIGCF_PRESENT);
+
     if (INVALID_HANDLE_VALUE != hdi)
     {
 
