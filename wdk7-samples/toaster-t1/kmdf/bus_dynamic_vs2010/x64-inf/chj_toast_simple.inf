@@ -15,7 +15,7 @@ Signature="$WINDOWS NT$"
 Class=TOASTER
 ClassGuid={B85B7C50-6A01-11d2-B841-00C04FAD5171}
 Provider=%MSFT%
-DriverVer=07/28/2016,1.0.0011.0
+DriverVer=08/25/2016,1.0.0012.0
 CatalogFile=toaster.cat
 
 [DestinationDirs]
@@ -31,9 +31,13 @@ CopyFiles=ToasterClassInstallerCopyFiles
 [ToasterClassReg]
 HKR,,,0,%ClassName%
 HKR,,Icon,,100
+HKR,,Installer32,,"tostrcls.dll,ToasterClassInstaller"
 HKR,,DeviceCharacteristics,0x10001,0x100     ;Use same security checks on relative opens
 HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system and built-in Admin. 
                                              ;This one overrides the security set by the driver
+
+[ToasterClassInstallerCopyFiles]
+tostrcls.dll
 
 ;*****************************************
 ; Toaster Device  Install Section
@@ -78,6 +82,7 @@ LoadOrderGroup = Extended Base
 
 [SourceDisksFiles]
 ChjBusDynamic.sys  = 1,,
+tostrcls.dll = 1,,
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
