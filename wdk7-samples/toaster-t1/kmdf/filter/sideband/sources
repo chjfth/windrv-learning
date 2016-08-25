@@ -1,0 +1,26 @@
+TARGETNAME=kmdf_toast_sideband
+TARGETTYPE=DRIVER
+
+
+C_DEFINES= $(C_DEFINES) -DIOCTL_INTERFACE=1
+
+KMDF_VERSION_MAJOR=1
+
+MSC_WARNING_LEVEL=/W4 /WX
+
+
+INF_NAME=kmdf_toast_sideband
+NTTARGETFILE0=$(OBJ_PATH)\$(O)\$(INF_NAME).inf
+
+
+TARGETLIBS=$(TARGETLIBS) \
+           $(DDK_LIB_PATH)\wdmsec.lib
+
+INCLUDES=$(INCLUDES);..\..\inc
+
+SOURCES= filter.cpp \
+         filter.rc
+
+
+
+
