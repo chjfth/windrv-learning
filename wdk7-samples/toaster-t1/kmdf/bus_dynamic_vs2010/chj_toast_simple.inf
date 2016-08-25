@@ -62,7 +62,7 @@ HKR,,"BeepCount",0x00010003,4
 ;-------------- Service installation
 
 [Toaster_Device.NT.Services]
-AddService = toaster, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
+AddService = ChjBusDynamic, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
 
 [toaster_Service_Inst]
 DisplayName    = %toaster.SVCDESC%
