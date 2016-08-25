@@ -1,0 +1,90 @@
+;/*++
+;
+;Copyright (c) Microsoft Corporation.  All rights reserved.
+;
+;Module Name:
+;
+;    TOASTER.INF
+;
+;Abstract:
+;    INF file for installing toaster device drivers
+;
+;--*/
+[Version]
+Signature="$WINDOWS NT$"
+Class=TOASTER
+ClassGuid={B85B7C50-6A01-11d2-B841-00C04FAD5171}
+Provider=%MSFT%
+DriverVer=07/28/2016,1.0.0011.0
+CatalogFile=toaster.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+ToasterClassInstallerCopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=ToasterClassReg     
+CopyFiles=ToasterClassInstallerCopyFiles
+
+[ToasterClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,100
+HKR,,DeviceCharacteristics,0x10001,0x100     ;Use same security checks on relative opens
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system and built-in Admin. 
+                                             ;This one overrides the security set by the driver
+
+;*****************************************
+; Toaster Device  Install Section
+;*****************************************
+
+[Manufacturer]
+%StdMfg%=Standard,NTamd64
+
+[Standard.NTamd64]
+; DisplayName       		Section           DeviceId
+; -----------       		-------           --------
+%ToasterDevice.DeviceDesc%=Toaster_Device, {b85b7c50-6a01-11d2-b841-00c04fad5171}\MsToaster
+
+[Toaster_Device.NT]
+CopyFiles=Toaster_Device.NT.Copy
+
+[Toaster_Device.NT.Copy]
+ChjBusDynamic.sys
+
+[Toaster_Device.NT.HW]
+AddReg=Toaster_Device.NT.HW.AddReg
+
+[Toaster_Device.NT.HW.AddReg]
+HKR,,"BeepCount",0x00010003,4
+
+;-------------- Service installation
+
+[Toaster_Device.NT.Services]
+AddService = toaster, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
+
+[toaster_Service_Inst]
+DisplayName    = %toaster.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ChjBusDynamic.sys
+LoadOrderGroup = Extended Base
+
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+ChjBusDynamic.sys  = 1,,
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+MSFT = "Microsoft (chj_toast_simple)"
+StdMfg = "(Standard system devices)"
+ClassName = "Toaster"
+DiskId1 = "Toaster Device Installation Disk #1"
+ToasterDevice.DeviceDesc = "Toaster child"
+toaster.SVCDESC = "Toaster child Device Driver"
+

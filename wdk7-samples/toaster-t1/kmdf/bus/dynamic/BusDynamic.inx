@@ -10,7 +10,7 @@
 ;    INF file for installing toaster bus enumerator driver
 ;
 ;Installation Notes:
-;    Using Devcon: Type "devcon install BusDynamic.inf root\BusDynamic" to install
+;    Using Devcon: Type "devcon install BusDynamic.inf chjbus" to install
 ;
 ;--*/
 [Version]
@@ -29,7 +29,7 @@ DefaultDestDir = 12
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
-BusDynamic.sys  = 1,,
+ChjBusDynamic.sys  = 1,,
 
 ;*****************************************
 ; ToasterDynamicBus  Install Section
@@ -60,12 +60,12 @@ HKR,,DeviceCharacteristics,0x10001,0x0100         ; Use same security checks on 
 HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"      ; Allow generic-all access to Built-in administrators and Local system 
 
 [Drivers_Dir]
-BusDynamic.sys
+ChjBusDynamic.sys
 
 
 ;-------------- Service installation
 [ToasterDynamicBus_Device.NT.Services]
-AddService = BusDynamic,%SPSVCINST_ASSOCSERVICE%, dynambus_Service_Inst
+AddService = ChjBusDynamic,%SPSVCINST_ASSOCSERVICE%, dynambus_Service_Inst
 
 ; -------------- dynambus driver install sections
 [dynambus_Service_Inst]
@@ -73,7 +73,7 @@ DisplayName    = %dynambus.SVCDESC%
 ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
 StartType      = 3               ; SERVICE_DEMAND_START 
 ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
-ServiceBinary  = %12%\BusDynamic.sys
+ServiceBinary  = %12%\ChjBusDynamic.sys
 LoadOrderGroup = Extended Base
 
 
@@ -97,14 +97,14 @@ WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
 [ToasterDynamicBus_Device.NT.Wdf]
-KmdfService = BusDynamic, dynambus_wdfsect
+KmdfService = ChjBusDynamic, dynambus_wdfsect
 [dynambus_wdfsect]
 KmdfLibraryVersion = $KMDFVERSION$
 
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "MicrosoftDemo (kmdf BusDynamic)"
+MSFT = "MicrosoftDemo (kmdf ChjBusDynamic)"
 StdMfg = "(Standard system devices)"
 DiskId1 = "Toaster Dynamic Bus Installation Disk #1"
 ToasterDynamicBus.DeviceDesc = "Toaster Dynamic Bus Enumerator"
