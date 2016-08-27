@@ -30,16 +30,21 @@
 //----------------------------------------------------------------------------
 
 //
-// Annotation to indicate to prefast that this is nondriver user-mode code.
-//
+#ifndef DONT_USE_WDK // Chj: when compiled with VS2010 vcxproj, don't use WDK headers
+// Annotation to indicate to prefast that this is non-driver user-mode code.
 #include <DriverSpecs.h>
 __user_code  
+#endif
 
 #include <windows.h>
 #include <setupapi.h>
 #include <stdio.h>
 #include "resource.h"
-#include <dontuse.h>
+
+#ifndef DONT_USE_WDK 
+#include <dontuse.h> // E:\WinDDK\7600.16385.1\inc\api\dontuse.h
+#endif
+
 //+---------------------------------------------------------------------------
 //
 // WARNING! 
@@ -49,7 +54,7 @@ __user_code
 //
 //  OutputDebugString should be fine...
 //
-#if DBG
+#if (defined DBG) || (defined _DEBUG)
 #define DbgOut(Text) OutputDebugString(TEXT("ClassInstaller: " Text "\n"))
 #else
 #define DbgOut(Text) 

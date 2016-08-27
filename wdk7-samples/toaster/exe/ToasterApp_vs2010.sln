@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enum", "enum\enum.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tostrco1", "..\coinstaller\tostrco1.vcxproj", "{A33FD2BA-B4AE-4C44-A512-FCF820160801}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tostrcls", "..\classinstaller\tostrcls.vcxproj", "{A33FD2BA-B4AE-4C44-A512-FCF820160802}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -39,6 +41,14 @@ Global
 		{A33FD2BA-B4AE-4C44-A512-FCF820160801}.Release|Win32.Build.0 = Release|Win32
 		{A33FD2BA-B4AE-4C44-A512-FCF820160801}.Release|x64.ActiveCfg = Release|x64
 		{A33FD2BA-B4AE-4C44-A512-FCF820160801}.Release|x64.Build.0 = Release|x64
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Debug|Win32.Build.0 = Debug|Win32
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Debug|x64.ActiveCfg = Debug|x64
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Debug|x64.Build.0 = Debug|x64
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Release|Win32.ActiveCfg = Release|Win32
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Release|Win32.Build.0 = Release|Win32
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Release|x64.ActiveCfg = Release|x64
+		{A33FD2BA-B4AE-4C44-A512-FCF820160802}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
