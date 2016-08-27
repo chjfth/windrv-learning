@@ -41,7 +41,7 @@ __user_code
 //
 //  OutputDebugString should be fine...
 //
-#if DBG
+#if (defined DBG) || (defined _DEBUG)
 #define DbgOut(Text) OutputDebugString(TEXT("CoInstaller: " Text "\n"))
 #else
 #define DbgOut(Text)
@@ -177,7 +177,7 @@ ToasterCoInstaller (
                                  DeviceInfoData,
                                  SPDRP_FRIENDLYNAME,
                                  (BYTE *)FriendlyName,
-                                 len
+                                 (DWORD)len
                                  );
                     if(!fSuccess) {
                         DbgOut("SetupDiSetDeviceRegistryProperty failed!");
