@@ -1,5 +1,3 @@
-//+---------------------------------------------------------------------------
-//
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
 //  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -16,20 +14,18 @@
 //              an icon for the toaster class and to demonstrate how one
 //              can provide a customer property sheet in the device manager
 //              in response to DIF_ADDPROPERTYPAGE_ADVANCED. 
+
 //              The property sheet has a check box. If you enable the box
 //              and press OK, it will restart the device. This is required
 //              if the user changes the device properties, and it needs to
-//              be restarted to apply the new attributes.
+//              be restarted to apply the new attributes. // 这段注释明显已经过时了,却没有删除
+
 //              For a complete description of ClassInstallers, please see the 
 //              Microsoft Windows 2000 DDK Documentation.
-//
 //  
 //  Revision: Added property page - Nov 14, 2000
 //  
-//
-//----------------------------------------------------------------------------
 
-//
 #ifndef DONT_USE_WDK // Chj: when compiled with VS2010 vcxproj, don't use WDK headers
 // Annotation to indicate to prefast that this is non-driver user-mode code.
 #include <DriverSpecs.h>
@@ -38,6 +34,7 @@ __user_code
 
 #include <windows.h>
 #include <setupapi.h>
+#include <assert.h>
 #include <stdio.h>
 #include "resource.h"
 
@@ -62,11 +59,9 @@ __user_code
 
 typedef struct _TOASTER_PROP_PARAMS
 {
-
-   HDEVINFO                     DeviceInfoSet;
-   PSP_DEVINFO_DATA             DeviceInfoData;
-   BOOL                         Restart;
-   
+	HDEVINFO                     DeviceInfoSet;
+	PSP_DEVINFO_DATA             DeviceInfoData;
+	BOOL                         Restart;  
 } TOASTER_PROP_PARAMS, *PTOASTER_PROP_PARAMS;
 
 
@@ -76,90 +71,73 @@ PropPageDlgProc(__in HWND   hDlg,
                __in WPARAM wParam,
                __in LPARAM lParam);
 
-UINT
-CALLBACK
+UINT CALLBACK
 PropPageDlgCallback(HWND hwnd,
                     UINT uMsg,
                     LPPROPSHEETPAGE ppsp);
 DWORD
-PropPageProvider(
-    __in  HDEVINFO            DeviceInfoSet,
-    __in  PSP_DEVINFO_DATA    DeviceInfoData OPTIONAL
-);
+PropPageProvider(__in HDEVINFO DeviceInfoSet, 
+	__in PSP_DEVINFO_DATA DeviceInfoData OPTIONAL); // Chj: this should be marked as OPTIONAL?
 
 BOOL
-OnNotify(
-    HWND    ParentHwnd,
-    LPNMHDR NmHdr,
-    PTOASTER_PROP_PARAMS Params
-    );
+OnNotify(HWND ParentHwnd, LPNMHDR NmHdr, PTOASTER_PROP_PARAMS Params);
     
-HMODULE ModuleInstance;
+HMODULE g_ModuleInstance;
 
 BOOL WINAPI 
-DllMain(
-    HINSTANCE DllInstance,
-    DWORD Reason,
-    PVOID Reserved
-    )
+DllMain(HINSTANCE DllInstance, DWORD Reason, PVOID Reserved)
 {
-
     UNREFERENCED_PARAMETER( Reserved );
 
-    switch(Reason) {
-
+    switch(Reason) 
+	{{
         case DLL_PROCESS_ATTACH: {
 
-            ModuleInstance = DllInstance;
+            g_ModuleInstance = DllInstance;
             DisableThreadLibraryCalls(DllInstance);
             InitCommonControls();
             break;
         }
 
         case DLL_PROCESS_DETACH: {
-            ModuleInstance = NULL;
+            g_ModuleInstance = NULL;
             break;
         }
 
         default: {
             break;
         }
-    }
+	}}
 
     return TRUE;
 }
 
 DWORD CALLBACK
-ToasterClassInstaller(
+ToasterClassInstaller( // The default name for the function is ClassInstall
     __in  DI_FUNCTION         InstallFunction,
     __in  HDEVINFO            DeviceInfoSet,
     __in  PSP_DEVINFO_DATA    DeviceInfoData OPTIONAL
     )
 /*++
-
 Routine Description: 
-
     Responds to Class-installer messages
     .  
 Arguments:
-
      InstallFunction   [in] 
      DeviceInfoSet     [in]
      DeviceInfoData    [in]
 
-Return Value:
-
-Returns:    NO_ERROR, ERROR_DI_POSTPROCESSING_REQUIRED, or an error code.
-
+Returns: ERROR_DI_DO_DEFAULT, NO_ERROR, or an error code. (Chj fixed M$'s wrong comment)
+Note: return code ERROR_DI_POSTPROCESSING_REQUIRED is used for CoInstaller, not ClassInstaller.
 --*/
 {
     switch (InstallFunction)
     {
         case DIF_INSTALLDEVICE: 
             //
-            // Sent twice: once before installing the device and once
-            // after installing device, if you have returned 
-            // ERROR_DI_POSTPROCESSING_REQUIRED during the first pass.
+            // Sent twice: first before installing the device and 
+            // [ second after installing device, if you have returned 
+            // ERROR_DI_POSTPROCESSING_REQUIRED during the first pass ].
             //
             DbgOut("DIF_INSTALLDEVICE");
             break;
@@ -246,19 +224,16 @@ PropPageProvider(
     __in  HDEVINFO            DeviceInfoSet,
     __in  PSP_DEVINFO_DATA    DeviceInfoData OPTIONAL
 )
-
 /*++
-
 Routine Description: 
-
-    Entry-point for adding additional device manager property
-    sheet pages.  
-Arguments:
-
-Return Value:
+    Entry-point for adding additional device manager property  sheet pages.  
 
 Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
 
+本函数应该遵循的处理过程在 WDK7 chm 标题 "Handling DIF_ADDPROPERTYPAGE_ADVANCED Requests"
+或在线网址(2016-08-28) https://msdn.microsoft.com/windows/hardware/drivers/install/creating-custom-property-pages
+
+执行时机: 刚刚打开设备管理器的 ToasterDevice01 属性对话框时, 此函数就会被执行.
 --*/
 {
     HPROPSHEETPAGE  pageHandle;
@@ -275,19 +250,20 @@ Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
         return ERROR_DI_DO_DEFAULT;
     }
 
-    AddPropertyPageData.ClassInstallHeader.cbSize = 
-         sizeof(SP_CLASSINSTALL_HEADER);
+    AddPropertyPageData.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
 
     //
     // Get the current class install parameters for the device
     //
 
     if (SetupDiGetClassInstallParams(DeviceInfoSet, DeviceInfoData,
-         (PSP_CLASSINSTALL_HEADER)&AddPropertyPageData,
+         (PSP_CLASSINSTALL_HEADER)&AddPropertyPageData, //[out]
          sizeof(SP_ADDPROPERTYPAGE_DATA), NULL )) 
     {
+		assert(DIF_ADDPROPERTYPAGE_ADVANCED==AddPropertyPageData.ClassInstallHeader.InstallFunction);
+			// Chj: Only when this assert is ok, the output data from 
+			// SetupDiGetClassInstallParams is an SP_ADDPROPERTYPAGE_DATA struct.
 
-        //
         // Ensure that the maximum number of dynamic pages for the 
         // device has not yet been met
         //
@@ -295,6 +271,7 @@ Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
             return NO_ERROR;
         }
         params = HeapAlloc(GetProcessHeap(), 0, sizeof(TOASTER_PROP_PARAMS));
+			// Chj: this memblock is freed in PropPageDlgCallback().
         if (params)
         {
             //
@@ -309,14 +286,15 @@ Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
             //
             memset(&page, 0, sizeof(PROPSHEETPAGE));
 
-            page.dwSize = sizeof(PROPSHEETPAGE);
+            page.dwSize = sizeof(PROPSHEETPAGE); // 104 on x64
             page.dwFlags = PSP_USECALLBACK;
-            page.hInstance = ModuleInstance;
+            page.hInstance = g_ModuleInstance; // e.g. 0x7FE`F4C50000 ; mmc.exe's base is 0xFF040000
             page.pszTemplate = MAKEINTRESOURCE(DLG_TOASTER_PORTSETTINGS);
             page.pfnDlgProc = PropPageDlgProc;
             page.pfnCallback = PropPageDlgCallback;
 
             page.lParam = (LPARAM) params;
+				// Chj: this value will be retrieved in PropPageDlgProc.WM_INITDIALOG
 
             pageHandle = CreatePropertySheetPage(&page);
             if(!pageHandle)
@@ -326,8 +304,7 @@ Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
             }
 
             //
-            // Add the new page to the list of dynamic property 
-            // sheets
+            // Add the new page to the list of dynamic property sheets
             //
             AddPropertyPageData.DynamicPages[
                 AddPropertyPageData.NumDynamicPages++]=pageHandle;
@@ -347,28 +324,23 @@ PropPageDlgProc(__in HWND   hDlg,
                    __in WPARAM wParam,
                    __in LPARAM lParam)
 /*++
-
 Routine Description: PropPageDlgProc
-
     The windows control function for the custom property page window
 
 Arguments:
-
     hDlg, uMessage, wParam, lParam: standard windows DlgProc parameters
 
 Return Value:
-
     BOOL: FALSE if function fails, TRUE if function passes
-
 --*/
 {
     PTOASTER_PROP_PARAMS params;
-
     UNREFERENCED_PARAMETER( wParam );
 
     params = (PTOASTER_PROP_PARAMS) GetWindowLongPtr(hDlg, DWLP_USER);
 
-    switch(uMessage) {
+    switch(uMessage) 
+	{{
     case WM_COMMAND:
         break;
 
@@ -378,30 +350,45 @@ Return Value:
     case WM_HELP:
         break;
 
-    case WM_INITDIALOG:
+    case WM_INITDIALOG: 
+	{
+		// 在用户点击 "Custom Property Page" 选项卡时才会撞到, 
+		// 仅仅打开 ToasterDevice 属性对话框并不会撞到.
 
-        //
-        // on WM_INITDIALOG call, lParam points to the property
-        // sheet page.
-        //
-        // The lParam field in the property sheet page struct is set by the
-        // caller. This was set when we created the property sheet.
-        // Save this in the user window long so that we can access it on later 
-        // on later messages.
-        //
+		BOOL fSuccess = FALSE;
+		TCHAR origFriendlyName[100] = {0};
 
-        params = (PTOASTER_PROP_PARAMS) ((LPPROPSHEETPAGE)lParam)->lParam;
-        SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR) params);
-        break;
+		DbgOut("PropPageDlgProc.WM_INITDIALOG");
+		//
+		// on WM_INITDIALOG call, lParam points to the property sheet page.
+		//
+		// The lParam field in the property sheet page struct is set by the
+		// caller. This was set when we created the property sheet.
+		// Save this in the user window long so that we can access it on later 
+		// on later messages.
+		//
+		params = (PTOASTER_PROP_PARAMS) ((LPPROPSHEETPAGE)lParam)->lParam;
+		SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR) params);
 
+		// Chj add: Retrieve existing friendly-name and display it in the editbox.
+		fSuccess = SetupDiGetDeviceRegistryProperty(params->DeviceInfoSet, params->DeviceInfoData,
+			SPDRP_FRIENDLYNAME, NULL, (BYTE*)origFriendlyName, sizeof(origFriendlyName), NULL);
+		if(fSuccess && origFriendlyName[0])
+			SetDlgItemText(hDlg, IDC_FRIENDLYNAME, origFriendlyName);
 
+		break;
+	}
     case WM_NOTIFY:
         OnNotify(hDlg, (NMHDR *)lParam, params);
         break;
 
+	case WM_DESTROY:
+		// 关闭 ToasterDevice 属性对话框时撞到.
+		DbgOut("PropPageDlgProc.WM_DESTROY"); // chj debug
+
     default: 
         return FALSE;
-    }
+	}}
 
     return TRUE;
 } 
@@ -414,28 +401,32 @@ PropPageDlgCallback(HWND hwnd,
                    LPPROPSHEETPAGE ppsp)
 {
     PTOASTER_PROP_PARAMS params;
-
     UNREFERENCED_PARAMETER( hwnd );
 
-    switch (uMsg) {
-
+    switch (uMsg) 
+	{{
     case PSPCB_CREATE:
-        //
+        // 当第一次点击 "Custom Property Page" 选项卡时, 会撞到此处, 
+		// 且在 PropPageDlgProc.WM_INITDIALOG 之前撞到.
+		//
         // Called when the property sheet is first displayed
         //
         return TRUE;    // return TRUE to continue with creation of page
 
     case PSPCB_RELEASE:
+		// 在 PropPageDlgProc.WM_DESTROY 之后撞到.
+		// 但注意: 如果用户没有去点击"Custom Property Page" 选项卡, WM_INITDIALOG 和 WM_DESTROY 都不会被执行.
         //
         // Called when property page is destroyed, even if the page 
         // was never displayed. This is the correct way to release data.
         //
         params = (PTOASTER_PROP_PARAMS) ppsp->lParam;
-        LocalFree(params);
+        LocalFree(params); // was allocated in PropPageProvider()
+
         return 0;       // return value ignored
     default:
         break;
-    }
+	}}
 
     return TRUE;
 }
@@ -452,17 +443,17 @@ OnNotify(
     TCHAR                friendlyName[LINE_LEN] ={0};
     BOOL    fSuccess;
     
-    switch (NmHdr->code) {
+    switch (NmHdr->code) 
+	{{
     case PSN_APPLY:
         //
         // Sent when the user clicks on Apply OR OK !!
         //
-
         GetDlgItemText(ParentHwnd, IDC_FRIENDLYNAME, friendlyName,
                                         LINE_LEN-1 );
         friendlyName[LINE_LEN-1] = UNICODE_NULL;
-        if(friendlyName[0]) {
-
+        if(friendlyName[0]) 
+		{
             fSuccess = SetupDiSetDeviceRegistryProperty(Params->DeviceInfoSet, 
                          Params->DeviceInfoData,
                          SPDRP_FRIENDLYNAME,
@@ -483,8 +474,8 @@ OnNotify(
      
             if (Params && SetupDiGetDeviceInstallParams(Params->DeviceInfoSet,
                                               Params->DeviceInfoData,
-                                              &spDevInstall)) {
-                //
+                                              &spDevInstall)) 
+			{
                 // If your device requires a reboot to restart, you can
                 // specify that by setting DI_NEEDREBOOT as shown below
                 //
@@ -498,13 +489,12 @@ OnNotify(
                                               Params->DeviceInfoData,
                                               &spDevInstall);
             }
-        
         }
         return TRUE;
 
     default:
         return FALSE;
-    }
+	}}
     return FALSE;   
 } 
 
