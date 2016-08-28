@@ -469,6 +469,8 @@ OnNotify(
             // Inform setup about property change so that it can
             // restart the device.
             //
+			// Chj Q: 一定要让 ToasterDevice 经历 IRP_MN_STOP_DEVICE/IRP_MN_START_DEVICE 吗?
+			// 有没办法仅仅让设备管理器执行一次"扫描硬件改动"(那样也可以刷新 friendly name 显示的)? 
 
             spDevInstall.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
      
