@@ -10,5 +10,5 @@ Visual C++ 2010 projects:
 .\exe\ToasterApp_vs2010.sln contains:
 	enum.exe 
 	toast.exe
-	tostrco1.dll , the coinstaller
-	
+	tostrco1.dll , the CoInstaller
+	tostrcls.dll , the ClassInstaller

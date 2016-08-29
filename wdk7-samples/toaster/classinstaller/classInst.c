@@ -34,8 +34,10 @@ __user_code
 
 #include <windows.h>
 #include <setupapi.h>
+#include <Cfgmgr32.h> // 
 #include <assert.h>
 #include <stdio.h>
+#include <tchar.h>
 #include "resource.h"
 
 #ifndef DONT_USE_WDK 
@@ -65,7 +67,7 @@ typedef struct _TOASTER_PROP_PARAMS
 } TOASTER_PROP_PARAMS, *PTOASTER_PROP_PARAMS;
 
 
-INT_PTR
+INT_PTR CALLBACK
 PropPageDlgProc(__in HWND   hDlg,
                __in UINT   uMessage,
                __in WPARAM wParam,
@@ -110,6 +112,37 @@ DllMain(HINSTANCE DllInstance, DWORD Reason, PVOID Reserved)
 	}}
 
     return TRUE;
+}
+
+void check_DIF_PROPERTYCHANGE(HDEVINFO dis, PSP_DEVINFO_DATA did) // chj test
+{
+	SP_PROPCHANGE_PARAMS cinfo = {0}; // (setup-)class-info
+	SP_DEVINSTALL_PARAMS dinfo = {0}; // device info
+	BOOL b = 0;
+//	const int dbgsize = 100; // Not valid for C (ok for c++)
+#define dbgsize 100
+	TCHAR buf[dbgsize];
+
+	cinfo.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
+	b = SetupDiGetClassInstallParams(dis, did,
+		(PSP_CLASSINSTALL_HEADER)&cinfo, //[out]
+		sizeof(SP_PROPCHANGE_PARAMS), NULL);
+	assert(b);
+	assert(DIF_PROPERTYCHANGE==cinfo.ClassInstallHeader.InstallFunction);
+
+	_sntprintf_s(buf, dbgsize, _TRUNCATE, 
+		TEXT("> ClassInstallParams: .StateChange=%d, .Scope=%d, .HwProfile=%d\n"),
+		cinfo.StateChange, cinfo.Scope, cinfo.HwProfile);
+	OutputDebugString(buf);
+
+	dinfo.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
+	b = SetupDiGetDeviceInstallParams(dis, did, &dinfo);
+	assert(b);
+
+	_sntprintf_s(buf, dbgsize, _TRUNCATE, 
+		TEXT("> DeviceInstallParams: .Flags=0x%X, .FlagsEx=0x%X\n"),
+		dinfo.Flags, dinfo.FlagsEx);
+	OutputDebugString(buf);
 }
 
 DWORD CALLBACK
@@ -163,6 +196,7 @@ Note: return code ERROR_DI_POSTPROCESSING_REQUIRED is used for CoInstaller, not 
             // SetupDiSetDeviceInstallParams. (Enable/Disable/Restart)
             //
             DbgOut("DIF_PROPERTYCHANGE");
+			check_DIF_PROPERTYCHANGE(DeviceInfoSet, DeviceInfoData); // chj test
             break;
         case DIF_REMOVE: 
              //
@@ -318,7 +352,7 @@ Returns:    NO_ERROR, ERROR_DI_DO_DEFAULT, or an error code.
     return NO_ERROR;
 } 
 
-INT_PTR
+INT_PTR CALLBACK
 PropPageDlgProc(__in HWND   hDlg,
                    __in UINT   uMessage,
                    __in WPARAM wParam,
@@ -394,8 +428,7 @@ Return Value:
 } 
 
 
-UINT
-CALLBACK
+UINT CALLBACK
 PropPageDlgCallback(HWND hwnd,
                    UINT uMsg,
                    LPPROPSHEETPAGE ppsp)
@@ -465,19 +498,23 @@ OnNotify(
                 break;
             }
 
-            //
-            // Inform setup about property change so that it can
-            // restart the device.
-            //
 			// Chj Q: 一定要让 ToasterDevice 经历 IRP_MN_STOP_DEVICE/IRP_MN_START_DEVICE 吗?
 			// 有没办法仅仅让设备管理器执行一次"扫描硬件改动"(那样也可以刷新 friendly name 显示的)? 
 
-            spDevInstall.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
+#define WILL_RESTART_DEVICE // WDK toaster default code
+#ifdef  WILL_RESTART_DEVICE 
+			//
+			// Inform setup about property change so that it can restart the device.
+			//
+			
+			spDevInstall.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
      
             if (Params && SetupDiGetDeviceInstallParams(Params->DeviceInfoSet,
                                               Params->DeviceInfoData,
                                               &spDevInstall)) 
 			{
+				// Chj: 发现 spDevInstall 结构体中返回的所有成员都是零值，这说明什么？
+
                 // If your device requires a reboot to restart, you can
                 // specify that by setting DI_NEEDREBOOT as shown below
                 //
@@ -491,7 +528,9 @@ OnNotify(
                                               Params->DeviceInfoData,
                                               &spDevInstall);
             }
-        }
+#else
+#endif
+		}
         return TRUE;
 
     default:
