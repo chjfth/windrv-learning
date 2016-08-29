@@ -25,6 +25,7 @@ __user_code
 #include <windows.h>
 #include <setupapi.h>
 #include <stdio.h>
+#include <tchar.h>
 #include <strsafe.h>
 
 //+---------------------------------------------------------------------------
@@ -105,6 +106,27 @@ HINF MyOpenInfFile (
     return FileHandle;
 }
 
+#define COUNT(ar) (sizeof(ar)/sizeof(ar[0]))
+
+void dbgprint(const TCHAR *fmt, ...)
+{
+	TCHAR buf[1000] = {0};
+	int prefixlen = 0;
+	va_list args;
+
+	_sntprintf_s(buf, COUNT(buf)-3, _TRUNCATE, TEXT("CoInstaller: ")); // prefix
+
+	prefixlen = (int)_tcslen(buf);
+
+	va_start(args, fmt);
+	_vsntprintf_s(buf+prefixlen, COUNT(buf)-3-prefixlen, _TRUNCATE, fmt, args);
+	prefixlen = (int)_tcslen(buf);
+	_tcsncpy_s(buf+prefixlen, 2, TEXT("\r\n"), _TRUNCATE); // add trailing \r\n
+	va_end(args);
+
+	OutputDebugString(buf);
+}
+
 //+---------------------------------------------------------------------------
 //
 //  Function:   ToasterCoInstaller
@@ -136,8 +158,12 @@ ToasterCoInstaller (
             BOOL        fSuccess=FALSE;
             DWORD       dwRegType, UINumber;
             size_t      len;
+			TCHAR szExePath[MAX_PATH]; 
+				// Will be 'C:\Windows\system32\DrvInst.exe' on Windows 7.
 
-            DbgOut("DIF_INSTALLDEVICE");
+			GetModuleFileName( NULL, szExePath, MAX_PATH );
+			dbgprint("DIF_INSTALLDEVICE from pid:%d(%s)", GetCurrentProcessId(), szExePath);
+            //DbgOut("DIF_INSTALLDEVICE");
 
             //
             // We will create here a friendly name for this device
