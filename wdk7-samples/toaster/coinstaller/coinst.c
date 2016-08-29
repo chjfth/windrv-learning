@@ -1,7 +1,3 @@
-// 45678901234567890123456789012345678901234567890123456789012345678901234567890
-//+---------------------------------------------------------------------------
-//
-//  Microsoft Windows
 //  Copyright (C) Microsoft Corporation, 1999.
 //
 //  File:       COINST.C
@@ -19,7 +15,6 @@
 //              to install device rather than in post-processing.
 //                  - July 28, 2000
 //
-//----------------------------------------------------------------------------
 
 //
 // Annotation to indicate to prefast that this is nondriver user-mode code.
@@ -133,7 +128,7 @@ ToasterCoInstaller (
                )
 {
     switch (InstallFunction)
-    {
+    {{
     case DIF_INSTALLDEVICE:
         if(!Context->PostProcessing)
         {
@@ -145,10 +140,10 @@ ToasterCoInstaller (
             DbgOut("DIF_INSTALLDEVICE");
 
             //
-            // We wil create here a friendly name for this device
+            // We will create here a friendly name for this device
             // based on it's serial number.
             // The bus driver returns the serial No. in the UINumber.
-            // field of the device capabiliities structure.
+            // field of the device capabilities structure.
             // So let us get that first .
             //
             fSuccess =
@@ -330,7 +325,7 @@ ToasterCoInstaller (
     default:
         DbgOut("?????");
         break;
-    }
+	}}
 
     return NO_ERROR;
 }
