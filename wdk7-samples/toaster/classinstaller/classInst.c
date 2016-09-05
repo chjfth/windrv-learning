@@ -521,8 +521,10 @@ OnNotify(
                 // if(NeedReboot) {
                 //    spDevInstall.Flags |= DI_PROPERTIES_CHANGE | DI_NEEDREBOOT;
                 // }
-                //
+                
                 spDevInstall.FlagsEx |= DI_FLAGSEX_PROPCHANGE_PENDING;
+                	// Chj: This will send IRP_MN_STOP_DEVICE & IRP_MN_START_DEVICE to the underlying device.
+                	// To avoid this restarting behavior, just use spDevInstall.Flags|=DI_PROPERTIES_CHANGE .
                 
                 SetupDiSetDeviceInstallParams(Params->DeviceInfoSet,
                                               Params->DeviceInfoData,
