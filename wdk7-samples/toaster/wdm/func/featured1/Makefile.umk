@@ -19,7 +19,7 @@ endif
 # gmu_G_Final_PrjName.
 ############################################################################
 ifndef gmu_PRJ_NAME
-  gmu_PRJ_NAME = wdk7-toasters-wdm-featured2
+  gmu_PRJ_NAME = wdk7-toasters-wdm-featured1
 endif
 
 ############################################################################
