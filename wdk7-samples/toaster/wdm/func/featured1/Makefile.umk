@@ -70,7 +70,7 @@ gmp_u_list_PLUGIN_TO_LOAD +=
 # Decoration may be applied to this name which results in $(gmu_Gf_Final_LinkOutput).
 # Using function gmpf_MakeExeName to construct output name makes the name more portable.
 ############################################################################
-gmu_uf_LINK_OUTPUT = wdm_toaster_featured1.sys
+gmu_uf_LINK_OUTPUT = toaster.sys
 gmp_DECO_UNICODE_FOR_LINK_OUTPUT = 
 	#Set this to 1 if you want a _U suffix on your output-image when gmp_bc_UNICODE=1
 gmp_DECO_DEBUG_FOR_LINK_OUTPUT = 
