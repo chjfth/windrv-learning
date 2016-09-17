@@ -3,12 +3,12 @@
 Step2: This steps shows:
        1) How to create a context with the WDFDEVICE object
        2) How to initialize the USB device.
-       3) How to register an interface so that app can open 
-          an handle to the device.
+       3) How to register an interface so that app can open an handle to the device.
 --*/
 
-#include "ntddk.h"
-#include "wdf.h"
+#include <ntddk.h>
+#include <wdf.h>
+
 #include "prototypes.h"
 #pragma warning(disable:4200)  // suppress nameless struct/union warning
 #pragma warning(disable:4201)  // suppress nameless struct/union warning
@@ -41,7 +41,7 @@ DriverEntry(
     WDF_DRIVER_CONFIG       config;
     NTSTATUS                status;
 
-    KdPrint(("DriverEntry of Step2\n"));
+    KdPrint(("DriverEntry() of Step2\n"));
 
     WDF_DRIVER_CONFIG_INIT(&config, EvtDeviceAdd);
 
@@ -88,7 +88,7 @@ EvtDeviceAdd(
     pDevContext = GetDeviceContext(device);
 
     status = WdfDeviceCreateDeviceInterface(device,
-                                (LPGUID) &GUID_DEVINTERFACE_OSRUSBFX2,
+                                &GUID_DEVINTERFACE_OSRUSBFX2,
                                 NULL);// Reference String
     if (!NT_SUCCESS(status)) {
         KdPrint(("WdfDeviceCreateDeviceInterface failed 0x%x\n", status));

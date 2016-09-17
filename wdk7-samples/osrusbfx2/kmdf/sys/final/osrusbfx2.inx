@@ -110,7 +110,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 ;---------------------------------------------------------------;
 
 [Strings]
-MSFT="Microsoft"
+MSFT="MicrosoftDemo(OSR USB FX2)"
 MfgName="OSR"
 Disk_Description="OSRUSBFX2 Installation Disk"
 USB\VID_045E&PID_930A.DeviceDesc="WDF Sample Driver for OSR USB-FX2 Learning Kit"
