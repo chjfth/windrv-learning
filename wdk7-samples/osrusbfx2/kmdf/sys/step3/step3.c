@@ -1,14 +1,14 @@
 /*++
-
 Step3: This steps shows:
        1) How to create a default parallel queue to receive a IOCTL requests to 
           set bar graph display.
-       2) How to retreive memory handle from the requests and use that to send
+       2) How to retrieve memory handle from the requests and use that to send
           a vendor command to the USB device.
 --*/
 
-#include "ntddk.h"
-#include "wdf.h"
+#include <ntddk.h>
+#include <wdf.h>
+
 #include "prototypes.h"
 #pragma warning(disable:4200)  // suppress nameless struct/union warning
 #pragma warning(disable:4201)  // suppress nameless struct/union warning
