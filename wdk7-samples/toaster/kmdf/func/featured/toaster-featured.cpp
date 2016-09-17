@@ -610,22 +610,17 @@ ToasterEvtDeviceContextCleanup(
     IN WDFOBJECT Device //WDFDEVICE Device (chj fix for .cpp compile)
     )
 /*++
-
 Routine Description:
-
    EvtDeviceContextCleanup event callback must perform any operations that are
    necessary before the specified device is removed. The framework calls
    the driver's EvtDeviceContextCleanup callback when the device is deleted in response
-   to IRP_MN_REMOVE_DEVICE request.
+   to *IRP_MN_REMOVE_DEVICE* request.
 
 Arguments:
-
     Device - Handle to a framework device object.
 
 Return Value:
-
     WDF status code
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -686,8 +681,8 @@ ToasterEvtFileClose (
 Routine Description:
    EvtFileClose is called when [all the handles represented by the FileObject
    is closed and all the references to FileObject is removed]. This callback
-   may get called in an arbitrary thread context instead of the thread that
-   called CloseHandle. 
+   may get called in an *arbitrary* thread context [instead of the thread that
+   called CloseHandle]. 
    
    If you want to delete any per FileObject context , that
    must be done in the context of the user thread that made the Create call, i.e.
@@ -695,9 +690,6 @@ Routine Description:
 
 Arguments:
     FileObject - Pointer to fileobject that represents the open handle.
-
-Return Value:
-	VOID
 --*/
 {
     PFDO_DATA    fdoData;
@@ -710,7 +702,6 @@ Return Value:
 
     return;
 }
-
 
 
 VOID
