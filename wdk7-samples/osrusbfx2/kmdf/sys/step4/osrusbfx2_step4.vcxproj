@@ -215,7 +215,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="step4.c" />
+    <ClCompile Include="step4.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\public.h" />

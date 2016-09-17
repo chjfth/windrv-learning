@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern"C" {
+#endif
+
+
 DRIVER_INITIALIZE DriverEntry;
 
 EVT_WDF_DRIVER_DEVICE_ADD EvtDeviceAdd;
@@ -13,3 +18,6 @@ EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestReadCompletionRoutine;
 EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestWriteCompletionRoutine;
 
 
+#ifdef __cplusplus
+} // extern"C" {
+#endif

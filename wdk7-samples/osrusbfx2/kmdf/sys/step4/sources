@@ -7,5 +7,5 @@ INCLUDES = ..\inc\
 
 KMDF_VERSION_MAJOR=1
 
-SOURCES=step4.c 
+SOURCES=step4.cpp 
 
