@@ -1,13 +1,13 @@
 /*++
-
 Step4: This steps shows:
        1) How to register Read and Write events on the default queue.
        2) Retrieve memory from read and write request, format the
           requests and send it to USB target.
 --*/
 
-#include "ntddk.h"
-#include "wdf.h"
+#include <ntddk.h>
+#include <wdf.h>
+
 #include "prototypes.h"
 #pragma warning(disable:4200)  // suppress nameless struct/union warning
 #pragma warning(disable:4201)  // suppress nameless struct/union warning
