@@ -27,6 +27,8 @@ Revision History:
 #if !defined(_TOASTER_H_)
 #define _TOASTER_H_
 
+                                               #ifndef _GMU_GCC_M_GEN_HDEPEND
+
 #include <VisualDDKHelpers.h>
 
 //
@@ -53,6 +55,8 @@ Revision History:
 // Disable warning C4100: unreferenced formal parameter
 //
 #pragma warning(disable:4100 4057)
+
+                                               #endif // _GMU_GCC_M_GEN_HDEPEND
 
 //
 // Include the driver.h which define the common data used by both

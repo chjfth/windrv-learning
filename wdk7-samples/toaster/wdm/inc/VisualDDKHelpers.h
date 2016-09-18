@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __VISUALDDK_H_
+#define __VISUALDDK_H_
+
 
 /*!	\file 
 	\brief Contains definitions making handles and NTSTATUS variables recognizable by debugger
@@ -27,3 +29,5 @@ C_ASSERT(sizeof(PHANDLE_VisualDDK_Helper_t) == sizeof(PHANDLE));
 #define PHANDLE PHANDLE_VisualDDK_Helper_t 
 
 #endif
+
+#endif // __VISUALDDK_H_
