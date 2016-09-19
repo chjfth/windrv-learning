@@ -423,6 +423,7 @@ Return Value:
     WDF status code
 --*/
 {
+	PAGED_CODE();
     PFDO_DATA   fdoData;
     NTSTATUS status = STATUS_SUCCESS;
     ULONG i;
@@ -435,7 +436,11 @@ Return Value:
 
     KdPrint(("ToasterEvtDevicePrepareHardware called\n"));
 
-    PAGED_CODE();
+	WDFUSBDEVICE UsbDevice = NULL;
+	NTSTATUS usbstatus = WdfUsbTargetDeviceCreate(Device,
+		WDF_NO_OBJECT_ATTRIBUTES,
+		&UsbDevice);
+
     //
     // Get the number item that are currently in Resources collection and
     // iterate thru as many times to get more information about the each items

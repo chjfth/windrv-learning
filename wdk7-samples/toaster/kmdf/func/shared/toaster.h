@@ -23,6 +23,8 @@ extern"C"{
 
 #include <ntddk.h>
 #include <wdf.h>
+#include <usbdi.h>
+#include <wdfusb.h> // test
 
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>

@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_filter_generic", "kmdf
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_filter_sideband", "kmdf\filter_sideband_vs2010\filter_sideband_vs2010.vcxproj", "{F82291CB-D596-466C-ABC3-0C9D442B0C01}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toastmon", "kmdf\toastmon_vs2010\toastmon_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-2016CCCC0051}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -119,6 +121,14 @@ Global
 		{F82291CB-D596-466C-ABC3-0C9D442B0C01}.Release|Win32.Build.0 = Release|Win32
 		{F82291CB-D596-466C-ABC3-0C9D442B0C01}.Release|x64.ActiveCfg = Release|x64
 		{F82291CB-D596-466C-ABC3-0C9D442B0C01}.Release|x64.Build.0 = Release|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Debug|Win32.Build.0 = Debug|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Debug|x64.ActiveCfg = Debug|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Debug|x64.Build.0 = Debug|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Release|Win32.ActiveCfg = Release|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Release|Win32.Build.0 = Release|Win32
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Release|x64.ActiveCfg = Release|x64
+		{AAE14642-CB46-449B-B30F-2016CCCC0051}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
