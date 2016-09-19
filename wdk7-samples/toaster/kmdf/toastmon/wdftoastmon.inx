@@ -47,12 +47,12 @@ wdftoastmon.sys=1
 
 ; For Win2K because it cannot parse decorated sections.
 [MSFT]
-; DisplayName            Section           DeviceId
+; DisplayName            Section           Hardware Id
 ; -----------            -------           --------
-%WdfToastMon.DRVDESC%=ToastMon_Inst,root\toastmon
+%WdfToastMon.DRVDESC%=ToastMon_Inst,       root\toastmon
 
 [MSFT.NT$ARCH$]
-%WdfToastMon.DRVDESC%=ToastMon_Inst,root\toastmon
+%WdfToastMon.DRVDESC%=ToastMon_Inst,       root\toastmon
 
 [ToastMon_Inst.NT]
 CopyFiles=ToastMon.CopyFiles
@@ -91,11 +91,12 @@ WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with
 
 [ToastMon_Inst.NT.Wdf]
 KmdfService =  wdfToastMon, wdfToastMon_wdfsect
+
 [wdfToastMon_wdfsect]
 KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
-MSFT = "MicrosoftDemo"
+MSFT = "MicrosoftDemo (toastmon)"
 ClassName = "Sample Device"
 WdfToastMon.SVCDESC = "Sample WDF ToastMon Service"
 WdfToastMon.DRVDESC = "Sample WDF ToastMon Driver"

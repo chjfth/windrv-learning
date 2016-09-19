@@ -6,6 +6,7 @@ Visual C++ 2010 projects:
 	WDM drivers
 	KMDF drivers
 	KMDF filter drivers
+	toastmon
 
 .\exe\ToasterApp_vs2010.sln contains:
 	enum.exe 

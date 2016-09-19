@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -21,11 +20,8 @@ Abstract:
           a timer callback at PASSIVE_LEVEL without having to create and 
           queue a WDFWORKITEM objects on its own.		  
           
-
 Environment:
-
     Kernel mode
-
 --*/
 
 #include "toastmon.h"
@@ -52,23 +48,15 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
-
     Installable driver initialization entry point.
     This entry point is called directly by the I/O system.
-
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
-
 Return Value:
-
     STATUS_SUCCESS
-
 --*/
 {
     NTSTATUS            status = STATUS_SUCCESS;
@@ -78,7 +66,7 @@ Return Value:
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
     //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
@@ -91,7 +79,6 @@ Return Value:
         &config,
         ToastMon_EvtDeviceAdd
         );
-
     //
     // Create a framework driver object to represent our driver.
     //
@@ -117,21 +104,16 @@ ToastMon_EvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     ToastMon_EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of toaster device.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_OBJECT_ATTRIBUTES           attributes;
@@ -154,7 +136,7 @@ Return Value:
     attributes.EvtCleanupCallback = ToastMon_EvtDeviceContextCleanup;
 
     //
-    // Create a framework device object.This call will inturn create
+    // Create a framework device object.This call will in turn create
     // a WDM deviceobject, attach to the lower stack and set the
     // appropriate flags and attributes.
     //

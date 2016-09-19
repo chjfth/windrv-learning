@@ -231,7 +231,7 @@
     <ClCompile Include="..\toastmon\WmI.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\func\shared\toaster.h" />
+    <ClInclude Include="..\func\shared\toastmon.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\toastmon\toastmon.rc" />

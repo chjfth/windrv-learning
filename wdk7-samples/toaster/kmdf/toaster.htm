@@ -383,12 +383,14 @@ an existing toaster device by using the filter.inf.</span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
 purpose of this sample is to show how to open a device and perform I/O in
-kernel mode using remote I/O target interfaces. This sample registers interface
+kernel mode using <u>remote I/O target interfaces</u>. This sample registers interface
 notification with the PNP manager for toaster interface class by using
 IoRegisterPlugPlayNotification. When a toaster device is plugged in, PnP
 manager notifies the driver by invoking the callback. In the callback, this
 sample creates a remote target and opens the device by using the symbolic link
-provided in the callback data. This sample uses a passive timer to demonstrate
+provided in the callback data. 
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
+This sample uses a passive timer to demonstrate
 how to perform asynchronous read and write to the target device. It also shows
 to respond to the device change notification by registering the
 EvtIoTargetQueryRemove/EvtIoTargetRemoveCanceled/EvtIoTargetRemoveComplete on
