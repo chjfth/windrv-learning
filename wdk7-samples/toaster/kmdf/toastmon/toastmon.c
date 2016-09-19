@@ -188,11 +188,12 @@ On Win7 x64, we'll get:
 
     //
     // Register for TOASTER device interface change notification.
-    // We will get GUID_DEVICE_INTERFACE_ARRIVAL and
+    // We will get GUID_DEVICE_INTERFACE_ARRIVAL and                  // 定义于 inc\ddk\wdmguid.h
     // GUID_DEVICE_INTERFACE_REMOVAL notification when the toaster
     // device is started and removed.
-    // Framework doesn't provide a WDF interface to register for interface change
-    // notification. However if the target device is opened (later) by symbolic-link using
+    // Framework doesn't provide a WDF interface to register for interface change notification. 
+    // --上头这句话好像强调的是: *只有* WDM 层面的函数(IoRegisterPlugPlayNotification)才提供 interface-change 通知功能, 因此只好用 WDM API 了.
+	// However if the target device is opened (later) by symbolic-link using
     // IoTarget, framework (自动进行) registers itself EventCategoryTargetDeviceChange
     // notification on the handle and responds to the PnP notifications.
     //
@@ -201,17 +202,18 @@ On Win7 x64, we'll get:
     // you cannot handle these notification before start then you should register this in
     // PrepareHardware or SelfManagedIoInit callback.
     // You must unregister this notification when the device is removed in the
-    // DeviceContextCleanup callback. This call takes a reference on the driverobject.
+    // DeviceContextCleanup callback. 
+	// This call takes a reference on the driverobject. // this call 指的是 IoRegisterPlugPlayNotification 吗?
     // So if you don't unregister it will prevent the driver from unloading.
     //
     status = IoRegisterPlugPlayNotification (
-                EventCategoryDeviceInterfaceChange, // 注意：此处不是用 EventCategoryTargetDeviceChange
-                PNPNOTIFY_DEVICE_INTERFACE_INCLUDE_EXISTING_INTERFACES,
-                (PVOID)&GUID_DEVINTERFACE_TOASTER,
-                WdfDriverWdmGetDriverObject(WdfDeviceGetDriver(device)),
-                ToastMon_PnpNotifyInterfaceChange, // (PDRIVER_NOTIFICATION_CALLBACK_ROUTINE) // pointer implicit conversion ok for C.
-                (PVOID)deviceExtension,
-                &deviceExtension->NotificationHandle);
+        EventCategoryDeviceInterfaceChange, // 注意：此处不是用 EventCategoryTargetDeviceChange
+        PNPNOTIFY_DEVICE_INTERFACE_INCLUDE_EXISTING_INTERFACES,
+        (PVOID)&GUID_DEVINTERFACE_TOASTER,  // 监视[提供 GUID_DEVINTERFACE_TOASTER 接口的设备的]生成和销毁事件
+        WdfDriverWdmGetDriverObject(WdfDeviceGetDriver(device)),
+        ToastMon_PnpNotifyInterfaceChange, // (PDRIVER_NOTIFICATION_CALLBACK_ROUTINE) // pointer implicit conversion ok for C.
+        (PVOID)deviceExtension,
+        &deviceExtension->NotificationHandle);
 
     if (!NT_SUCCESS(status)) {
         KdPrint(("RegisterPnPNotifiction failed: 0x%x\n", status));
@@ -242,9 +244,7 @@ Arguments:
 --*/
 {
     PDEVICE_EXTENSION           deviceExtension;
-
     KdPrint( ("ToastMon_EvtDeviceContextCleanup\n"));
-
     PAGED_CODE();
 
     deviceExtension = GetDeviceExtension(Device);
@@ -259,7 +259,7 @@ Arguments:
     //
     // TargetDeviceCollection will get deleted automatically when
     // the Device is deleted due to the association we made when
-    // we created the object in EvtDeviceAdd.
+    // we created the object in EvtDeviceAdd. (之前用 .ParentObject 关联的)
     //
     // Any targets remaining in the collection will also be automatically closed
     // and deleted.
@@ -274,7 +274,7 @@ Arguments:
 NTSTATUS
 ToastMon_PnpNotifyInterfaceChange(
     IN  PDEVICE_INTERFACE_CHANGE_NOTIFICATION NotificationStruct,
-    IN  PVOID                        Context
+    IN  PVOID  Context
     )
 /*++
 Routine Description:
@@ -300,8 +300,7 @@ Arguments:
     NotificationStruct  - Structure defining the change.
 
     Context -    pointer to the device extension.
-                 (supplied as the "context" when we
-                  registered for this callback)
+                 (supplied as the "context" when we registered for this callback)
 Return Value:
 
     STATUS_SUCCESS - always, even if something goes wrong.
@@ -324,11 +323,11 @@ Return Value:
                       (LPGUID)&GUID_DEVINTERFACE_TOASTER));
 
     //
-    // Check the callback event.
+    // Check the callback event (type).
     //
     if(IsEqualGUID( (LPGUID)&(NotificationStruct->Event),
-                     (LPGUID)&GUID_DEVICE_INTERFACE_ARRIVAL )) {
-
+                     (LPGUID)&GUID_DEVICE_INTERFACE_ARRIVAL )) 
+	{
         KdPrint(("Arrival Notification\n"));
 
         status = Toastmon_OpenDevice((WDFDEVICE)deviceExtension->WdfDevice,
@@ -356,9 +355,9 @@ Return Value:
 
         WdfWaitLockRelease(deviceExtension->TargetDeviceCollectionLock);
 
-
-    } else {
-
+    } 
+	else 
+	{
         KdPrint(("Removal Interface Notification\n"));
     }
     return STATUS_SUCCESS;
@@ -407,6 +406,7 @@ Routine Description:
     // For example, SWENUM devices in conjunction with KS
     // initiate an enumeration of a device when you do the
     // open on the device interface.
+	//
     // We can open the target device here because we know the
     // toaster function driver doesn't trigger any pnp action. // 没看懂， toaster 触发 PnP action 是什么意思？
     //
@@ -430,8 +430,7 @@ Routine Description:
     openParams.EvtIoTargetQueryRemove = ToastMon_EvtIoTargetQueryRemove;
     openParams.EvtIoTargetRemoveCanceled = ToastMon_EvtIoTargetRemoveCanceled;
     openParams.EvtIoTargetRemoveComplete = ToastMon_EvtIoTargetRemoveComplete;
-
-
+	//
     status = WdfIoTargetOpen(ioTarget, &openParams);
 
     if (!NT_SUCCESS(status)) {
@@ -481,19 +480,16 @@ Routine Description:
      
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TIMER_CONTEXT);
 
-    //
     // Make IoTarget as parent of the timer to prevent the ioTarget
-    // from deleted until the dpc has run to completion.
+    // from deleted until the DPC has run to completion.
     //
     attributes.ParentObject = ioTarget;
 
-    //
     // By specifying WdfExecutionLevelPassive the framework will invoke
     // the timer callback Toastmon_EvtTimerPostRequests at PASSIVE_LEVEL.
     //
     attributes.ExecutionLevel = WdfExecutionLevelPassive;
 
-    //
     // Setting the AutomaticSerialization to FALSE prevents
     // WdfTimerCreate to fail if the parent device object's 
     // execution level is set to WdfExecutionLevelPassive.
@@ -513,8 +509,7 @@ Routine Description:
 
     GetTimerContext(targetDeviceInfo->TimerForPostingRequests)->IoTarget = ioTarget;
 
-    //
-    // Start the passive timer. The first timer will be queued after 1ms  interval and
+    // Start the passive timer. The first timer will be queued after 1ms interval and
     // after that it will be requeued in the timer callback function. 
     // The value of 1 ms (lowest timer resolution allowed on NT) is chosen here so 
     // that timer would fire right away.
@@ -711,7 +706,6 @@ Return Value:
     NT Status code - only failure expected is STATUS_INSUFFICIENT_RESOURCES
 --*/
 {
-
     WDFREQUEST                  request;
     NTSTATUS                    status;
     PTARGET_DEVICE_INFO       targetInfo;
@@ -725,7 +719,7 @@ Return Value:
     //
     // Allocate memory for read. Ideally I should have allocated the memory upfront along
     // with the request because the sizeof the memory buffer is constant.
-    // But for demonstration, I have choosen to allocate a memory
+    // But for demonstration, I have chosen to allocate a memory
     // object everytime I send a request down and delete it when the request
     // is completed.
     //
@@ -760,7 +754,7 @@ Return Value:
 
     //
     // Clear the ReadRequest field in the context to avoid
-    // being reposted even before the reqeuest completes.
+    // being reposted even before the request completes.
     // This will be reset in the complete routine when the request completes.
     //
     targetInfo->ReadRequest = NULL;
@@ -799,7 +793,7 @@ Return Value:
     //
     // Allocate memory for write. Ideally I should have allocated the memory upfront along
     // with the request because the sizeof the memory buffer is constant.
-    // But for demonstration, I have choosen to allocate a memory
+    // But for demonstration, I have chosen to allocate a memory
     // object everytime I send a request down and delete it when the request
     // is completed.
     //
@@ -832,10 +826,9 @@ Return Value:
                    Toastmon_WriteRequestCompletionRoutine,
                    targetInfo);
 
-
     //
     // Clear the WriteRequest field in the context to avoid
-    // being reposted even before the reqeuest completes.
+    // being reposted even before the request completes.
     // This will be reset in the complete routine when the request completes.
     //
     targetInfo->WriteRequest = NULL;
@@ -898,7 +891,6 @@ Return Value:
 
     status = WdfRequestReuse(Request, &params);
     ASSERT(NT_SUCCESS(status));
-
     //
     // RequestReuse zero all the values in structure pointed by CompletionParams.
     // So you must get all the information from completion params before
@@ -907,7 +899,6 @@ Return Value:
 
     targetInfo->ReadRequest = Request;
 
-    //
     // Don't repost the request in the completion routine because it may lead to recursion
     // if the driver below completes the request synchronously.
     //
