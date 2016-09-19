@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -19,10 +18,7 @@ Abstract: This module demonstrates how to receive WMI notification fired by
           fired by NDIS whenever the network cable is plugged or unplugged.
 
 Environment:
-
     Kernel mode
-
-
 --*/
 
 #include "toastmon.h"
@@ -165,17 +161,13 @@ GetTargetFriendlyName(
     IN WDFMEMORY* TargetName
     )
 /*++
-
 Routine Description:
-
     Return the friendly name associated with the given device object.
 
 Arguments:
 
 Return Value:
-
     NT status
-
 --*/
 {
     NTSTATUS status;
@@ -184,7 +176,7 @@ Return Value:
 
     //
     // First get the length of the string. If the FriendlyName
-    // is not there then get the lenght of device description.
+    // is not there then get the length of device description.
     //
     status = WdfIoTargetAllocAndQueryTargetProperty(Target,
                                                     DevicePropertyFriendlyName,
@@ -198,7 +190,6 @@ Return Value:
                                                         NonPagedPool,
                                                         WDF_NO_OBJECT_ATTRIBUTES,
                                                         TargetName);
-
     }
 
     if (!NT_SUCCESS(status)) {

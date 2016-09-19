@@ -184,9 +184,9 @@ Return Value:
     // GUID_DEVICE_INTERFACE_REMOVAL notification when the toaster
     // device is started and removed.
     // Framework doesn't provide a WDF interface to register for interface change
-    // notification. However if the target device is opened by symboliclink using
-    // IoTarget, framework registers itself EventCategoryTargetDeviceChange
-    // notification on the handle and responds to the pnp notifications.
+    // notification. However if the target device is opened (later) by symbolic-link using
+    // IoTarget, framework (自动进行) registers itself EventCategoryTargetDeviceChange
+    // notification on the handle and responds to the PnP notifications.
     //
     // Note that as soon as you register, arrival notification will be sent
     // about all existing toaster devices even before this device is started. So if
@@ -197,12 +197,11 @@ Return Value:
     // So if you don't unregister it will prevent the driver from unloading.
     //
     status = IoRegisterPlugPlayNotification (
-                EventCategoryDeviceInterfaceChange,
+                EventCategoryDeviceInterfaceChange, // 注意：此处不是用 EventCategoryTargetDeviceChange
                 PNPNOTIFY_DEVICE_INTERFACE_INCLUDE_EXISTING_INTERFACES,
                 (PVOID)&GUID_DEVINTERFACE_TOASTER,
                 WdfDriverWdmGetDriverObject(WdfDeviceGetDriver(device)),
-                (PDRIVER_NOTIFICATION_CALLBACK_ROUTINE)
-                    ToastMon_PnpNotifyInterfaceChange,
+                ToastMon_PnpNotifyInterfaceChange, // (PDRIVER_NOTIFICATION_CALLBACK_ROUTINE) // pointer implicit conversion ok for C.
                 (PVOID)deviceExtension,
                 &deviceExtension->NotificationHandle);
 
@@ -221,24 +220,17 @@ ToastMon_EvtDeviceContextCleanup(
     IN WDFDEVICE Device
     )
 /*++
-
 Routine Description:
 
-   EvtDeviceContextCleanup event callback must perform any operations that are
+EvtDeviceContextCleanup event callback must perform any operations that are
    necessary before the specified device is removed. The framework calls
-   the driver's EvtDeviceRemove callback when the PnP manager sends
+   the driver's EvtDeviceRemove callback when the PnP manager sends    // 注释错误: EvtDeviceRemove
    an IRP_MN_REMOVE_DEVICE request to the driver stack. Function driver
    typically undo whatever they did in EvtDeviceAdd callback - free
    structures, cleanup collections, etc.
 
 Arguments:
-
     Device - Handle to a framework device object.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     PDEVICE_EXTENSION           deviceExtension;
@@ -261,7 +253,7 @@ Return Value:
     // the Device is deleted due to the association we made when
     // we created the object in EvtDeviceAdd.
     //
-    // Any targets remaining in the collection will also be automaticaly closed
+    // Any targets remaining in the collection will also be automatically closed
     // and deleted.
     //
     deviceExtension->TargetDeviceCollection = NULL;
@@ -277,26 +269,23 @@ ToastMon_PnpNotifyInterfaceChange(
     IN  PVOID                        Context
     )
 /*++
-
 Routine Description:
 
     This routine is the PnP "interface change notification" callback routine.
 
-    This gets called on a Toaster triggered device interface arrival or
-    removal.
+    This gets called on a Toaster triggered device interface arrival or removal.
       - Interface arrival corresponds to a Toaster device being STARTED
       - Interface removal corresponds to a Toaster device being REMOVED
 
     On arrival:
-      - Create a IoTarget and open it by using the symboliclink. WDF will
-         Register for EventCategoryTargetDeviceChange notification on the fileobject
-        so it can cleanup whenever associated device is removed.
+      - Create a IoTarget and open it by using the symbolic-link. WDF will
+        register for EventCategoryTargetDeviceChange notification on the fileobject
+        so it can cleanup whenever associated device is removed. // 意思是 WDF 会自动做这个注册动作
 
     On removal:
       - This callback is a NO-OP for interface removal because framework registers
-      for PnP EventCategoryTargetDeviceChange callbacks and
-      uses that callback to clean up when the associated toaster device goes
-      away.
+        for PnP EventCategoryTargetDeviceChange callbacks and
+        uses that callback to clean up when the associated toaster device goes away.
 
 Arguments:
 
@@ -307,11 +296,9 @@ Arguments:
                   registered for this callback)
 Return Value:
 
-    STATUS_SUCCESS - always, even if something goes wrong
+    STATUS_SUCCESS - always, even if something goes wrong.
 
-    status is only used during query removal notifications and the OS ignores other
-    cases
-
+    status is only used during query removal notifications and the OS ignores other cases
 --*/
 {
     NTSTATUS                    status = STATUS_SUCCESS;
@@ -337,8 +324,8 @@ Return Value:
         KdPrint(("Arrival Notification\n"));
 
         status = Toastmon_OpenDevice((WDFDEVICE)deviceExtension->WdfDevice,
-                                                (PUNICODE_STRING)NotificationStruct->SymbolicLinkName,
-                                                &ioTarget);
+                                     (PUNICODE_STRING)NotificationStruct->SymbolicLinkName,
+                                     &ioTarget);
         if (!NT_SUCCESS(status)) {
             KdPrint( ("Unable to open control device 0x%x\n", status));
             return status;
@@ -377,18 +364,9 @@ Toastmon_OpenDevice(
     WDFIOTARGET *Target
     )
 /*++
-
 Routine Description:
-
     Open the I/O target and preallocate any resources required
     to communicate with the target device.
-
-Arguments:
-
-Return Value:
-
-    NTSTATUS
-
 --*/
 {
     NTSTATUS                    status = STATUS_SUCCESS;
@@ -399,8 +377,7 @@ Return Value:
     PDEVICE_EXTENSION           deviceExtension = GetDeviceExtension(Device);
     WDF_TIMER_CONFIG            wdfTimerConfig;
     
-
-    WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TARGET_DEVICE_INFO);
+	WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TARGET_DEVICE_INFO);
 
     status = WdfIoTargetCreate(deviceExtension->WdfDevice,
                             &attributes,
@@ -423,7 +400,7 @@ Return Value:
     // initiate an enumeration of a device when you do the
     // open on the device interface.
     // We can open the target device here because we know the
-    // toaster function driver doesn't trigger any pnp action.
+    // toaster function driver doesn't trigger any pnp action. // 没看懂， toaster 触发 PnP action 是什么意思？
     //
 
     WDF_IO_TARGET_OPEN_PARAMS_INIT_OPEN_BY_NAME(
@@ -439,7 +416,7 @@ Return Value:
     // In this sample, we use a periodic timers to post requests to the target.
     // So we need to register these callbacks so that we can start and stop
     // the timer when the state of the target device changes. Since we are
-    // registering these callbacks, we are now responsbile for closing and
+    // registering these callbacks, we are now responsible for closing and
     // reopening the target.
     //
     openParams.EvtIoTargetQueryRemove = ToastMon_EvtIoTargetQueryRemove;
@@ -455,14 +432,14 @@ Return Value:
         return status;
     }
    
-    KdPrint(("Target Device 0x%x, PDO 0x%x, Fileobject 0x%x, Filehandle 0x%x\n",
+    KdPrint(("Target Device 0x%x, PDO 0x%x, Fileobject 0x%x, Filehandle 0x%x\n", // shouldn't be %p ??
                         WdfIoTargetWdmGetTargetDeviceObject(ioTarget),
                         WdfIoTargetWdmGetTargetPhysicalDevice(ioTarget),
                         WdfIoTargetWdmGetTargetFileObject(ioTarget),
                         WdfIoTargetWdmGetTargetFileHandle(ioTarget)));
 
     //
-    // Create two requests - one for read and one for write.
+    // Create two request objects - one for read and one for write.
     //
     WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
     attributes.ParentObject = ioTarget;
@@ -498,7 +475,7 @@ Return Value:
 
     //
     // Make IoTarget as parent of the timer to prevent the ioTarget
-    // from deleted until the dpc has runto completion.
+    // from deleted until the dpc has run to completion.
     //
     attributes.ParentObject = ioTarget;
 
@@ -531,7 +508,7 @@ Return Value:
     //
     // Start the passive timer. The first timer will be queued after 1ms  interval and
     // after that it will be requeued in the timer callback function. 
-    // The value of 1 ms (lowest timer resoltion allowed on NT) is chosen here so 
+    // The value of 1 ms (lowest timer resolution allowed on NT) is chosen here so 
     // that timer would fire right away.
     //
     WdfTimerStart(targetDeviceInfo->TimerForPostingRequests,
@@ -548,23 +525,13 @@ ToastMon_EvtIoTargetQueryRemove(
     WDFIOTARGET IoTarget
 )
 /*++
-
 Routine Description:
-
     Called when the Target device receives IRP_MN_QUERY_REMOVE.
     This happens when somebody disables, ejects or uninstalls the target
-    device driver in usermode. Here close the handle to the
+    device driver in user mode. Here close the handle to the
     target device. If the system fails to remove the device for
     some reason, you will get RemoveCancelled callback where
     you can reopen and continue to interact with the target device.
-
-Arguments:
-
-    IoTarget -
-
-Return Value:
-
-
 --*/
 {
     PTARGET_DEVICE_INFO         targetDeviceInfo = NULL;
@@ -592,20 +559,10 @@ ToastMon_EvtIoTargetRemoveCanceled(
     WDFIOTARGET IoTarget
     )
 /*++
-
 Routine Description:
-
     Called when the Target device received IRP_MN_CANCEL_REMOVE.
     This happens if another app or driver talking to the target
     device doesn't close handle or veto query-remove notification.
-
-Arguments:
-
-    IoTarget -
-
-Return Value:
-
-
 --*/
 {
     PTARGET_DEVICE_INFO         targetDeviceInfo = NULL;
@@ -636,7 +593,6 @@ Return Value:
     //
     WdfTimerStart(targetDeviceInfo->TimerForPostingRequests,
                                         WDF_REL_TIMEOUT_IN_SEC(1));
-
 }
 
 VOID
@@ -644,19 +600,9 @@ ToastMon_EvtIoTargetRemoveComplete(
     WDFIOTARGET IoTarget
 )
 /*++
-
 Routine Description:
-
     Called when the Target device is removed ( either the target
     received IRP_MN_REMOVE_DEVICE or IRP_MN_SURPRISE_REMOVAL)
-
-Arguments:
-
-    IoTarget -
-
-Return Value:
-
-
 --*/
 {
     PDEVICE_EXTENSION      deviceExtension;
@@ -689,7 +635,6 @@ Return Value:
     WdfObjectDelete(IoTarget);
 
     return;
-
 }
 
 VOID
@@ -697,15 +642,8 @@ Toastmon_EvtTimerPostRequests(
     IN WDFTIMER Timer
     )
 /*++
-
 Routine Description:
-
-    Passive timer event to post read and write reqeuests.
-
-Return Value:
-
-    None
-
+    Passive timer event to post read and write requests.
 --*/
 {
     NTSTATUS status;
@@ -742,7 +680,6 @@ Return Value:
         if (!NT_SUCCESS(status)) {
             ASSERT(status == STATUS_INSUFFICIENT_RESOURCES);
         }
-
     }
 
     //
@@ -759,15 +696,11 @@ ToastMon_PostReadRequests(
     IN WDFIOTARGET IoTarget
     )
 /*++
-
 Routine Description:
-
     Called by the timer callback to send a read request to the target device.
 
 Return Value:
-
     NT Status code - only failure expected is STATUS_INSUFFICIENT_RESOURCES
-
 --*/
 {
 
@@ -838,18 +771,13 @@ ToastMon_PostWriteRequests(
     IN WDFIOTARGET IoTarget
     )
 /*++
-
 Routine Description:
-
     Called by the timer callback to send a write request to the target device.
 
 Return Value:
-
     NT Status code - only failure expected is STATUS_INSUFFICIENT_RESOURCES
-
 --*/
 {
-
     WDFREQUEST                  request;
     NTSTATUS                    status;
     PTARGET_DEVICE_INFO       targetInfo;
