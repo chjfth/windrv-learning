@@ -121,8 +121,16 @@ Return Value:
     WDFDEVICE                       device;
     PDEVICE_EXTENSION               deviceExtension;
 
+/* Test code:
+	void *p1=(void*)0x912345678, *p2=Driver;
+	KdPrint(( "[%%p]p1=%p , p2=%p\n", p1, p2 ));
+	KdPrint(( "[%%X]p1=0x%x , p2=0x%x\n", p1, p2 ));
+On Win7 x64, we'll get:
+	[%p]p1=0000000912345678 , p2=0000057FEF692B38
+	[%X]p1=0x12345678 , p2=0xef692b38
+--so a stack element from va_args() is at least 8-bytes.
+*/
     KdPrint( ("ToastMon_EvtDeviceAdd routine\n"));
-
     UNREFERENCED_PARAMETER(Driver);
 
     PAGED_CODE();
@@ -432,7 +440,7 @@ Routine Description:
         return status;
     }
    
-    KdPrint(("Target Device 0x%x, PDO 0x%x, Fileobject 0x%x, Filehandle 0x%x\n", // shouldn't be %p ??
+    KdPrint(("Target Device=0x%p, PDO=0x%p, Fileobject=0x%p, Filehandle=0x%p\n",
                         WdfIoTargetWdmGetTargetDeviceObject(ioTarget),
                         WdfIoTargetWdmGetTargetPhysicalDevice(ioTarget),
                         WdfIoTargetWdmGetTargetFileObject(ioTarget),
