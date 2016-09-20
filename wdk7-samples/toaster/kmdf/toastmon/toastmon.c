@@ -387,7 +387,7 @@ Routine Description:
     PDEVICE_EXTENSION           deviceExtension = GetDeviceExtension(Device);
     WDF_TIMER_CONFIG            wdfTimerConfig;
     
-	WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TARGET_DEVICE_INFO);
+	WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TARGET_DEVICE_INFO); // 明明应该叫 IOTARGET_INFO
 
     status = WdfIoTargetCreate(deviceExtension->WdfDevice, // =Device
                             &attributes,
