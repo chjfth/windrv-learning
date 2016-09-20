@@ -38,7 +38,7 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_EXTENSION, GetDeviceExtension)
 
 typedef struct  _TARGET_DEVICE_INFO {
     PDEVICE_EXTENSION DeviceExtension; // Our FDO device extension
-    LIST_ENTRY        ListEntry; // Entry to chain to the listhead
+//  LIST_ENTRY        ListEntry; // Entry to chain to the listhead // Chj: this is not used.
     WDFREQUEST        ReadRequest;
     WDFREQUEST        WriteRequest;
     WDFTIMER          TimerForPostingRequests;       
