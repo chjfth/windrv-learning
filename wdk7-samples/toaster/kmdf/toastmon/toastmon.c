@@ -12,8 +12,9 @@ Module Name:
 
 Abstract: 
           This sample demonstrates how to register PnP event notification
-          for an interface class, how to open the target device in the
-          callback and register and respond to device change notification.
+          for an interface class, how to open the target device(toaster child)
+          in the callback(due to PnP event notification)
+		  and register and respond to device change notification.
           
           To schedule sending Read and Write requests to the target device
           the sample uses a "passive" timer. This feature enables getting 
@@ -24,6 +25,7 @@ Environment:
     Kernel mode
 --*/
 
+#include <VisualDDKHelpers.h>
 #include "toastmon.h"
 #include <initguid.h>
 #include <wdmguid.h>
@@ -281,7 +283,8 @@ Routine Description:
 
     This routine is the PnP "interface change notification" callback routine.
 
-    This gets called on a Toaster triggered device interface arrival or removal.
+	This gets called on a Toaster triggered device interface arrival or removal.
+	// Chj: This gets called when a device supporting GUID_DEVINTERFACE_TOASTER arrives or disappears.
       - Interface arrival corresponds to a Toaster device being STARTED
       - Interface removal corresponds to a Toaster device being REMOVED
 
@@ -386,7 +389,7 @@ Routine Description:
     
 	WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, TARGET_DEVICE_INFO);
 
-    status = WdfIoTargetCreate(deviceExtension->WdfDevice,
+    status = WdfIoTargetCreate(deviceExtension->WdfDevice, // =Device
                             &attributes,
                             &ioTarget);
     if (!NT_SUCCESS(status)) {
@@ -492,7 +495,7 @@ Routine Description:
 
     // Setting the AutomaticSerialization to FALSE prevents
     // WdfTimerCreate to fail if the parent device object's 
-    // execution level is set to WdfExecutionLevelPassive.
+    // execution level is set to WdfExecutionLevelPassive.       // ∫Œ“‚£ø
     //
     wdfTimerConfig.AutomaticSerialization = FALSE;
     
@@ -849,22 +852,13 @@ Toastmon_ReadRequestCompletionRoutine(
     IN WDFCONTEXT                  Context
     )
 /*++
-
 Routine Description:
-
     Completion Routine
 
 Arguments:
-
-    CompletionParams - Contains the results of the transfer such as
-                                    IoStatus, Length, Buffer, etc.
+    CompletionParams - Contains the results of the transfer such as IoStatus, Length, Buffer, etc.
 
     Context - context value specified in the WdfRequestSetCompletionRoutine
-
-Return Value:
-
-    VOID
-
 --*/
 {
     WDF_REQUEST_REUSE_PARAMS    params;
@@ -913,22 +907,13 @@ Toastmon_WriteRequestCompletionRoutine(
     IN WDFCONTEXT                  Context
     )
 /*++
-
 Routine Description:
-
     Completion Routine
 
 Arguments:
-
-    CompletionParams - Contains the results of the transfer such as
-                                    IoStatus, Length, Buffer, etc.
+    CompletionParams - Contains the results of the transfer such as IoStatus, Length, Buffer, etc.
 
     Context - context value specified in the WdfRequestSetCompletionRoutine
-
-Return Value:
-
-    VOID
-
 --*/
 {
     WDF_REQUEST_REUSE_PARAMS    params;

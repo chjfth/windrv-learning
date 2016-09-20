@@ -439,7 +439,7 @@ Return Value:
 	WDFUSBDEVICE UsbDevice = NULL;
 	NTSTATUS usbstatus = WdfUsbTargetDeviceCreate(Device,
 		WDF_NO_OBJECT_ATTRIBUTES,
-		&UsbDevice);
+		&UsbDevice); // casual test of WdfUsbTargetDeviceCreate(), expect to fail
 
     //
     // Get the number item that are currently in Resources collection and
