@@ -523,7 +523,6 @@ Routine Description:
     *Target = ioTarget;
 
     return status;
-
 }
 
 NTSTATUS
@@ -556,8 +555,9 @@ Routine Description:
 
     WdfIoTargetCloseForQueryRemove(IoTarget);
 
-    return STATUS_SUCCESS;
+//	return STATUS_UNSUCCESSFUL; // Memo: This will cause `enum -e 1` to be denied.
 
+	return STATUS_SUCCESS;
 }
 
 VOID
