@@ -703,7 +703,7 @@ Arguments:
 
     fdoData = ToasterFdoGetData(WdfFileObjectGetDevice(FileObject));
 
-    KdPrint( ("ToasterEvtFileClose\n"));
+    KdPrint( ("ToasterEvtFileClose(0x%p)\n", FileObject));
 
     return;
 }

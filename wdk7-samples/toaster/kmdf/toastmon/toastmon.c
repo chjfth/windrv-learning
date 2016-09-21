@@ -93,7 +93,7 @@ Return Value:
         );
 
     if (!NT_SUCCESS(status)) {
-        KdPrint( ("WdfDriverCreate failed with status 0x%x\n", status));
+        KdPrint( ("[toastmon]WdfDriverCreate failed with status 0x%x\n", status));
     }
 
     return status;
@@ -132,7 +132,7 @@ On Win7 x64, we'll get:
 	[%X]p1=0x12345678 , p2=0xef692b38
 --so a stack element from va_args() is at least 8-bytes.
 */
-    KdPrint( ("ToastMon_EvtDeviceAdd routine\n"));
+    KdPrint( ("[toastmon]ToastMon_EvtDeviceAdd routine\n"));
     UNREFERENCED_PARAMETER(Driver);
 
     PAGED_CODE();
@@ -152,7 +152,7 @@ On Win7 x64, we'll get:
     //
     status = WdfDeviceCreate(&DeviceInit, &attributes, &device);
     if (!NT_SUCCESS(status)) {
-        KdPrint( ("WdfDeviceCreate failed with Status 0x%x\n", status));
+        KdPrint( ("[toastmon]WdfDeviceCreate failed with Status 0x%x\n", status));
         return status;
     }
 
@@ -173,7 +173,7 @@ On Win7 x64, we'll get:
                                 &deviceExtension->TargetDeviceCollection);
     if (!NT_SUCCESS(status))
     {
-        KdPrint( ("WdfCollectionCreate failed with status 0x%x\n", status));
+        KdPrint( ("[toastmon]WdfCollectionCreate failed with status 0x%x\n", status));
         return status;
     }
 
@@ -184,7 +184,7 @@ On Win7 x64, we'll get:
                                &deviceExtension->TargetDeviceCollectionLock);
     if (!NT_SUCCESS(status))
     {
-        KdPrint( ("WdfWaitLockCreate failed with status 0x%x\n", status));
+        KdPrint( ("[toastmon]WdfWaitLockCreate failed with status 0x%x\n", status));
         return status;
     }
 
@@ -218,7 +218,7 @@ On Win7 x64, we'll get:
         &deviceExtension->NotificationHandle);
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("RegisterPnPNotifiction failed: 0x%x\n", status));
+        KdPrint(("[toastmon]RegisterPnPNotifiction failed: 0x%x\n", status));
         return status;
     }
 
@@ -246,7 +246,7 @@ Arguments:
 --*/
 {
     PDEVICE_EXTENSION           deviceExtension;
-    KdPrint( ("ToastMon_EvtDeviceContextCleanup\n"));
+    KdPrint( ("[toastmon]ToastMon_EvtDeviceContextCleanup\n"));
     PAGED_CODE();
 
     deviceExtension = GetDeviceExtension(Device);
@@ -317,7 +317,7 @@ Return Value:
 
     PAGED_CODE();
 
-    KdPrint(("Entered ToastMon_PnpNotifyInterfaceChange\n"));
+    KdPrint(("[toastmon]Entered ToastMon_PnpNotifyInterfaceChange\n"));
 
     //
     // Verify that interface class is a toaster device interface.
@@ -331,13 +331,13 @@ Return Value:
     if(IsEqualGUID( (LPGUID)&(NotificationStruct->Event),
                      (LPGUID)&GUID_DEVICE_INTERFACE_ARRIVAL )) 
 	{
-        KdPrint(("Arrival Notification\n"));
+        KdPrint(("[toastmon]Arrival Notification\n"));
 
         status = Toastmon_OpenDevice((WDFDEVICE)deviceExtension->WdfDevice,
                                      (PUNICODE_STRING)NotificationStruct->SymbolicLinkName,
                                      &ioTarget);
         if (!NT_SUCCESS(status)) {
-            KdPrint( ("Unable to open control device 0x%x\n", status));
+            KdPrint( ("[toastmon]Unable to open control device 0x%x\n", status));
             return status;
         }
 
@@ -352,7 +352,7 @@ Return Value:
         //
         status = WdfCollectionAdd(deviceExtension->TargetDeviceCollection, ioTarget);
         if (!NT_SUCCESS(status)) {
-            KdPrint( ("WdfCollectionAdd failed 0x%x\n", status));
+            KdPrint( ("[toastmon]WdfCollectionAdd failed 0x%x\n", status));
             WdfObjectDelete(ioTarget); // Delete will also close the target
         }
 
@@ -361,7 +361,7 @@ Return Value:
     } 
 	else 
 	{
-        KdPrint(("Removal Interface Notification\n"));
+        KdPrint(("[toastmon]Removal Interface Notification\n"));
     }
     return STATUS_SUCCESS;
 }
@@ -393,7 +393,7 @@ Routine Description:
                             &attributes,
                             &ioTarget);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfIoTargetCreate failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfIoTargetCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -437,12 +437,12 @@ Routine Description:
     status = WdfIoTargetOpen(ioTarget, &openParams);
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfIoTargetOpen failed with status 0x%x\n", status));
+        KdPrint(("[toastmon]WdfIoTargetOpen failed with status 0x%x\n", status));
         WdfObjectDelete(ioTarget);
         return status;
     }
    
-    KdPrint(("Target Device=0x%p, PDO=0x%p, Fileobject=0x%p, Filehandle=0x%p\n",
+    KdPrint(("[toastmon]Target Device=0x%p, PDO=0x%p, Fileobject=0x%p, Filehandle=0x%p\n",
                         WdfIoTargetWdmGetTargetDeviceObject(ioTarget),
                         WdfIoTargetWdmGetTargetPhysicalDevice(ioTarget),
                         WdfIoTargetWdmGetTargetFileObject(ioTarget),
@@ -505,7 +505,7 @@ Routine Description:
                        );
 
     if(!NT_SUCCESS(status)) {
-        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfTimerCreate failed 0x%x\n", status));
         WdfObjectDelete(ioTarget);
         return status;
     }
@@ -546,7 +546,7 @@ Routine Description:
 
     targetDeviceInfo = GetTargetDeviceInfo(IoTarget);
 
-    KdPrint((("Device Removal (query remove) Notification\n")));
+    KdPrint(("[toastmon]Device Removal (query remove) Notification\n"));
 
     //
     // Stop the timer 
@@ -577,7 +577,7 @@ Routine Description:
 
     PAGED_CODE();
 
-    KdPrint((("Device Removal (remove cancelled) Notification\n")));
+    KdPrint(("[toastmon]Device Removal (remove cancelled) Notification\n"));
 
     targetDeviceInfo = GetTargetDeviceInfo(IoTarget);
 
@@ -589,7 +589,7 @@ Routine Description:
     status = WdfIoTargetOpen(IoTarget, &openParams);
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfIoTargetOpen failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfIoTargetOpen failed 0x%x\n", status));
         WdfObjectDelete(IoTarget);
         return;
     }
@@ -614,7 +614,7 @@ Routine Description:
     PDEVICE_EXTENSION      deviceExtension;
     PTARGET_DEVICE_INFO    targetDeviceInfo = NULL;
 
-    KdPrint((("Device Removal (remove complete) Notification\n")));
+    KdPrint(("[toastmon]Device Removal (remove complete) Notification\n"));
 
     PAGED_CODE();
 
@@ -736,7 +736,7 @@ Return Value:
                         NULL); // buffer pointer
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfMemoryCreate failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfMemoryCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -747,7 +747,7 @@ Return Value:
                                 NULL, // Buffer offset
                                 NULL); // OutputBufferOffset
    if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfIoTargetFormatRequestForRead failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfIoTargetFormatRequestForRead failed 0x%x\n", status));
         return status;
     }
 
@@ -764,7 +764,7 @@ Return Value:
 
     if(WdfRequestSend(request, IoTarget, WDF_NO_SEND_OPTIONS) == FALSE) {
         status = WdfRequestGetStatus(request);
-        KdPrint(("WdfRequestSend failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfRequestSend failed 0x%x\n", status));
         targetInfo->ReadRequest = request;
     }
 
@@ -810,7 +810,7 @@ Return Value:
                         NULL); // buffer pointer
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfMemoryCreate failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfMemoryCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -821,7 +821,7 @@ Return Value:
                                 NULL, // Buffer offset
                                 NULL); // OutputBufferOffset
    if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfIoTargetFormatRequestForWrite failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfIoTargetFormatRequestForWrite failed 0x%x\n", status));
         return status;
     }
 
@@ -838,7 +838,7 @@ Return Value:
 
     if(WdfRequestSend(request, IoTarget, WDF_NO_SEND_OPTIONS) == FALSE) {
         status = WdfRequestGetStatus(request);
-        KdPrint(("WdfRequestSend failed 0x%x\n", status));
+        KdPrint(("[toastmon]WdfRequestSend failed 0x%x\n", status));
         targetInfo->WriteRequest = request;
     }
     return status;
