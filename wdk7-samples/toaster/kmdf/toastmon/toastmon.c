@@ -759,6 +759,9 @@ Return Value:
     // Clear the ReadRequest field in the context to avoid
     // being reposted even before the request completes.
     // This will be reset in the complete routine when the request completes.
+	//
+	// "avoid being reposted" 的意思是, 防止前一次的 read-request 未完成前, (由于下一个定时时间点到)又再启动一次 read-request.
+	// 本程序不希望出现并行的两个 read-request. 将 targetInfo->ReadRequest 设成 NULL; 可以达到此目的.
     //
     targetInfo->ReadRequest = NULL;
 
@@ -889,13 +892,13 @@ Arguments:
     // RequestReuse zero all the values in structure pointed by CompletionParams.
     // So you must get all the information from completion params before
     // calling RequestReuse.
-    //
 
-    targetInfo->ReadRequest = Request;
+    targetInfo->ReadRequest = Request; 
+		// 该赋值将被定时器回调函数 Toastmon_EvtTimerPostRequests 里头的代码检测到, 
+		// 重新启动一轮 ToastMon_PostReadRequests.
 
     // Don't repost the request in the completion routine because it may lead to recursion
     // if the driver below completes the request synchronously.
-    //
     return;
 }
 
