@@ -1,12 +1,9 @@
 /*--
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
-
 
 Module Name:
 
@@ -21,9 +18,7 @@ Abstract: This module have the code enumerate a raw PDO for every device
           instances of the filter device.
 
 Environment:
-
     Kernel mode only.
-
 --*/
 
 #include "kbfiltr.h"
@@ -38,13 +33,10 @@ KbFilter_EvtIoDeviceControlForRawPdo(
     IN ULONG         IoControlCode
     )
 /*++
-
 Routine Description:
-
     This routine is the dispatch routine for device control requests.
 
 Arguments:
-
     Queue - Handle to the framework queue object that is associated
             with the I/O request.
     Request - Handle to a framework request object.
@@ -56,11 +48,6 @@ Arguments:
 
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     NTSTATUS status = STATUS_SUCCESS;
@@ -73,7 +60,7 @@ Return Value:
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-    DebugPrint(("Entered KbFilter_EvtIoDeviceControlForRawPdo\n"));
+    DebugPrint(("[kbfiltr]Entered KbFilter_EvtIoDeviceControlForRawPdo\n"));
 
     //
     // Process the ioctl and complete it when you are done.
@@ -105,17 +92,8 @@ KbFiltr_CreateRawPdo(
     ULONG           InstanceNo
     )
 /*++
-
 Routine Description:
-
     This routine creates and initialize a PDO.
-
-Arguments:
-
-Return Value:
-
-    NT Status code.
-
 --*/
 {   
     NTSTATUS                    status;
@@ -133,7 +111,7 @@ Return Value:
     DECLARE_CONST_UNICODE_STRING(deviceLocation,L"Keyboard Filter\0" );
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_ID_LEN);
 
-    DebugPrint(("Entered KbFiltr_CreateRawPdo\n"));
+    DebugPrint(("[kbfiltr]Entered KbFiltr_CreateRawPdo\n"));
 
     //
     // Allocate a WDFDEVICE_INIT structure and set the properties
@@ -156,7 +134,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // Since keyboard is secure device, we must protect ourselves from random
     // users sending ioctls and creating trouble.
     //
@@ -166,7 +143,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // Assign DeviceID - This will be reported to IRP_MN_QUERY_ID/BusQueryDeviceID
     //
     status = WdfPdoInitAssignDeviceID(pDeviceInit, &deviceId);
@@ -174,7 +150,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // For RAW PDO, there is no need to provide BusQueryHardwareIDs
     // and BusQueryCompatibleIDs IDs unless we are running on
     // Windows 2000.
@@ -192,7 +167,6 @@ Return Value:
         }
     }
 
-    //
     // We could be enumerating more than one children if the filter attaches
     // to multiple instances of keyboard, so we must provide a
     // BusQueryInstanceID. If we don't, system will throw CA bugcheck.
@@ -207,7 +181,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // Provide a description about the device. This text is usually read from
     // the device. In the case of USB device, this text comes from the string
     // descriptor. This text is displayed momentarily by the PnP manager while
@@ -221,7 +194,6 @@ Return Value:
         goto Cleanup;
     }
 
-    //
     // You can call WdfPdoInitAddDeviceText multiple times, adding device
     // text for multiple locales. When the system displays the text, it
     // chooses the text that matches the current locale, if available.
@@ -240,13 +212,11 @@ Return Value:
 
     WdfPdoInitSetDefaultLocale(pDeviceInit, 0x409);
     
-    //
     // Initialize the attributes to specify the size of PDO device extension.
     // All the state information private to the PDO will be tracked here.
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, RPDO_DEVICE_DATA);
 
-    //
     // Set up our queue to allow forwarding of requests to the parent
     // This is done so that the cached Keyboard Attributes can be retrieved
     //
@@ -274,7 +244,7 @@ Return Value:
     // Configure the default queue associated with the control device object
     // to be Serial so that request passed to EvtIoDeviceControl are serialized.
     // A default queue gets all the requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching.
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching.
     //
 
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,

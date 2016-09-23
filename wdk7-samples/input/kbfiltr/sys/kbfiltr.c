@@ -1,12 +1,10 @@
 /*--
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
-
 
 Module Name:
 
@@ -30,11 +28,8 @@ Abstract: This is an upper device filter driver sample for PS/2 keyboard. This
         " HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\
         {4D36E96B-E325-11CE-BFC1-08002BE10318}\UpperFilters"
 
-
 Environment:
-
     Kernel mode only.
-
 --*/
 
 #include "kbfiltr.h"
@@ -53,24 +48,18 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
-
     Installable driver initialization entry point.
     This entry point is called directly by the I/O system.
 
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     WDF_DRIVER_CONFIG               config;
@@ -79,8 +68,7 @@ Return Value:
     DebugPrint(("Keyboard Filter Driver Sample - Driver Framework Edition.\n"));
     DebugPrint(("Built %s %s\n", __DATE__, __TIME__));
 
-    //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
@@ -88,7 +76,6 @@ Return Value:
     // config structure. In general xxx_CONFIG_INIT macros are provided to
     // initialize most commonly used members.
     //
-
     WDF_DRIVER_CONFIG_INIT(
         &config,
         KbFilter_EvtDeviceAdd
@@ -103,7 +90,7 @@ Return Value:
                             &config,
                             WDF_NO_HANDLE); // hDriver optional
     if (!NT_SUCCESS(status)) {
-        DebugPrint(("WdfDriverCreate failed with status 0x%x\n", status));
+        DebugPrint(("[kbfiltr]WdfDriverCreate failed with status 0x%x\n", status));
     }
 
     return status;
@@ -116,27 +103,21 @@ KbFilter_EvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. Here you can query the device properties
     using WdfFdoInitWdmGetPhysicalDevice/IoGetDeviceProperty and based
     on that, decide to create a filter device object and attach to the
     function stack.
 
-    If you are not interested in filtering this particular instance of the
-    device, you can just return STATUS_SUCCESS without creating a framework
-    device.
+    *If* you are *not interested* in filtering this particular instance of the
+    device, you can just return STATUS_SUCCESS without creating a framework device.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;
@@ -150,11 +131,10 @@ Return Value:
 
     PAGED_CODE();
 
-    DebugPrint(("Enter FilterEvtDeviceAdd \n"));
+    DebugPrint(("[kbfiltr]Enter FilterEvtDeviceAdd \n"));
 
-    //
     // Tell the framework that you are filter driver. Framework
-    // takes care of inherting all the device flags & characterstics
+    // takes care of inheriting all the device flags & characteristics
     // from the lower device you are attaching to.
     //
     WdfFdoInitSetFilter(DeviceInit);
@@ -176,20 +156,17 @@ Return Value:
 
     filterExt = FilterGetData(hDevice);
 
-    //
     // Configure the default queue to be Parallel. Do not use sequential queue
     // if this driver is going to be filtering PS2 ports because it can lead to
     // deadlock. The PS2 port driver sends a request to the top of the stack when it
     // receives an ioctl request and waits for it to be completed. If you use a
     // a sequential queue, this request will be stuck in the queue because of the 
-    // outstanding ioctl request sent earlier to the port driver.
+    // outstanding ioctl request sent earlier to the port driver.                   // ´ıÀí½â!
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,
                              WdfIoQueueDispatchParallel);
 
-    //
-    // Framework by default creates non-power managed queues for
-    // filter drivers.
+    // Framework by default creates non-power managed queues for filter drivers.
     //
     ioQueueConfig.EvtIoInternalDeviceControl = KbFilter_EvtIoInternalDeviceControl;
 
@@ -203,19 +180,14 @@ Return Value:
         return status;
     }
 
+    // Create a new queue to handle IOCTLs that will be forwarded to us from the rawPDO. 
     //
-    // Create a new queue to handle IOCTLs that will be forwarded to us from
-    // the rawPDO. 
+    WDF_IO_QUEUE_CONFIG_INIT(&ioQueueConfig,WdfIoQueueDispatchParallel);
     //
-    WDF_IO_QUEUE_CONFIG_INIT(&ioQueueConfig,
-                             WdfIoQueueDispatchParallel);
-
-    //
-    // Framework by default creates non-power managed queues for
-    // filter drivers.
+    // Framework by default creates non-power managed queues for filter drivers.
     //
     ioQueueConfig.EvtIoDeviceControl = KbFilter_EvtIoDeviceControlFromRawPdo;
-
+	//
     status = WdfIoQueueCreate(hDevice,
                             &ioQueueConfig,
                             WDF_NO_OBJECT_ATTRIBUTES,
@@ -228,10 +200,9 @@ Return Value:
 
     filterExt->rawPdoQueue = hQueue;
 
-    //
     // Create a RAW pdo so we can provide a sideband communication with
-    // the application. Please note that not filter drivers desire to
-    // produce such a communication and not all of them are contrained
+    // the application. Please note that not all filter drivers desire to
+    // produce such a communication and not all of them are contrained (constrained?)
     // by other filter above which prevent communication thru the device
     // interface exposed by the main stack. So use this only if absolutely
     // needed. Also look at the toaster filter driver sample for an alternate
@@ -251,13 +222,10 @@ KbFilter_EvtIoDeviceControlFromRawPdo(
     IN ULONG         IoControlCode
     )
 /*++
-
 Routine Description:
-
     This routine is the dispatch routine for device control requests.
 
 Arguments:
-
     Queue - Handle to the framework queue object that is associated
             with the I/O request.
     Request - Handle to a framework request object.
@@ -269,11 +237,6 @@ Arguments:
 
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     NTSTATUS status = STATUS_SUCCESS;
@@ -284,7 +247,7 @@ Return Value:
 
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-    DebugPrint(("Entered KbFilter_EvtIoInternalDeviceControl\n"));
+    DebugPrint(("[kbfiltr]Entered KbFilter_EvtIoInternalDeviceControl\n"));
 
     hDevice = WdfIoQueueGetDevice(Queue);
     devExt = FilterGetData(hDevice);
@@ -295,7 +258,6 @@ Return Value:
 
     switch (IoControlCode) {
     case IOCTL_KBFILTR_GET_KEYBOARD_ATTRIBUTES:
-        
         //
         // Buffer is too small, fail the request
         //
@@ -307,7 +269,7 @@ Return Value:
         status = WdfRequestRetrieveOutputMemory(Request, &outputMemory);
         
         if (!NT_SUCCESS(status)) {
-            DebugPrint(("WdfRequestRetrieveOutputMemory failed %x\n", status));
+            DebugPrint(("[kbfiltr]WdfRequestRetrieveOutputMemory failed %x\n", status));
             break;
         }
         
@@ -317,7 +279,7 @@ Return Value:
                                     sizeof(KEYBOARD_ATTRIBUTES));
 
         if (!NT_SUCCESS(status)) {
-            DebugPrint(("WdfMemoryCopyFromBuffer failed %x\n", status));
+            DebugPrint(("[kbfiltr]WdfMemoryCopyFromBuffer failed %x\n", status));
             break;
         }
 
@@ -343,7 +305,6 @@ KbFilter_EvtIoInternalDeviceControl(
     IN ULONG         IoControlCode
     )
 /*++
-
 Routine Description:
 
     This routine is the dispatch routine for internal device control requests.
@@ -376,11 +337,6 @@ Arguments:
 
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-
-Return Value:
-
-   VOID
-
 --*/
 {
     PDEVICE_EXTENSION               devExt;
@@ -397,7 +353,6 @@ Return Value:
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-
     PAGED_CODE();
 
     DebugPrint(("Entered KbFilter_EvtIoInternalDeviceControl\n"));
@@ -405,7 +360,8 @@ Return Value:
     hDevice = WdfIoQueueGetDevice(Queue);
     devExt = FilterGetData(hDevice);
 
-    switch (IoControlCode) {
+    switch (IoControlCode) 
+	{{
 
     //
     // Connect a keyboard class device driver to the port driver.
@@ -540,7 +496,7 @@ Return Value:
     case IOCTL_KEYBOARD_QUERY_TYPEMATIC:
     case IOCTL_KEYBOARD_SET_TYPEMATIC:
         break;
-    }
+	}}
 
     if (!NT_SUCCESS(status)) {
         WdfRequestComplete(Request, status);
@@ -553,8 +509,8 @@ Return Value:
     // the stack.
     //
 
-    if (forwardWithCompletionRoutine) {
-
+    if (forwardWithCompletionRoutine) 
+	{
         //
         // Format the request with the output memory so the completion routine
         // can access the return data in order to cache it into the context area
@@ -603,7 +559,6 @@ Return Value:
     }
     else
     {
-
         //
         // We are not interested in post processing the IRP so 
         // fire and forget.
@@ -633,7 +588,6 @@ KbFilter_InitializationRoutine(
     OUT PBOOLEAN                       TurnTranslationOn
     )
 /*++
-
 Routine Description:
 
     This routine gets called after the following has been performed on the kb
@@ -650,7 +604,7 @@ Arguments:
 
     SynchFuncContext - Context to pass when calling Read/WritePort
 
-    Read/WritePort - Functions to synchronoulsy read and write to the kb
+    Read/WritePort - Functions to synchronously read and write to the kb
 
     TurnTranslationOn - If TRUE when this function returns, i8042prt will not
                         turn on translation on the keyboard
@@ -726,7 +680,7 @@ Arguments:
     ContinueProcessing - If TRUE, i8042prt will proceed with normal processing of
                          the interrupt.  If FALSE, i8042prt will return from the
                          interrupt after this function returns.  Also, if FALSE,
-                         it is this functions responsibilityt to report the input
+                         it is this functions responsibility to report the input
                          packet via the function provided in the hook IOCTL or via
                          queueing a DPC within this driver and calling the
                          service callback function acquired from the connect IOCTL
@@ -821,23 +775,14 @@ KbFilterRequestCompletionRoutine(
     WDFCONTEXT                  Context
    )
 /*++
-
 Routine Description:
-
     Completion Routine
 
 Arguments:
-
     Target - Target handle
     Request - Request handle
     Params - request completion params
     Context - Driver supplied context
-
-
-Return Value:
-
-    VOID
-
 --*/
 {
     WDFMEMORY buffer = CompletionParams->Parameters.Ioctl.Output.Buffer;
@@ -849,9 +794,10 @@ Return Value:
     //
     if (CompletionParams->Type == WdfRequestTypeDeviceControlInternal &&
         NT_SUCCESS(CompletionParams->IoStatus.Status) && 
-        CompletionParams->Parameters.Ioctl.IoControlCode == IOCTL_KEYBOARD_QUERY_ATTRIBUTES) {
-
-        if( CompletionParams->Parameters.Ioctl.Output.Length >= sizeof(KEYBOARD_ATTRIBUTES)) {
+        CompletionParams->Parameters.Ioctl.IoControlCode == IOCTL_KEYBOARD_QUERY_ATTRIBUTES) 
+	{
+        if( CompletionParams->Parameters.Ioctl.Output.Length >= sizeof(KEYBOARD_ATTRIBUTES)) 
+		{
             WdfMemoryCopyToBuffer(buffer,
                                   CompletionParams->Parameters.Ioctl.Output.Offset,
                                   &((PDEVICE_EXTENSION)Context)->KeyboardAttributes,
@@ -861,7 +807,6 @@ Return Value:
     }
 
     WdfRequestComplete(Request, CompletionParams->IoStatus.Status);
-
     return;
 }
 

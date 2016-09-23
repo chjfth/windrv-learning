@@ -60,52 +60,36 @@ typedef struct _DEVICE_EXTENSION
 {
     WDFDEVICE WdfDevice;
 
-    //
     // Queue for handling requests that come from the rawPdo
-    //
     WDFQUEUE rawPdoQueue;
 
-    //
     // Number of creates sent down
-    //
     LONG EnableCount;
 
-    //
     // The real connect data that this driver reports to
-    //
     CONNECT_DATA UpperConnectData;
 
-    //
     // Previous initialization and hook routines (and context)
     //
     PVOID UpperContext;
     PI8042_KEYBOARD_INITIALIZATION_ROUTINE UpperInitializationRoutine;
     PI8042_KEYBOARD_ISR UpperIsrHook;
 
-    //
     // Write function from within KbFilter_IsrHook
-    //
     IN PI8042_ISR_WRITE_PORT IsrWritePort;
 
-    //
     // Queue the current packet (ie the one passed into KbFilter_IsrHook)
-    //
     IN PI8042_QUEUE_PACKET QueueKeyboardPacket;
 
-    //
     // Context for IsrWritePort, QueueKeyboardPacket
-    //
     IN PVOID CallContext;
 
-    //
     // Cached Keyboard Attributes
-    //
     KEYBOARD_ATTRIBUTES KeyboardAttributes;
 
 } DEVICE_EXTENSION, *PDEVICE_EXTENSION;
 
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_EXTENSION,
-                                        FilterGetData)
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_EXTENSION, FilterGetData)
 
 
 typedef struct _WORKER_ITEM_CONTEXT {
@@ -180,12 +164,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_KBFILTER,
 
 typedef struct _RPDO_DEVICE_DATA
 {
-
     ULONG InstanceNo;
 
-    //
     // Queue of the parent device we will forward requests to
-    //
     WDFQUEUE ParentQueue;
 
 } RPDO_DEVICE_DATA, *PRPDO_DEVICE_DATA;
