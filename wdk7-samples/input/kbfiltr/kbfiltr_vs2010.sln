@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kbfiltr", "kbfiltr_sys_vs2010\kbfiltr_sys.vcxproj", "{FEDED036-A6C0-4F41-997B-77779E8E2631}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kbftest", "kbftest_vs2010\kbftest.vcxproj", "{E32E4999-C75B-4304-9749-77773CEF53C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,14 @@ Global
 		{FEDED036-A6C0-4F41-997B-77779E8E2631}.Release|Win32.Build.0 = Release|Win32
 		{FEDED036-A6C0-4F41-997B-77779E8E2631}.Release|x64.ActiveCfg = Release|x64
 		{FEDED036-A6C0-4F41-997B-77779E8E2631}.Release|x64.Build.0 = Release|x64
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Debug|Win32.Build.0 = Debug|Win32
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Debug|x64.ActiveCfg = Debug|x64
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Debug|x64.Build.0 = Debug|x64
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Release|Win32.ActiveCfg = Release|Win32
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Release|Win32.Build.0 = Release|Win32
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Release|x64.ActiveCfg = Release|x64
+		{E32E4999-C75B-4304-9749-77773CEF53C5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
