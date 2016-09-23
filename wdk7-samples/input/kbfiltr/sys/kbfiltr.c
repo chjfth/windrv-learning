@@ -555,7 +555,6 @@ Arguments:
             DebugPrint( ("WdfRequestSend failed: 0x%x\n", status));
             WdfRequestComplete(Request, status);
         }
-
     }
     else
     {
@@ -686,9 +685,7 @@ Arguments:
                          service callback function acquired from the connect IOCTL
 
 Return Value:
-
     Status is returned.
-
 --*/
 {
     PDEVICE_EXTENSION devExt;
@@ -724,7 +721,6 @@ KbFilter_ServiceCallback(
     IN OUT PULONG InputDataConsumed
     )
 /*++
-
 Routine Description:
 
     Called when there are keyboard packets to report to the Win32 subsystem.
@@ -735,7 +731,6 @@ Routine Description:
     o Insert packets into the stream
 
 Arguments:
-
     DeviceObject - Context passed during the connect IOCTL
 
     InputDataStart - First packet to be reported
@@ -746,11 +741,6 @@ Arguments:
     InputDataConsumed - Set to the total number of packets consumed by the RIT
                         (via the function pointer we replaced in the connect
                         IOCTL)
-
-Return Value:
-
-    Status is returned.
-
 --*/
 {
     PDEVICE_EXTENSION   devExt;
@@ -760,7 +750,7 @@ Return Value:
 
     devExt = FilterGetData(hDevice);
 
-    (*(PSERVICE_CALLBACK_ROUTINE)(ULONG_PTR) devExt->UpperConnectData.ClassService)(
+    (*(PSERVICE_CALLBACK_ROUTINE)devExt->UpperConnectData.ClassService)(
         devExt->UpperConnectData.ClassDeviceObject,
         InputDataStart,
         InputDataEnd,
@@ -809,5 +799,4 @@ Arguments:
     WdfRequestComplete(Request, CompletionParams->IoStatus.Status);
     return;
 }
-
 
