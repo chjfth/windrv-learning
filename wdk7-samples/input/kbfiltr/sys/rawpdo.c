@@ -243,8 +243,8 @@ Routine Description:
     //
     // Configure the default queue associated with the control device object
     // to be Serial so that request passed to EvtIoDeviceControl are serialized.
-    // A default queue gets all the requests that are not
-    // configure-forwarded using WdfDeviceConfigureRequestDispatching.
+    // A default queue gets all the requests [that are not
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching].
     //
 
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,
@@ -306,7 +306,9 @@ Routine Description:
     // After the child device is added to the static collection successfully,
     // driver must call WdfPdoMarkMissing to get the device deleted. It
     // shouldn't delete the child device directly by calling WdfObjectDelete.
-    //
+    //  
+	// Chj Q: 但为什么没看到此工程中有调用 WdfPdoMarkMissing 呢? 难道框架自动会调用? 什么场合下悄悄调的?
+	//
     status = WdfFdoAddStaticChild(Device, hChild);
     if (!NT_SUCCESS(status)) {
         goto Cleanup;

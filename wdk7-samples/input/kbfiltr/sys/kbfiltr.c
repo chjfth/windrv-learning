@@ -10,23 +10,25 @@ Module Name:
 
     kbfiltr.c
 
-Abstract: This is an upper device filter driver sample for PS/2 keyboard. This
-        driver layers in between the KbdClass driver and i8042prt driver and
-        hooks the callback routine that moves keyboard inputs from the port
-        driver to class driver. With this filter, you can remove or insert
-        additional keys into the stream. This sample also creates a raw
-        PDO and registers an interface so that application can talk to
-        the filter driver directly without going thru the PS/2 devicestack.
-        The reason for providing this additional interface is because the keyboard
-        device is an exclusive secure device and it's not possible to open the
-        device from usermode and send custom ioctls.
+Abstract: 
+	This is an upper device filter driver sample for PS/2 keyboard. This
+    driver layers in between the KbdClass driver and i8042prt driver and
+    hooks the [callback routine] that moves keyboard inputs // 这个 [callback routine] 指...
+    from the port driver to class driver.  // port driver: 如 i8042prt.sys; class driver: kbdclass.sys
+	With this filter, you can remove or insert
+    additional keys into the stream. This sample also creates a raw
+    PDO and registers an interface so that application can talk to
+    the filter driver directly without going thru the PS/2 devicestack.
+    The reason for providing this additional interface is because the keyboard
+    device is an exclusive secure device and it's not possible to open the
+    device from usermode and send custom ioctls.
 
-        If you want to filter keyboard inputs from all the keyboards (ps2, usb)
-        plugged into the system then you can install this driver as a class filter
-        and make it sit below the kbdclass filter driver by adding the service
-        name of this filter driver before the kbdclass filter in the registry at
-        " HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\
-        {4D36E96B-E325-11CE-BFC1-08002BE10318}\UpperFilters"
+    If you want to filter keyboard inputs from all the keyboards (ps2, usb)
+    plugged into the system then you can install this driver as a class filter
+    and make it sit below the kbdclass filter driver by adding the service
+    name of this filter driver before the kbdclass filter in the registry at
+    " HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\
+    {4D36E96B-E325-11CE-BFC1-08002BE10318}\UpperFilters"
 
 Environment:
     Kernel mode only.
@@ -65,8 +67,8 @@ Return Value:
     WDF_DRIVER_CONFIG               config;
     NTSTATUS                        status;
 
-    DebugPrint(("Keyboard Filter Driver Sample - Driver Framework Edition.\n"));
-    DebugPrint(("Built %s %s\n", __DATE__, __TIME__));
+    DebugPrint(("[kbfiltr]Keyboard Filter Driver Sample - Driver Framework Edition.\n"));
+    DebugPrint(("[kbfiltr]Built %s %s\n", __DATE__, __TIME__));
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
@@ -157,11 +159,11 @@ Return Value:
     filterExt = FilterGetData(hDevice);
 
     // Configure the default queue to be Parallel. Do not use sequential queue
-    // if this driver is going to be filtering PS2 ports because it can lead to
-    // deadlock. The PS2 port driver sends a request to the top of the stack when it
+    // if this driver is going to be filtering PS2 ports, because it can lead to
+    // deadlock. The PS2 port driver sends a request to the top of the stack when it   // Q: 具体是哪个 request?
     // receives an ioctl request and waits for it to be completed. If you use a
     // a sequential queue, this request will be stuck in the queue because of the 
-    // outstanding ioctl request sent earlier to the port driver.                   // 待理解!
+    // outstanding ioctl request sent earlier to the port driver.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig,
                              WdfIoQueueDispatchParallel);
@@ -182,7 +184,7 @@ Return Value:
 
     // Create a new queue to handle IOCTLs that will be forwarded to us from the rawPDO. 
     //
-    WDF_IO_QUEUE_CONFIG_INIT(&ioQueueConfig,WdfIoQueueDispatchParallel);
+    WDF_IO_QUEUE_CONFIG_INIT(&ioQueueConfig, WdfIoQueueDispatchParallel); // chj: re-use ioQueueConfig
     //
     // Framework by default creates non-power managed queues for filter drivers.
     //
