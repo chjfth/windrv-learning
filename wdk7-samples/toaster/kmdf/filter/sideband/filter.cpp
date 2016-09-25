@@ -33,8 +33,8 @@ Environment:
 // that any event callback routine can easily walk thru the list and pick a
 // specific instance of the device for filtering.
 //
-WDFCOLLECTION   FilterDeviceCollection;
-WDFWAITLOCK     FilterDeviceCollectionLock;
+WDFCOLLECTION   g_FilterDeviceCollection;
+WDFWAITLOCK     g_FilterDeviceCollectionLock;
 
 
 #ifdef ALLOC_PRAGMA
@@ -45,13 +45,13 @@ WDFWAITLOCK     FilterDeviceCollectionLock;
 
 
 //
-// ControlDevice provides a sideband communication to the filter from
+// g_ControlDevice provides a sideband communication to the filter from
 // usermode. This is required if the filter driver is sitting underneath
 // another driver that fails custom ioctls defined by the Filter driver.
 // Since there is one control-device for all instances of the device the
 // filter is attached to, we will store the device handle in a global variable.
 //
-WDFDEVICE       ControlDevice = NULL;
+WDFDEVICE       g_ControlDevice = NULL;
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, FilterEvtIoDeviceControl)
@@ -118,7 +118,7 @@ Return Value:
     // The collection object has the driver object as a default parent.
     //
     status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
-                                &FilterDeviceCollection);
+                                &g_FilterDeviceCollection);
     if (!NT_SUCCESS(status))
     {
         KdPrint( ("WdfCollectionCreate failed with status 0x%x\n", status));
@@ -128,7 +128,7 @@ Return Value:
     // The wait-lock object has the driver object as a default parent.
     // (chj: will be deleted along with the driver-object)
     status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
-                                &FilterDeviceCollectionLock);
+                                &g_FilterDeviceCollectionLock);
     if (!NT_SUCCESS(status))
     {
         KdPrint( ("WdfWaitLockCreate failed with status 0x%x\n", status));
@@ -218,16 +218,16 @@ Return Value:
     //
     // Add this device to the FilterDevice collection.
     //
-    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+    WdfWaitLockAcquire(g_FilterDeviceCollectionLock, NULL);
     //
     // WdfCollectionAdd takes a reference on the item object and removes
     // it when you call WdfCollectionRemove.
     //
-    status = WdfCollectionAdd(FilterDeviceCollection, device);
+    status = WdfCollectionAdd(g_FilterDeviceCollection, device);
     if (!NT_SUCCESS(status)) {
         KdPrint( ("WdfCollectionAdd failed with status code 0x%x\n", status));
     }
-    WdfWaitLockRelease(FilterDeviceCollectionLock);
+    WdfWaitLockRelease(g_FilterDeviceCollectionLock);
 
     // Create a control device
     //
@@ -269,9 +269,9 @@ Return Value:
 
     KdPrint(("Entered FilterEvtDeviceContextCleanup\n"));
 
-    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+    WdfWaitLockAcquire(g_FilterDeviceCollectionLock, NULL);
 
-    count = WdfCollectionGetCount(FilterDeviceCollection);
+    count = WdfCollectionGetCount(g_FilterDeviceCollection);
 
     if(count == 1)
     {
@@ -279,16 +279,16 @@ Return Value:
          // so that driver can unload when the FilterDevice is deleted.
          // We absolutely have to do the deletion of control device with
          // the collection lock acquired because we implicitly use this
-         // lock to protect ControlDevice global variable. We need to make
+         // lock to protect g_ControlDevice global variable. We need to make
          // sure another thread doesn't attempt to create while we are
          // deleting the device.
          //
          FilterDeleteControlDevice(Device);
      }
 
-    WdfCollectionRemove(FilterDeviceCollection, Device);
+    WdfCollectionRemove(g_FilterDeviceCollection, Device);
 
-    WdfWaitLockRelease(FilterDeviceCollectionLock);
+    WdfWaitLockRelease(g_FilterDeviceCollectionLock);
 }
 
 NTSTATUS
@@ -328,17 +328,17 @@ Return Value:
     PAGED_CODE();
 
     //
-    // First find out whether any ControlDevice has been created. If the
+    // First find out whether any g_ControlDevice has been created. If the
     // collection has more than one device then we know somebody has already
     // created or in the process of creating the device.
     //
-    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+    WdfWaitLockAcquire(g_FilterDeviceCollectionLock, NULL);
 
-    if(WdfCollectionGetCount(FilterDeviceCollection) == 1) {
+    if(WdfCollectionGetCount(g_FilterDeviceCollection) == 1) {
         bCreate = TRUE;
     }
 
-    WdfWaitLockRelease(FilterDeviceCollectionLock);
+    WdfWaitLockRelease(g_FilterDeviceCollectionLock);
 
     if(!bCreate) {
         //
@@ -423,7 +423,7 @@ Return Value:
     //
     WdfControlFinishInitializing(controlDevice);
 
-    ControlDevice = controlDevice;
+    g_ControlDevice = controlDevice;
 
     return STATUS_SUCCESS;
 
@@ -465,9 +465,9 @@ Return Value:
 
     KdPrint(("Deleting Control Device\n"));
 
-    if (ControlDevice) {
-        WdfObjectDelete(ControlDevice);
-        ControlDevice = NULL;
+    if (g_ControlDevice) {
+        WdfObjectDelete(g_ControlDevice);
+        g_ControlDevice = NULL;
     }
 }
 
@@ -507,20 +507,20 @@ Arguments:
 
     KdPrint(("Ioctl received into filter control object.\n"));
 
-    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+    WdfWaitLockAcquire(g_FilterDeviceCollectionLock, NULL);
 
-    noItems = WdfCollectionGetCount(FilterDeviceCollection);
+    noItems = WdfCollectionGetCount(g_FilterDeviceCollection);
 
     for(i=0; i<noItems ; i++) {
 
-        hFilterDevice = (WDFDEVICE)WdfCollectionGetItem(FilterDeviceCollection, i);
+        hFilterDevice = (WDFDEVICE)WdfCollectionGetItem(g_FilterDeviceCollection, i);
 
         filterExt = FilterGetData(hFilterDevice);
 
         KdPrint(("filter.cpp: Serial No: %d\n", filterExt->SerialNo));
     }
 
-    WdfWaitLockRelease(FilterDeviceCollectionLock);
+    WdfWaitLockRelease(g_FilterDeviceCollectionLock);
 
     WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, 0);
 }
