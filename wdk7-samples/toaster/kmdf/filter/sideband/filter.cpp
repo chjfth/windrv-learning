@@ -320,7 +320,7 @@ Return Value:
     WDFDEVICE                   controlDevice = NULL;
     WDF_OBJECT_ATTRIBUTES       controlAttributes;
     WDF_IO_QUEUE_CONFIG         ioQueueConfig;
-    BOOLEAN                     bCreate = FALSE;
+    BOOLEAN                     bCreateNow = FALSE;
     NTSTATUS                    status;
     WDFQUEUE                    queue;
     DECLARE_CONST_UNICODE_STRING(ntDeviceName, NTDEVICE_NAME_STRING) ;
@@ -335,12 +335,15 @@ Return Value:
     WdfWaitLockAcquire(g_FilterDeviceCollectionLock, NULL);
 
     if(WdfCollectionGetCount(g_FilterDeviceCollection) == 1) {
-        bCreate = TRUE;
+        bCreateNow = TRUE;
     }
+
+	// Chj Q: 疑问! 如果两个 toaster 设备同时插入系统, 进而 FilterEvtDeviceAdd 被两个 CPU 同时执行,
+	// 会不会导致 WdfCollectionGetCount(g_FilterDeviceCollection) 第一次调用就返回 2 (跳过了 1) ?
 
     WdfWaitLockRelease(g_FilterDeviceCollectionLock);
 
-    if(!bCreate) {
+    if(!bCreateNow) {
         //
         // Control device is already created. So return success.
         //
