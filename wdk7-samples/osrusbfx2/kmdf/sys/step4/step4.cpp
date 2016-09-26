@@ -160,7 +160,7 @@ EvtDevicePrepareHardware(
 
     status = WdfUsbTargetDeviceSelectConfig(pDeviceContext->UsbDevice,
                                         WDF_NO_OBJECT_ATTRIBUTES,
-                                        &configParams);
+                                        &configParams); // [in,out]
     if(!NT_SUCCESS(status)) {
         KdPrint(("WdfUsbTargetDeviceSelectConfig failed 0x%x\n", status));
         return status;
