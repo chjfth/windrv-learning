@@ -357,7 +357,7 @@ Arguments:
 
     PAGED_CODE();
 
-    DebugPrint(("Entered KbFilter_EvtIoInternalDeviceControl\n"));
+    DebugPrint(("[kbfiltr]Entered KbFilter_EvtIoInternalDeviceControl\n"));
 
     hDevice = WdfIoQueueGetDevice(Queue);
     devExt = FilterGetData(hDevice);
@@ -430,7 +430,7 @@ Arguments:
     //
     case IOCTL_INTERNAL_I8042_HOOK_KEYBOARD:
 
-        DebugPrint(("hook keyboard received!\n"));
+        DebugPrint(("[kbfiltr]hook keyboard received!\n"));
 
         //
         // Get the input buffer from the request
