@@ -5,6 +5,7 @@ Step4: This steps shows:
           requests and send it to USB target.
 --*/
 
+#include <VisualDDKHelpers.h>
 #include <ntddk.h>
 #include <wdf.h>
 

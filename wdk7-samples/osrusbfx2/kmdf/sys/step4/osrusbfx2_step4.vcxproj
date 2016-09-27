@@ -220,6 +220,18 @@
   <ItemGroup>
     <ClInclude Include="..\inc\public.h" />
   </ItemGroup>
+
+  <ItemGroup>
+    <CustomBuild Include="osrusbfx2_step4.inx">
+      <FileType>Document</FileType>
+      <Command>set SDK_INC_PATH=$(WDKPATH)\inc\api
+copy osrusbfx2_step4.inx $(TargetDir)osrusbfx2_step4.inf
+stampinf -f $(TargetDir)osrusbfx2_step4.inf -a $(stampinf_ARCH) -k 1.9</Command>
+      <Message>Translating .inx to .inf ...</Message>
+      <Outputs>$(TargetDir)osrusbfx2_step4.inf</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
