@@ -126,6 +126,33 @@ EvtDeviceAdd(
     return status;
 }
 
+void chj_try_usbapi_1(WDFUSBDEVICE usbdevice)
+{
+	USB_DEVICE_DESCRIPTOR dev_dscpr;
+	WdfUsbTargetDeviceGetDeviceDescriptor(usbdevice, &dev_dscpr);
+
+	char buf_cfg_dscpr[1000];
+	USHORT bufsize = sizeof(buf_cfg_dscpr);
+	WdfUsbTargetDeviceRetrieveConfigDescriptor(usbdevice, buf_cfg_dscpr, &bufsize);
+
+	WDFUSBINTERFACE usbinterface = WdfUsbTargetDeviceGetInterface(usbdevice, 0); // ok
+
+	int altindex_now = WdfUsbInterfaceGetConfiguredSettingIndex(usbinterface);
+
+	int cfg_pipes = WdfUsbInterfaceGetNumConfiguredPipes(usbinterface); // always 0
+
+	WDF_USB_PIPE_INFORMATION pipeinfo; WDF_USB_PIPE_INFORMATION_INIT(&pipeinfo);
+	WDFUSBPIPE usbpipe0 = WdfUsbInterfaceGetConfiguredPipe(usbinterface,
+		0,//BULK_IN_ENDPOINT_INDEX, (PT850 mod)
+		&pipeinfo); // return NULL because of not SelectConfig yet.
+}
+
+void chj_try_usbapi_2(WDFUSBDEVICE usbdevice, WDFUSBINTERFACE usbinterface)
+{
+	int altindex_now = WdfUsbInterfaceGetConfiguredSettingIndex(usbinterface);
+
+	int cfg_pipes = WdfUsbInterfaceGetNumConfiguredPipes(usbinterface);
+}
 
 NTSTATUS
 EvtDevicePrepareHardware(
@@ -157,6 +184,8 @@ EvtDevicePrepareHardware(
         }
     }
 
+	chj_try_usbapi_1(pDeviceContext->UsbDevice);
+
     WDF_USB_DEVICE_SELECT_CONFIG_PARAMS_INIT_SINGLE_INTERFACE(&configParams);
 
     status = WdfUsbTargetDeviceSelectConfig(pDeviceContext->UsbDevice,
@@ -169,7 +198,9 @@ EvtDevicePrepareHardware(
 
     pDeviceContext->UsbInterface =  
                 configParams.Types.SingleInterface.ConfiguredUsbInterface;
-    
+
+	chj_try_usbapi_2(pDeviceContext->UsbDevice, pDeviceContext->UsbInterface);
+
     pDeviceContext->BulkReadPipe = WdfUsbInterfaceGetConfiguredPipe(
                                                   pDeviceContext->UsbInterface,
                                                   0,//BULK_IN_ENDPOINT_INDEX, (PT850 mod)
