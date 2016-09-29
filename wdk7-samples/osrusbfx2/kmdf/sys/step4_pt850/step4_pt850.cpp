@@ -390,6 +390,25 @@ EvtRequestReadCompletionRoutine(
     return;
 }
 
+bool chj_try_usbreset(WDFUSBDEVICE usbdevice, WDFMEMORY reqMemory)
+{
+	size_t bytes = 0;
+	const char *pInBuf = (char*)WdfMemoryGetBuffer(reqMemory, &bytes);
+
+	if(bytes==1 && *pInBuf=='R') // 0x52
+	{
+		WdfUsbTargetDeviceResetPortSynchronously(usbdevice);
+		return true;
+	}
+	else if(bytes==1 && *pInBuf=='S') // 0x53
+	{
+		WdfUsbTargetDeviceCyclePortSynchronously(usbdevice);
+		return true;
+	}
+	else
+		return false;
+}
+
 VOID 
 EvtIoWrite(
     IN WDFQUEUE         Queue,
@@ -413,6 +432,11 @@ EvtIoWrite(
     if(!NT_SUCCESS(status)){
         goto Exit;
     }
+
+	if(chj_try_usbreset(pDeviceContext->UsbDevice, reqMemory)) {
+		WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, 0);
+		return;
+	}
 
     status = WdfUsbTargetPipeFormatRequestForWrite(pipe,
                                               Request,
