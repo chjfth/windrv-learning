@@ -61,7 +61,7 @@ CopyFiles=osrusbfx2.Files.Ext
 AddService = , %SPSVCINST_ASSOCSERVICE%, 
 
 [osrusbfx2.Dev.NT.Services]
-AddService = osrusbfx2, %SPSVCINST_ASSOCSERVICE%, osrusbfx2.AddService
+AddService = osrusbfx2-pt850, %SPSVCINST_ASSOCSERVICE%, osrusbfx2.AddService
 
 [osrusbfx2.AddService]
 DisplayName    = %osrusbfx2.SvcDesc%
@@ -103,7 +103,7 @@ WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with
 HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
 
 [osrusbfx2.Dev.NT.Wdf]
-KmdfService = osrusbfx2, osrusbfx2_wdfsect
+KmdfService = osrusbfx2-pt850, osrusbfx2_wdfsect
 [osrusbfx2_wdfsect]
 KmdfLibraryVersion = $KMDFVERSION$
 
