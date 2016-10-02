@@ -400,9 +400,10 @@ EvtRequestReadCompletionRoutine(
     if (NT_SUCCESS(status)){
         KdPrint(("Number of bytes read: %I64d\n", (INT64)bytesRead));  
     } else {
-        KdPrint(("Read failed - request status 0x%x , UsbdStatus 0x%x\n",
-                status, usbCompletionParams->UsbdStatus));
-
+        KdPrint(("Read failed - request status 0x%x , UsbdStatus 0x%x %s\n",
+                status, usbCompletionParams->UsbdStatus,
+				status==STATUS_CANCELLED ? "(I/O cancelled)" : ""
+				));
     }
 
 	size_t bytesRet = 0;
