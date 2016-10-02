@@ -264,8 +264,8 @@ Return Value:
 
     return;
 #else
-    UNREFERENCED_PARAMETER(TraceEventsLevel);
-    UNREFERENCED_PARAMETER(TraceEventsFlag);
+    UNREFERENCED_PARAMETER(DebugPrintLevel);
+    UNREFERENCED_PARAMETER(DebugPrintFlag);
     UNREFERENCED_PARAMETER(DebugMessage);
 #endif
 }
