@@ -44,9 +44,9 @@ Arguments:
 
     Queue - Default queue handle
     Request - Handle to the read/write request
-    Lenght - Length of the data buffer associated with the request.
+    Length - Length of the data buffer associated with the request.
                  The default property of the queue is to not dispatch
-                 zero lenght read & write requests to the driver and
+                 zero length read & write requests to the driver and
                  complete is with status success. So we will never get
                  a zero length request.
 
@@ -222,9 +222,9 @@ Arguments:
 
     Queue - Default queue handle
     Request - Handle to the read/write request
-    Lenght - Length of the data buffer associated with the request.
+    Length - Length of the data buffer associated with the request.
                  The default property of the queue is to not dispatch
-                 zero lenght read & write requests to the driver and
+                 zero length read & write requests to the driver and
                  complete is with status success. So we will never get
                  a zero length request.
 
@@ -399,7 +399,7 @@ Routine Description:
     are actually pending in the target device, we will just acknowledge
     its presence. Until we acknowledge, complete, or requeue the requests
     framework will wait before allowing the device suspend or remove to
-    proceeed. When the underlying USB stack gets the request to suspend or
+    proceed. When the underlying USB stack gets the request to suspend or
     remove, it will fail all the pending requests.
 
 Arguments:
