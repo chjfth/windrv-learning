@@ -52,7 +52,7 @@ DriverEntry(
     WDF_DRIVER_CONFIG       config;
     NTSTATUS                status;
 
-    KdPrint(("DriverEntry of Step4\n"));
+    KdPrint(("[osrusbfx2]DriverEntry of Step4\n"));
 
     WDF_DRIVER_CONFIG_INIT(&config, EvtDeviceAdd);
 
@@ -85,8 +85,11 @@ EvtDeviceAdd(
     
     UNREFERENCED_PARAMETER(Driver);
 
+	KdPrint(("[osrusbfx2]EvtDeviceAdd()\n"));
+
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
     pnpPowerCallbacks.EvtDevicePrepareHardware = EvtDevicePrepareHardware;
+	pnpPowerCallbacks.EvtDeviceReleaseHardware = EvtDeviceReleaseHardware;
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, DEVICE_CONTEXT);
@@ -168,7 +171,9 @@ EvtDevicePrepareHardware(
     UNREFERENCED_PARAMETER(ResourceList);
     UNREFERENCED_PARAMETER(ResourceListTranslated);
 
-    pDeviceContext = GetDeviceContext(Device);
+	KdPrint(("[osrusbfx2]EvtDevicePrepareHardware() wdfdevice=0x%p\n", Device));
+
+	pDeviceContext = GetDeviceContext(Device);
 
     //
     // Create the USB device if it is not already created.
@@ -216,6 +221,19 @@ EvtDevicePrepareHardware(
     WdfUsbTargetPipeSetNoMaximumPacketSizeCheck(pDeviceContext->BulkWritePipe);
         
     return status;
+}
+
+NTSTATUS
+EvtDeviceReleaseHardware(
+	IN WDFDEVICE    Device,
+	IN WDFCMRESLIST ResourceListTranslated
+	)
+{
+	UNREFERENCED_PARAMETER(ResourceListTranslated);
+
+	KdPrint(("[osrusbfx2]EvtDeviceReleaseHardware() wdfdevice=0x%p\n", Device));
+
+	return STATUS_SUCCESS;
 }
 
 VOID
