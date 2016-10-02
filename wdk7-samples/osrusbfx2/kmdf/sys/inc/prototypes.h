@@ -19,6 +19,10 @@ EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL EvtIoDeviceControl;
 EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestReadCompletionRoutine;
 EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestWriteCompletionRoutine;
 
+// chj test:
+EVT_WDF_FILE_CLEANUP EvtFileobjectCleanup;
+EVT_WDF_FILE_CLOSE   EvtFileobjectClose;
+
 
 #ifdef __cplusplus
 } // extern"C" {

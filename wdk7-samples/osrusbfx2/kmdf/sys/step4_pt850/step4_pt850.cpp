@@ -92,6 +92,11 @@ EvtDeviceAdd(
 	pnpPowerCallbacks.EvtDeviceReleaseHardware = EvtDeviceReleaseHardware;
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
+	// chj test:
+	WDF_FILEOBJECT_CONFIG foConfig;
+	WDF_FILEOBJECT_CONFIG_INIT(&foConfig, NULL, EvtFileobjectClose, EvtFileobjectCleanup);
+	WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, NULL);
+
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, DEVICE_CONTEXT);
 
     status = WdfDeviceCreate(&DeviceInit, &attributes, &device);
@@ -516,4 +521,14 @@ EvtRequestWriteCompletionRoutine(
 
     return;
 }
+
+void EvtFileobjectCleanup(WDFFILEOBJECT  FileObject)
+{
+	KdPrint(("[osrusbfx2]EvtFileobjectCleanup() wdffileobject=0x%p\n", FileObject));
+}	
+
+void EvtFileobjectClose(WDFFILEOBJECT  FileObject)
+{
+	KdPrint(("[osrusbfx2]EvtFileobjectClose() wdffileobject=0x%p\n", FileObject));
+}	
 
