@@ -406,8 +406,19 @@ EvtRequestReadCompletionRoutine(
 				));
     }
 
+	// chj test >>>
 	size_t bytesRet = 0;
 	void *pmem = WdfMemoryGetBuffer(usbCompletionParams->Parameters.PipeRead.Buffer, &bytesRet);
+		// peak into the returned content
+
+	WDFMEMORY mem_out; size_t outsizeRet = 0;
+	WdfRequestRetrieveOutputMemory(Request, &mem_out);
+	void *pmem_out = WdfMemoryGetBuffer(mem_out, &outsizeRet);
+
+	ASSERT(pmem_out == pmem);
+
+	ASSERT(mem_out == usbCompletionParams->Parameters.PipeRead.Buffer);
+	// chj test <<<
 
     WdfRequestCompleteWithInformation(Request, status, bytesRead);
 
