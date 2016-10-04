@@ -1,16 +1,11 @@
 /*++
-
 Copyright (c) 1990-2000  Microsoft Corporation
-
 Module Name:
-
     device.c - Device handling events for example driver.
 
 Abstract:
-
     This is a C version of a very simple sample driver that illustrates
     how to use the driver framework and demonstrates best practices.
-
 --*/
 
 #include "driver.h"
@@ -26,21 +21,15 @@ EchoDeviceCreate(
     PWDFDEVICE_INIT DeviceInit
     )
 /*++
-
 Routine Description:
-
     Worker routine called to create a device and its software resources.
 
 Arguments:
-
     DeviceInit - Pointer to an opaque init structure. Memory for this
                     structure will be freed by the framework when the WdfDeviceCreate
                     succeeds. So don't access the structure after that point.
-
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;

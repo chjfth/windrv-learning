@@ -1,13 +1,10 @@
 /*++
-
 Copyright (c) 1990-2000  Microsoft Corporation
 
 Module Name:
-
     driver.c
 
 Abstract:
-
     This driver demonstrates use of a default I/O Queue, its
     request start events, cancellation event, and a synchronized DPC.
 
@@ -16,8 +13,8 @@ Abstract:
     DPC will complete it next time the DPC runs.
 
     During the time the request is waiting for the DPC to run, it is
-    made cancellable by the call WdfRequestMarkCancelable. This
-    allows the test program to cancel the cancel the request and exit instantly.
+    made cancellable by the call *WdfRequestMarkCancelable*. This
+    allows the test program to cancel the request and exit instantly.
 
     This rather complicated set of events is designed to demonstrate
     the driver frameworks synchronization of access to a device driver
@@ -27,12 +24,11 @@ Abstract:
     This common data structure, or resource is accessed by new request
     events arriving, the DPC that completes it, and cancel processing.
 
-    Notice the lack of specific lock/unlock operations.
+    Notice the lack(=unnecessary?) of specific lock/unlock operations.
 
     Even though this example utilizes a serial queue, a parallel queue
     would not need any additional explicit synchronization, just a
     strategy for managing multiple requests outstanding.
-
 --*/
 
 #include "driver.h"
@@ -50,7 +46,6 @@ DriverEntry(
     IN PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
     DriverEntry initializes the driver and is the first routine called by the
     system after the driver is loaded. DriverEntry specifies the other entry
@@ -69,10 +64,8 @@ Parameters Description:
     reboots. The path does not store hardware instance specific data.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     WDF_DRIVER_CONFIG config;
@@ -106,21 +99,16 @@ EchoEvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of the device.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     NTSTATUS status;
@@ -129,7 +117,7 @@ Return Value:
 
     PAGED_CODE();
 
-    KdPrint(("Enter  EchoEvtDeviceAdd\n"));
+    KdPrint(("[echo-AS]Enter  EchoEvtDeviceAdd\n"));
 
     status = EchoDeviceCreate(DeviceInit);
 
@@ -141,17 +129,9 @@ EchoPrintDriverVersion(
     )
 /*++
 Routine Description:
-
    This routine shows how to retrieve framework version string and
    also how to find out to which version of framework library the
    client driver is bound to.
-
-Arguments:
-
-Return Value:
-
-    NTSTATUS
-
 --*/
 {
     NTSTATUS status;
@@ -160,7 +140,7 @@ Return Value:
     WDF_DRIVER_VERSION_AVAILABLE_PARAMS ver;
 
     //
-    // 1) Retreive version string and print that in the debugger.
+    // 1) Retrieve version string and print that in the debugger.
     //
     status = WdfStringCreate(NULL, WDF_NO_OBJECT_ATTRIBUTES, &string);
     if (!NT_SUCCESS(status)) {

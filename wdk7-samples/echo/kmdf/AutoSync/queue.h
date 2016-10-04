@@ -34,6 +34,8 @@ typedef struct _QUEUE_CONTEXT {
 
     // Virtual I/O
     WDFREQUEST  CurrentRequest;
+		// Chj: 既用来存放写请求的 wdfrequest, 也用来存放读请求的 wdfrequest, 只不过是分时的.
+
     NTSTATUS   CurrentStatus;
 
 } QUEUE_CONTEXT, *PQUEUE_CONTEXT;

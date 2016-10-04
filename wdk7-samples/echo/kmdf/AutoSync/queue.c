@@ -1,16 +1,11 @@
 /*++
-
 Copyright (c) 1990-2000  Microsoft Corporation
-
 Module Name:
-
     queue.c
 
 Abstract:
-
     This is a C version of a very simple sample driver that illustrates
     how to use the driver framework and demonstrates best practices.
-
 --*/
 
 #include "driver.h"
@@ -25,10 +20,7 @@ EchoQueueInitialize(
     WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
-
      The I/O dispatch callbacks for the frameworks device object
      are configured in this function.
 
@@ -43,15 +35,8 @@ Routine Description:
      Queue object, and we register an optional destructor callback
      to release any private allocations, and/or resources.
 
-
 Arguments:
-
     Device - Handle to a framework device object.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     WDFQUEUE queue;
@@ -63,9 +48,9 @@ Return Value:
     PAGED_CODE();
 
     //
-    // Configure a default queue so that requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching to goto
-    // other queues get dispatched here.
+    // Configure a default queue so that [requests that are not
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
+    // other queues] get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
          &queueConfig,
@@ -86,9 +71,7 @@ Return Value:
     // with the same lock.
     //
     queueAttributes.SynchronizationScope = WdfSynchronizationScopeQueue;
-    
     queueAttributes.EvtDestroyCallback = EchoEvtIoQueueContextDestroy;
-
     status = WdfIoQueueCreate(
                  Device,
                  &queueConfig,
@@ -130,22 +113,12 @@ EchoTimerCreate(
     IN WDFQUEUE        Queue
     )
 /*++
-
 Routine Description:
-
     Subroutine to create periodic timer. By associating the timerobject with
-    the queue, we are basically telling the framework to serialize the queue
-    callbacks with the dpc callback. By doing so, we don't have to worry
+    the queue, we are basically telling the framework to [serialize the queue
+    callbacks with the dpc callback]. By doing so, we don't have to worry
     about protecting queue-context structure from multiple threads accessing
     it simultaneously.
-
-Arguments:
-
-
-Return Value:
-
-    VOID
-
 --*/
 {
     NTSTATUS Status;
@@ -166,10 +139,8 @@ Return Value:
                              &timerAttributes,
                              Timer     // Output handle
                              );
-
     return Status;
 }
-
 
 
 VOID
@@ -177,20 +148,12 @@ EchoEvtIoQueueContextDestroy(
     WDFOBJECT Object
 )
 /*++
-
 Routine Description:
-
     This is called when the Queue that our driver context memory
     is associated with is destroyed.
 
 Arguments:
-
     Context - Context that's being freed.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     PQUEUE_CONTEXT queueContext = QueueGetContext(Object);
@@ -218,30 +181,21 @@ EchoEvtRequestCancel(
     IN WDFREQUEST Request
     )
 /*++
-
 Routine Description:
-
-
     Called when an I/O request is cancelled after the driver has marked
     the request cancellable. This callback is automatically synchronized
     with the I/O callbacks since we have chosen to use frameworks Device
     level locking.
 
 Arguments:
-
     Request - Request being cancelled.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     PQUEUE_CONTEXT queueContext = QueueGetContext(WdfRequestGetIoQueue(Request));
 
     KdPrint(("EchoEvtRequestCancel called on Request 0x%p\n",  Request));
 
-    //
+    // [操, 这个长句怎么断句?]
     // The following is race free by the callside or DPC side
     // synchronizing completion by calling
     // WdfRequestMarkCancelable(Queue, Request, FALSE) before
@@ -267,9 +221,7 @@ EchoEvtIoRead(
     IN size_t      Length
     )
 /*++
-
 Routine Description:
-
     This event is called when the framework receives IRP_MJ_READ request.
     It will copy the content from the queue-context buffer to the request buffer.
     If the driver hasn't received any write request earlier, the read returns zero.
@@ -283,14 +235,9 @@ Arguments:
 
     Length  - number of bytes to be read.
               The default property of the queue is to not dispatch
-              zero lenght read & write requests to the driver and
+              zero length read & write requests to the driver and
               complete is with status success. So we will never get
               a zero length request.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     NTSTATUS Status;
@@ -299,7 +246,7 @@ Return Value:
 
     __analysis_assume(Length > 0);
 
-    KdPrint(("EchoEvtIoRead Called! Queue 0x%p, Request 0x%p Length %d\n",
+    KdPrint(("EchoEvtIoRead Called! Queue 0x%p, Request 0x%p, Length=%d\n",
              Queue,Request,Length));
     //
     // No data to read
@@ -345,7 +292,6 @@ Return Value:
     // Mark the request is cancelable
     WdfRequestMarkCancelable(Request, EchoEvtRequestCancel);
 
-
     // Defer the completion to another thread from the timer dpc
     queueContext->CurrentRequest = Request;
     queueContext->CurrentStatus  = Status;
@@ -360,14 +306,12 @@ EchoEvtIoWrite(
     IN size_t     Length
     )
 /*++
-
 Routine Description:
-
     This event is invoked when the framework receives IRP_MJ_WRITE request.
     This routine allocates memory buffer, copies the data from the request to it,
     and stores the buffer pointer in the queue-context with the length variable
     representing the buffers length. The actual completion of the request
-    is defered to the periodic timer dpc.
+    is deferred to the periodic timer dpc.
 
 Arguments:
 
@@ -378,14 +322,9 @@ Arguments:
 
     Length  - number of bytes to be read.
               The default property of the queue is to not dispatch
-              zero lenght read & write requests to the driver and
+              zero length read & write requests to the driver and
               complete is with status success. So we will never get
               a zero length request.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     NTSTATUS Status;
@@ -394,11 +333,11 @@ Return Value:
 
     __analysis_assume(Length > 0);
 
-    KdPrint(("EchoEvtIoWrite Called! Queue 0x%p, Request 0x%p Length %d\n",
+    KdPrint(("EchoEvtIoWrite Called! Queue 0x%p, Request 0x%p, Length=%d\n",
              Queue,Request,Length));
 
     if( Length > MAX_WRITE_LENGTH ) {
-        KdPrint(("EchoEvtIoWrite Buffer Length to big %d, Max is %d\n",
+        KdPrint(("EchoEvtIoWrite Buffer Length too big %d, Max is %d\n",
                  Length,MAX_WRITE_LENGTH));
         WdfRequestCompleteWithInformation(Request, STATUS_BUFFER_OVERFLOW, 0L);
         return;
@@ -407,7 +346,7 @@ Return Value:
     // Get the memory buffer
     Status = WdfRequestRetrieveInputMemory(Request, &memory);
     if( !NT_SUCCESS(Status) ) {
-        KdPrint(("EchoEvtIoWrite Could not get request memory buffer 0x%x\n",
+        KdPrint(("EchoEvtIoWrite Could not get request memory buffer. ntstatus=0x%x\n",
                  Status));
         WdfVerifierDbgBreakPoint();
         WdfRequestComplete(Request, Status);
@@ -429,7 +368,7 @@ Return Value:
     }
 
 
-    // Copy the memory in
+	// Copy the memory in
     Status = WdfMemoryCopyToBuffer( memory,
                                     0,  // offset into the source memory
                                     queueContext->Buffer,
@@ -468,22 +407,14 @@ EchoEvtTimerFunc(
     IN WDFTIMER     Timer
     )
 /*++
-
 Routine Description:
-
     This is the TimerDPC the driver sets up to complete requests.
     This function is registered when the WDFTIMER object is created, and
     will automatically synchronize with the I/O Queue callbacks
     and cancel routine.
 
 Arguments:
-
     Timer - Handle to a framework Timer object.
-
-Return Value:
-
-    VOID
-
 --*/
 {
     NTSTATUS      Status;
@@ -499,9 +430,8 @@ Return Value:
     // so this is race free without explicit driver managed locking.
     //
     Request = queueContext->CurrentRequest;
-    if( Request != NULL ) {
-
-        //
+    if( Request != NULL ) 
+	{
         // Attempt to remove cancel status from the request.
         //
         // The request is not completed if it is already cancelled
@@ -517,6 +447,8 @@ Return Value:
             KdPrint(("CustomTimerDPC Completing request 0x%p, Status 0x%x \n", Request,Status));
 
             WdfRequestComplete(Request, Status);
+
+			// Chj: 如果此次 complete 的是"写请求", 那么 QUEUE_CONTEXT.Buffer 并未释放, 而是等着"读请求"来获取.
         }
         else {
             KdPrint(("CustomTimerDPC Request 0x%p is STATUS_CANCELLED, not completing\n",
