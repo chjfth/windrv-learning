@@ -5,7 +5,7 @@ xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 12">
 <meta name=Originator content="Microsoft Word 12">
@@ -464,8 +464,8 @@ p
 	mso-margin-bottom-alt:auto;
 	margin-left:0in;
 	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman","serif";
+	font-size:11pt;
+/*	font-family:"Times New Roman","serif"; */
 	mso-fareast-font-family:"Times New Roman";
 	color:black;}
 pre
@@ -771,20 +771,31 @@ style='font-family:"Verdana","sans-serif";mso-fareast-font-family:"Times New Rom
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
 sample demonstrates how to use sequential queue to serialize read and write
 requests presented to the driver and how to synchronize execution of these
-events with other asynchronous events such as request cancellation and DPC. The
-version of the driver under the directory AutoSync demonstrates how the driver
-uses framework-provided synchronization to manage the ownership of the request
-between the I/O callbacks, timer DPC and the cancel routine. The version of the
-driver under the directory DriverSync demonstrates how the driver uses its own
-lock to manage the same.</span><o:p></o:p></p>
-
-<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
-building and installation instructions given here apply to Windows® 2000 and
-later operating systems.<o:p></o:p></span></p>
+events with other asynchronous events such as request cancellation and DPC. </span></p>
+<ul>
+  <li>
+    <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
+      version of the driver under the directory <u>AutoSync</u> demonstrates how the driver
+      uses framework-provided synchronization to manage the ownership of the request
+      between the I/O callbacks, timer DPC and the cancel routine. </span></p>
+  </li>
+  <li>
+    <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The version of the
+      driver under the directory <u>DriverSync</u> demonstrates how the driver uses its own
+      lock to manage the same.</span> </p>
+  </li>
+</ul>
+<p>
+  <o:p></o:p>
+  <span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The
+building and installation instructions given here apply to WindowsÂ® 2000 and
+later operating systems.
+<o:p></o:p>
+  </span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
-sample driver is a minimal driver meant to demonstrate the usage of the Windows
-Driver Framework. It is not intended for use in a production environment. <o:p></o:p></span></p>
+  sample driver is a minimal driver meant to demonstrate the usage of the Windows
+  Driver Framework. It is not intended for use in a production environment. <o:p></o:p></span></p>
 
 <h3><span style='font-family:"Verdana","sans-serif";mso-fareast-font-family:
 "Times New Roman"'>BUILDING THE SAMPLE<o:p></o:p></span></h3>
@@ -794,7 +805,7 @@ Free Build Environment or Checked Build Environment icon under Development Kits
 program group to set basic environment variables. <o:p></o:p></span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Change to
-the directory containing the device source code, such as “src\general\echo\kmdf”.
+the directory containing the device source code, such as â€œsrc\general\echo\kmdfâ€.
 <o:p></o:p></span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Run <b>build
@@ -814,7 +825,7 @@ style='font-size:10.0pt;mso-bidi-font-size:12.0pt;font-family:"Verdana","sans-se
 mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
 style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Copy
-the KMDF coinstaller (wdfcoinstallerMMmmm.dll – for example WdfCoInstaller01009.dll),
+the KMDF coinstaller (wdfcoinstallerMMmmm.dll â€“ for example WdfCoInstaller01009.dll),
 driver binary and the echo.inf file to directory on your test machine (for
 example c:\echoSample). </span></p>
 
@@ -836,11 +847,11 @@ example: c:\winddk\&lt;bld&gt;\tools\devcon\i386\devcon.exe) to install the
 echo driver. DevCon allows you to root-enumerate a driver with one simple
 command. To install the driver using devcon.exe: </span><o:p></o:p></p>
 
-<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'><pre>devcon.exe install<span style='mso-spacerun:yes'>  </span>echo.inf<span style='mso-spacerun:yes'>  </span>&quot;root\echo&quot;<o:p></o:p></pre></blockquote>
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'><pre>devcon.exe install<span style='mso-spacerun:yes'>Â  </span>echo.inf<span style='mso-spacerun:yes'>Â  </span>&quot;root\echo&quot;<o:p></o:p></pre></blockquote>
 
 <h3 style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><span
 style='font-family:"Verdana","sans-serif";mso-fareast-font-family:"Times New Roman"'>CODE
-TOUR</span><span style='mso-fareast-font-family:"Times New Roman"'><o:p></o:p></span></h3>
+TOUR</span><span><o:p></o:p></span></h3>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><u>DriverEntry</u>
 - Creates a framework driver object.<o:p></o:p></p>
@@ -856,18 +867,20 @@ asynchronous event. The purpose of this timer would be to complete the
 currently pending request. <o:p></o:p></p>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'>In
-the AutoSync version of the sample, the queue is created with
-WdfSynchronizationScopeQueue so that I/O callbacks including cancel routine are
-synchronized with a queue-level lock. Since timer is parented to queue and by
+the <strong>AutoSync</strong> version of the sample, the queue is created with
+<code>WdfSynchronizationScopeQueue</code> so that I/O callbacks including cancel routine are
+synchronized with a queue-level lock. Since timer is parented to queue(queue object is the parent of timer object) and by
 default timer objects are created with AutomaticSerialization set to TRUE,
 timer DPC callbacks will be serialized with EvtIoRead, EvtIoWrite and Cancel
-Routine.<o:p></o:p></p>
+Routine.
+<o:p></o:p></p>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'>In
-the DriverSync version of the sample, the queue is created with WdfSynchronizationScopeNone,
+the <strong>DriverSync</strong> version of the sample, the queue is created with <code>WdfSynchronizationScopeNone</code>,
 so that the framework does not provide any synchronization. The driver
 synchronizes the I/O callbacks, cancel routine and the timer DPC using a spinlock
-that it creates for this purpose.<o:p></o:p></p>
+that it creates for this purpose.
+<o:p></o:p></p>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><u>EvtIoWrite</u>:
 Allocates an internal buffer as big as the size of buffer in the write request
@@ -891,25 +904,25 @@ the queue is a sequential queue, only one request is outstanding in the driver.
 style='mso-fareast-font-family:"Times New Roman"'>TESTING<o:p></o:p></span></h3>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><b>Usage:</b><br>
-Echoapp.exe --- Send single write and read request synchronously<br>
-Echoapp.exe -Async --- Send 100 reads and writes asynchronously<br>
+  <code>Echoapp.exe</code> --- Send single write and read request synchronously<br>
+<code>Echoapp.exe -Async</code> --- Send 100 reads and writes asynchronously<br>
 Exit the app anytime by pressing Ctrl-C<o:p></o:p></p>
 
 <h4 style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><span
 style='font-family:"Verdana","sans-serif";mso-fareast-font-family:"Times New Roman"'>File
 Manifest<o:p></o:p></span></h4>
 
-<pre><u>File<span style='mso-tab-count:2'>           </span><span
-style='mso-tab-count:2'>               </span>Description<o:p></o:p></u></pre><pre><o:p>&nbsp;</o:p></pre><pre>Echo.htm<span
-style='mso-tab-count:1'>       </span><span style='mso-tab-count:2'>               </span>Documentation for this sample (this file).<o:p></o:p></pre><pre><o:p>&nbsp;</o:p></pre><pre><b
+<pre><u>File<span style='mso-tab-count:2'>Â Â Â Â Â Â Â Â Â Â  </span><span
+style='mso-tab-count:2'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span>Description<o:p></o:p></u></pre><pre><o:p>&nbsp;</o:p></pre><pre>Echo.htm<span
+style='mso-tab-count:1'>Â Â Â Â Â Â  </span><span style='mso-tab-count:2'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span>Documentation for this sample (this file).<o:p></o:p></pre><pre><o:p>&nbsp;</o:p></pre><pre><b
 style='mso-bidi-font-weight:normal'><i style='mso-bidi-font-style:normal'>(The AutoSync and DriverSync versions of the sample each have their own version of the following files)<o:p></o:p></i></b></pre><pre>Driver.h, Driver.c<span
-style='mso-tab-count:1'>     </span><span style='mso-tab-count:1'>        </span>DriverEntry and Events on the Driver Object.<o:p></o:p></pre><pre>Device.h, Device.c<span
-style='mso-tab-count:1'>     </span><span style='mso-tab-count:1'>        </span>Events on the Device Object.<o:p></o:p></pre><pre>Queue.h, Queue.c<span
-style='mso-tab-count:1'>       </span><span style='mso-tab-count:1'>        </span>Contains Events on the I/O Queue Objects.<o:p></o:p></pre><pre>Echo.inx<span
-style='mso-tab-count:3'>                       </span>File that describes the installation of this driver. The build process converts this into an INF file.<o:p></o:p></pre><pre>Makefile.inc<span
-style='mso-tab-count:3'>                   </span><span style='color:windowtext'>A makefile&nbsp;that defines&nbsp;custom build actions. This includes the conversion of the .INX file into a .INF file</span><o:p></o:p></pre><pre>Makefile<span
-style='mso-tab-count:1'>       </span><span style='mso-tab-count:2'>               </span>This file merely redirects to the real makefile that is shared by all the driver components of the Windows NT DDK.<o:p></o:p></pre><pre>Sources<span
-style='mso-tab-count:2'>        </span><span style='mso-tab-count:2'>               </span>Generic file that lists source files and all the build options.<o:p></o:p></pre>
+style='mso-tab-count:1'>Â Â Â Â  </span><span style='mso-tab-count:1'>Â Â Â Â Â Â Â  </span>DriverEntry and Events on the Driver Object.<o:p></o:p></pre><pre>Device.h, Device.c<span
+style='mso-tab-count:1'>Â Â Â Â  </span><span style='mso-tab-count:1'>Â Â Â Â Â Â Â  </span>Events on the Device Object.<o:p></o:p></pre><pre>Queue.h, Queue.c<span
+style='mso-tab-count:1'>Â Â Â Â Â Â  </span><span style='mso-tab-count:1'>Â Â Â Â Â Â Â  </span>Contains Events on the I/O Queue Objects.<o:p></o:p></pre><pre>Echo.inx<span
+style='mso-tab-count:3'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span>File that describes the installation of this driver. The build process converts this into an INF file.<o:p></o:p></pre><pre>Makefile.inc<span
+style='mso-tab-count:3'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span><span style='color:windowtext'>A makefile&nbsp;that defines&nbsp;custom build actions. This includes the conversion of the .INX file into a .INF file</span><o:p></o:p></pre><pre>Makefile<span
+style='mso-tab-count:1'>Â Â Â Â Â Â  </span><span style='mso-tab-count:2'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span>This file merely redirects to the real makefile that is shared by all the driver components of the Windows NT DDK.<o:p></o:p></pre><pre>Sources<span
+style='mso-tab-count:2'>Â Â Â Â Â Â Â  </span><span style='mso-tab-count:2'>Â Â Â Â Â Â Â Â Â Â Â Â Â Â  </span>Generic file that lists source files and all the build options.<o:p></o:p></pre>
 
 <p align=center style='text-align:center;tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><a
 href="#top"><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Top
@@ -928,7 +941,7 @@ of page</span></a><span style='font-size:10.0pt;font-family:"Verdana","sans-seri
 </table>
 
 <p style='tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt'><span
-style='font-size:7.5pt;font-family:"MS Sans Serif","serif"'>© 2002 Microsoft
+style='font-size:7.5pt;font-family:"MS Sans Serif","serif"'>Â© 2002 Microsoft
 Corporation</span><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
 <o:p></o:p></span></p>
 
