@@ -76,13 +76,14 @@ EvtDeviceAdd(
     IN PWDFDEVICE_INIT  DeviceInit
     )
 {
+	PAGED_CODE();
+
     WDF_OBJECT_ATTRIBUTES               attributes;
     NTSTATUS                            status;
     WDFDEVICE                           device;
     PDEVICE_CONTEXT                     pDevContext;
     WDF_PNPPOWER_EVENT_CALLBACKS        pnpPowerCallbacks;
     WDF_IO_QUEUE_CONFIG                 ioQueueConfig;
-    
     UNREFERENCED_PARAMETER(Driver);
 
 	KdPrint(("[osrusbfx2]EvtDeviceAdd()\n"));
@@ -169,6 +170,8 @@ EvtDevicePrepareHardware(
     IN WDFCMRESLIST ResourceListTranslated
     )
 {
+	PAGED_CODE();
+
     NTSTATUS                            status;
     PDEVICE_CONTEXT                     pDeviceContext;
     WDF_USB_DEVICE_SELECT_CONFIG_PARAMS configParams;
@@ -234,6 +237,7 @@ EvtDeviceReleaseHardware(
 	IN WDFCMRESLIST ResourceListTranslated
 	)
 {
+	PAGED_CODE();
 	UNREFERENCED_PARAMETER(ResourceListTranslated);
 
 	KdPrint(("[osrusbfx2]EvtDeviceReleaseHardware() wdfdevice=0x%p\n", Device));
@@ -250,6 +254,8 @@ EvtIoDeviceControl(
     IN ULONG      IoControlCode    
     )
 {
+	PAGED_CODE();
+
     WDFDEVICE                           device;
     PDEVICE_CONTEXT                     pDevContext;
     size_t                              bytesTransferred = 0;
@@ -330,6 +336,8 @@ EvtIoRead(
     IN size_t           Length
     )   
 {
+	PAGED_CODE();
+
     WDFUSBPIPE                  pipe;
     NTSTATUS                    status;
     WDFMEMORY                   reqMemory;
@@ -384,6 +392,8 @@ EvtRequestReadCompletionRoutine(
     IN WDFCONTEXT                  Context
     )
 {    
+//	PAGED_CODE(); // seen DISPATCH_LEVEL
+
     NTSTATUS    status;
     size_t      bytesRead = 0;
     PWDF_USB_REQUEST_COMPLETION_PARAMS usbCompletionParams;
@@ -451,6 +461,8 @@ EvtIoWrite(
     IN size_t           Length
     )   
 {
+	PAGED_CODE();
+
     NTSTATUS                    status;
     WDFUSBPIPE                  pipe;
     WDFMEMORY                   reqMemory;
@@ -509,6 +521,8 @@ EvtRequestWriteCompletionRoutine(
     IN WDFCONTEXT                  Context
     )
 {
+//	PAGED_CODE(); // seen DISPATCH_LEVEL
+
     NTSTATUS    status;
     size_t      bytesWritten = 0;
     PWDF_USB_REQUEST_COMPLETION_PARAMS usbCompletionParams;
