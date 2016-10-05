@@ -71,6 +71,8 @@ Arguments:
     // with the same lock.
     //
     queueAttributes.SynchronizationScope = WdfSynchronizationScopeQueue;
+		// Chj: 事实上, 本程序设置 WdfSynchronizationScopeQueue 是多余的, 因为
+		// 本例中 WdfIoQueueDispatchSequential 已经能达成它的效果了.
     queueAttributes.EvtDestroyCallback = EchoEvtIoQueueContextDestroy;
     status = WdfIoQueueCreate(
                  Device,
