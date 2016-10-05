@@ -205,6 +205,11 @@ EvtDevicePrepareHardware(
                                         WDF_NO_OBJECT_ATTRIBUTES,
                                         &configParams); // [in,out]
     if(!NT_SUCCESS(status)) {
+		// Chj: When VisualDDK debugging a Win7 VM(USB device is attached to the 
+		// VMware Workstation VM), it sometimes fails here, don't know why?
+		// Retry loading the driver usually gets the cure.
+		// Retry method 1: From devmgmt.msc, Disable then Enable the device.
+		// Retry method 2: Unplug USB cable then plug it in again.
         KdPrint(("WdfUsbTargetDeviceSelectConfig failed 0x%x\n", status));
         return status;
     }
