@@ -347,7 +347,7 @@ Return Value:
     // the system.
     //
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleCannotWakeFromS0);
-    idleSettings.IdleTimeout = 60000; // 60 secs idle timeout
+    idleSettings.IdleTimeout = 10000; // 10 seconds idle timeout
 	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
     status = WdfDeviceAssignS0IdleSettings(device, &idleSettings);
     if (!NT_SUCCESS(status)) {
