@@ -54,7 +54,7 @@ Arguments:
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
          &queueConfig,
-        WdfIoQueueDispatchSequential
+        WdfIoQueueDispatchSequential // (WdfIoQueueDispatchParallel is wrong, see my Evernote 'echo_pbad')
         );
 
     queueConfig.EvtIoRead   = EchoEvtIoRead;
@@ -191,7 +191,7 @@ Arguments:
     Request - Request being cancelled.
 --*/
 {
-//	PAGED_CODE(); // chj: this run at DISPATCH_LEVEL
+//	PAGED_CODE(); // chj: this runs at DISPATCH_LEVEL
 
     PQUEUE_CONTEXT queueContext = QueueGetContext(WdfRequestGetIoQueue(Request));
 
