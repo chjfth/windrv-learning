@@ -100,9 +100,7 @@ EchoEvtDeviceSelfManagedIoStart(
     IN  WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     This event is called by the Framework when the device is started
     or restarted after a suspend operation.
 
@@ -113,13 +111,10 @@ Routine Description:
     until the system drivers can service this page fault.
 
 Arguments:
-
     Device - Handle to a framework device object.
 
 Return Value:
-
     NTSTATUS - Failures will result in the device stack being torn down.
-
 --*/
 {
     PQUEUE_CONTEXT queueContext = QueueGetContext(WdfDeviceGetDefaultQueue(Device));
@@ -147,23 +142,16 @@ EchoEvtDeviceSelfManagedIoSuspend(
     IN  WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     This event is called by the Framework when the device is stopped
-    for resource rebalance or suspended when the system is entering
-    Sx state.
-
+    for resource rebalance or suspended when the system is entering Sx state.
 
 Arguments:
-
     Device - Handle to a framework device object.
 
 Return Value:
-
     NTSTATUS - The driver is not allowed to fail this function.  If it does, the
     device stack will be torn down.
-
 --*/
 {
     PQUEUE_CONTEXT queueContext = QueueGetContext(WdfDeviceGetDefaultQueue(Device));

@@ -1,23 +1,3 @@
-/*++
-
-Copyright (c) Microsoft Corporation
-
-Module Name:
-
-    ioctl.cpp
-
-Abstract:
-
-    A simple asynch test for usb driver.
-
-
-Environment:
-
-    user mode only
-
---*/
-
-  
 #include <DriverSpecs.h>
 __user_code  
 
@@ -30,7 +10,7 @@ __user_code
 #include <stdlib.h>
 #include "public.h"
 
-#define NUM_ASYNCH_IO   100
+#define NUM_ASYNCH_IO   5
 #define BUFFER_SIZE     (40*1024)
 
 #define READER_TYPE   1
@@ -39,7 +19,7 @@ __user_code
 BOOLEAN G_PerformAsyncIo;
 PCHAR DevicePath;
 
-ULONG
+ULONG __stdcall
 AsyncIo(
     PVOID   ThreadParameter
     );
@@ -326,7 +306,7 @@ Cleanup:
 
 
 
-ULONG
+ULONG __stdcall
 AsyncIo(
     PVOID  ThreadParameter
     )
