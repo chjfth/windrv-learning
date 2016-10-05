@@ -14,10 +14,10 @@ Abstract:
 --*/
 
 // Set max write length for testing
-#define MAX_WRITE_LENGTH 1024*40
+#define MAX_WRITE_LENGTH (1024*40)
 
 // Set timer period in ms
-#define TIMER_PERIOD     (1000*2) 
+#define TIMER_PERIOD     (1000*2) // chj: reduce to 2 seconds
 
 //
 // This is the context that can be placed per queue

@@ -6,7 +6,7 @@
     <stampinf_ARCH Condition="'$(Platform)'=='x64'">AMD64</stampinf_ARCH>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetExt>.sys</TargetExt>
+    <TargetExt>.exe</TargetExt>
     <ExecutablePath>$(WDKPATH)\bin\x86;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup>

@@ -191,6 +191,8 @@ Arguments:
     Request - Request being cancelled.
 --*/
 {
+//	PAGED_CODE(); // chj: this run at DISPATCH_LEVEL
+
     PQUEUE_CONTEXT queueContext = QueueGetContext(WdfRequestGetIoQueue(Request));
 
     KdPrint(("EchoEvtRequestCancel called on Request 0x%p\n",  Request));

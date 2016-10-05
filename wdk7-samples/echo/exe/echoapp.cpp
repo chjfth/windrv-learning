@@ -10,7 +10,7 @@ __user_code
 #include <stdlib.h>
 #include "public.h"
 
-#define NUM_ASYNCH_IO   5
+#define NUM_ASYNCH_IO   10
 #define BUFFER_SIZE     (40*1024)
 
 #define READER_TYPE   1
@@ -362,7 +362,8 @@ AsyncIo(
     // Issue asynch I/O
     //
 
-    for (i = 0; i < NUM_ASYNCH_IO; i++) {
+    for (i = 0; i < NUM_ASYNCH_IO; i++) 
+	{
         if (ioType == READER_TYPE) {
             if ( ReadFile( hDevice,
                       buf + (i* BUFFER_SIZE),
@@ -576,5 +577,3 @@ GetDevicePath(
     return DeviceInterfaceDetailData->DevicePath;
 
 }
-
-
