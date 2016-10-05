@@ -17,7 +17,7 @@ Abstract:
 #define MAX_WRITE_LENGTH 1024*40
 
 // Set timer period in ms
-#define TIMER_PERIOD     1000*10
+#define TIMER_PERIOD     (1000*2) 
 
 //
 // This is the context that can be placed per queue
