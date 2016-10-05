@@ -23,6 +23,9 @@ EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestWriteCompletionRoutine;
 EVT_WDF_FILE_CLEANUP EvtFileobjectCleanup;
 EVT_WDF_FILE_CLOSE   EvtFileobjectClose;
 
+EVT_WDF_DEVICE_D0_ENTRY EvtDeviceD0Entry;
+EVT_WDF_DEVICE_D0_EXIT EvtDeviceD0Exit;
+
 
 #ifdef __cplusplus
 } // extern"C" {

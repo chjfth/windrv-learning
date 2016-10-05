@@ -91,6 +91,8 @@ EvtDeviceAdd(
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
     pnpPowerCallbacks.EvtDevicePrepareHardware = EvtDevicePrepareHardware;
 	pnpPowerCallbacks.EvtDeviceReleaseHardware = EvtDeviceReleaseHardware;
+	pnpPowerCallbacks.EvtDeviceD0Entry = EvtDeviceD0Entry;
+	pnpPowerCallbacks.EvtDeviceD0Exit = EvtDeviceD0Exit;
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
 	// chj test:
@@ -198,6 +200,19 @@ EvtDevicePrepareHardware(
     }
 
 	chj_try_usbapi_1(pDeviceContext->UsbDevice);
+
+	// chj try USB selective suspend:
+	WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS idleSettings;
+	WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, 
+		IdleCannotWakeFromS0 // IdleUsbSelectiveSuspend
+		);
+	idleSettings.IdleTimeout = 10000; // 10 seconds idle timeout
+	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
+	status = WdfDeviceAssignS0IdleSettings(Device, &idleSettings);
+	if (!NT_SUCCESS(status)) {
+		KdPrint( ("WdfDeviceAssignS0IdleSettings failed 0x%x\n", status));
+		return status;
+	}
 
     WDF_USB_DEVICE_SELECT_CONFIG_PARAMS_INIT_SINGLE_INTERFACE(&configParams);
 
@@ -563,3 +578,65 @@ void EvtFileobjectClose(WDFFILEOBJECT  FileObject)
 	KdPrint(("[osrusbfx2]EvtFileobjectClose() wdffileobject=0x%p\n", FileObject));
 }	
 
+
+PCHAR
+DbgDevicePowerString(
+    IN WDF_POWER_DEVICE_STATE Type
+    )
+{
+    PAGED_CODE();
+
+    switch (Type)
+    {
+    case WdfPowerDeviceInvalid:
+        return "WdfPowerDeviceInvalid";
+    case WdfPowerDeviceD0:
+        return "WdfPowerDeviceD0";
+    case PowerDeviceD1:
+        return "WdfPowerDeviceD1";
+    case WdfPowerDeviceD2:
+        return "WdfPowerDeviceD2";
+    case WdfPowerDeviceD3:
+        return "WdfPowerDeviceD3";
+    case WdfPowerDeviceD3Final:
+        return "WdfPowerDeviceD3Final";
+    case WdfPowerDevicePrepareForHibernation:
+        return "WdfPowerDevicePrepareForHibernation";
+    case WdfPowerDeviceMaximum:
+        return "PowerDeviceMaximum";
+    default:
+        return "UnKnown Device Power State";
+    }
+}
+
+NTSTATUS
+EvtDeviceD0Entry(
+    IN WDFDEVICE                Device,
+    IN WDF_POWER_DEVICE_STATE   RecentPowerState
+    )
+{
+	PAGED_CODE();
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(RecentPowerState);
+
+    KdPrint(("[osrusbfx2]EvtDeviceD0Entry - coming from %s\n",
+              DbgDevicePowerString(RecentPowerState)));
+
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS
+EvtDeviceD0Exit(
+    IN WDFDEVICE                Device,
+    IN WDF_POWER_DEVICE_STATE   PowerState
+    )
+{
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(PowerState);
+    PAGED_CODE();
+
+    KdPrint(("[osrusbfx2]EvtDeviceD0Exit - to %s\n",
+              DbgDevicePowerString(PowerState)));
+
+    return STATUS_SUCCESS;
+}
