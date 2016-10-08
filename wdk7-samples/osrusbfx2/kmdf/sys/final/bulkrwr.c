@@ -35,24 +35,17 @@ OsrFxEvtIoRead(
     __in size_t           Length
     )
 /*++
-
 Routine Description:
-
-    Called by the framework when it receives Read or Write requests.
+    Called by the framework when it receives Read requests.
 
 Arguments:
-
     Queue - Default queue handle
     Request - Handle to the read/write request
     Length - Length of the data buffer associated with the request.
-                 The default property of the queue is to not dispatch
-                 zero length read & write requests to the driver and
-                 complete is with status success. So we will never get
-                 a zero length request.
-
-Return Value:
-
-
+            The default property of the queue is to not dispatch
+            zero length read & write requests to the driver and
+            complete it with status success. So we will never get
+            a zero length request.
 --*/
 {
     WDFUSBPIPE                  pipe;
@@ -147,24 +140,17 @@ EvtRequestReadCompletionRoutine(
     __in WDFCONTEXT                  Context
     )
 /*++
-
 Routine Description:
-
     This is the completion routine for reads/writes
     If the irp completes with success, we check if we
     need to recirculate this irp for another stage of
     transfer.
 
 Arguments:
-
     Context - Driver supplied context
     Device - Device handle
     Request - Request handle
     Params - request completion params
-
-Return Value:
-    None
-
 --*/
 {
     NTSTATUS    status;
@@ -213,24 +199,17 @@ OsrFxEvtIoWrite(
     __in size_t           Length
     ) 
 /*++
-
 Routine Description:
-
-    Called by the framework when it receives Read or Write requests.
+    Called by the framework when it receives Write requests.
 
 Arguments:
-
     Queue - Default queue handle
     Request - Handle to the read/write request
     Length - Length of the data buffer associated with the request.
-                 The default property of the queue is to not dispatch
-                 zero length read & write requests to the driver and
-                 complete is with status success. So we will never get
-                 a zero length request.
-
-Return Value:
-
-
+            The default property of the queue is to not dispatch
+            zero length read & write requests to the driver and
+            complete it with status success. So we will never get
+            a zero length request.
 --*/
 {
     NTSTATUS                    status;
@@ -240,7 +219,6 @@ Return Value:
     GUID                        activity = RequestToActivityId(Request);
 
     UNREFERENCED_PARAMETER(Queue);
-
 
     // 
     // Log write start event, using request as activity id.
@@ -322,7 +300,6 @@ EvtRequestWriteCompletionRoutine(
     __in WDFCONTEXT                  Context
     )
 /*++
-
 Routine Description:
 
     This is the completion routine for reads/writes
@@ -331,15 +308,10 @@ Routine Description:
     transfer.
 
 Arguments:
-
     Context - Driver supplied context
     Device - Device handle
     Request - Request handle
     Params - request completion params
-
-Return Value:
-    None
-
 --*/
 {
     NTSTATUS    status;

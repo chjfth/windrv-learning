@@ -1,25 +1,18 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Device.c
 
 Abstract:
-
     USB device driver for OSR USB-FX2 Learning Kit
 
 Environment:
-
     Kernel mode only
-
-
 --*/
 
 #include <osrusbfx2.h>
@@ -306,21 +299,16 @@ OsrFxEvtDevicePrepareHardware(
     WDFCMRESLIST ResourceListTranslated
     )
 /*++
-
 Routine Description:
-
     In this callback, the driver does whatever is necessary to make the
     hardware ready to use.  In the case of a USB device, this involves
     reading and selecting descriptors.
 
 Arguments:
-
     Device - handle to a device
 
 Return Value:
-
     NT status value
-
 --*/
 {
     NTSTATUS                            status;
@@ -832,6 +820,4 @@ Updated Routine Description:
         return "UnKnown Device Power State";
     }
 }
-
-
 
