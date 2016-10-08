@@ -197,21 +197,12 @@ TraceEvents (
     __in PCSTR DebugMessage,
     ...
     )
-
 /*++
-
 Routine Description:
-
     Debug print for the sample driver.
 
 Arguments:
-
-    TraceEventsLevel - print level between 0 and 3, with 3 the most verbose
-
-Return Value:
-
-    None.
-
+    TraceEventsLevel - print level between 0 and 4, with 4 the most verbose
  --*/
  {
 #if DBG
@@ -223,7 +214,6 @@ Return Value:
     va_start(list, DebugMessage);
 
     if (DebugMessage) {
-
         //
         // Using new safe string functions instead of _vsnprintf.
         // This function takes care of NULL terminating if the message
@@ -234,13 +224,13 @@ Return Value:
                                       DebugMessage,
                                       list );
         if(!NT_SUCCESS(status)) {
-
             DbgPrint (_DRIVER_NAME_": RtlStringCbVPrintfA failed 0x%x\n", status);
             return;
         }
         if (DebugPrintLevel <= TRACE_LEVEL_ERROR ||
             (DebugPrintLevel <= DebugLevel &&
-             ((DebugPrintFlag & DebugFlag) == DebugPrintFlag))) {
+             ((DebugPrintFlag & DebugFlag) == DebugPrintFlag))) 
+		{
             DbgPrint("%s %s", _DRIVER_NAME_, debugMessageBuffer);
         }
     }

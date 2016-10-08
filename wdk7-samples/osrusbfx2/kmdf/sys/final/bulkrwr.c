@@ -391,26 +391,23 @@ OsrFxEvtIoStop(
     __in ULONG            ActionFlags
     )
 /*++
-
 Routine Description:
-
-    This callback is invoked on every inflight request when the device
-    is suspended or removed. Since our inflight read and write requests
-    are actually pending in the target device, we will just acknowledge
-    its presence. Until we acknowledge, complete, or requeue the requests
-    framework will wait before allowing the device suspend or remove to
-    proceed. When the underlying USB stack gets the request to suspend or
+    This callback is invoked on every inflight request when the device is suspended or removed. 
+	Since our inflight read and write requests are actually pending in the target device, 
+	we will just acknowledge its presence. 
+	
+	Until we acknowledge, complete, or requeue the requests
+    framework will wait before allowing the device suspend or remove to proceed. 
+	
+	When the underlying USB stack gets the request to suspend or
     remove, it will fail all the pending requests.
-
-Arguments:
-
-Return Value:
-    None
-
 --*/
 {
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(ActionFlags);
+
+	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP,
+		"- OsrFxEvtIoStop() called, request=0x%p\n", Request);
 
     if (ActionFlags &  WdfRequestStopActionSuspend ) {
         WdfRequestStopAcknowledge(Request, FALSE); // Don't requeue
