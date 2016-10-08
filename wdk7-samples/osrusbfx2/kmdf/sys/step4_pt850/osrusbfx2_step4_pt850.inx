@@ -9,7 +9,7 @@
 ;
 ;Module Name:
 ;
-;    OSRUSBFX2.INF
+;    osrusbfx2_step4_pt850.inx
 ;
 ;Abstract:
 ;    Installation inf for OSR USB-FX2 Learning Kit
@@ -113,8 +113,8 @@ KmdfLibraryVersion = $KMDFVERSION$
 MSFT="MicrosoftDemo(OSR USB FX2 step4 PT850)"
 MfgName="OSR"
 Disk_Description="OSRUSBFX2 Installation Disk"
-USB\VID_1EAB&PID_0501.DeviceDesc="WDF Sample Driver for OSR USB-FX2 Learning Kit (PT850 mod)"
-osrusbfx2.SvcDesc="WDF Sample Driver for OSR USB-FX2 Learning Kit"
+USB\VID_1EAB&PID_0501.DeviceDesc="WDF Sample Driver for OSR USB-FX2 (PT850 mod)"
+osrusbfx2.SvcDesc="WDF Sample Driver for OSR USB-FX2 (PT850 mod)"
 ClassName       = "Sample Device"
 Switch.DeviceDesc = "OsrUsbFX2 RawPdo For Switch"
 SPSVCINST_ASSOCSERVICE= 0x00000002
