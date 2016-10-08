@@ -186,7 +186,7 @@ Return Value:
                     "Number of bytes read: %I64d\n", (INT64)bytesRead);
     } else {
         TraceEvents(TRACE_LEVEL_ERROR, DBG_READ,
-            "Read failed - request status 0x%x UsbdStatus 0x%x\n",
+            "Read failed - request status 0x%x, UsbdStatus 0x%x\n",
                 status, usbCompletionParams->UsbdStatus);
 
     }
