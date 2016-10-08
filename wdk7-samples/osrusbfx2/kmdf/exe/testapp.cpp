@@ -287,7 +287,7 @@ Usage()
 Routine Description:
 
     Called by main() to dump usage info to the console when
-    the app is called with no parms or with an invalid parm
+    the app is called with no params or with an invalid param
 
 Arguments:
 
@@ -1088,7 +1088,7 @@ Return Value:
     Parse(argc, argv );
 
     //
-    // dump USB configuation and pipe info
+    // dump USB configuaration and pipe info
     //
     if (G_fDumpUsbConfig) {
         DumpUsbConfig();
@@ -1119,7 +1119,7 @@ Return Value:
         }
 
         //
-        // Use this thread for peforming write.
+        // Use this thread for performing write.
         //
         AsyncIo((PVOID)WRITER_TYPE);
 

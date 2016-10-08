@@ -1,25 +1,21 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Driver.c
 
 Abstract:
-
     Main module.
 
     This driver is for Open System Resources USB-FX2 Learning Kit designed
     and built by OSR specifically for use in teaching software developers how to write
     drivers for USB devices.
 
-    The board supports a single configuration. The board automatically
+    The board supports a single [USB]configuration. The board automatically
     detects the speed of the host controller, and supplies either the
     high or full speed configuration based on the host controller's speed.
 
@@ -27,7 +23,7 @@ Abstract:
 
     Endpoint number 1 is used to indicate the state of the 8-switch
     switch-pack on the OSR USB-FX2 board. A single byte representing
-    the switch state is sent (a) when the board is first stated,
+    the switch state is sent (a) when the board is first started,
     (b) when the board resumes after selective-suspend,
     (c) whenever the state of the switches is changed.
 
@@ -40,9 +36,7 @@ Abstract:
     Vendor ID of the device is 0x4705 and Product ID is 0x210.
 
 Environment:
-
     Kernel mode only
-
 --*/
 
 #include <osrusbfx2.h>
@@ -75,7 +69,6 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
     DriverEntry initializes the driver and is the first routine called by the
     system after the driver is loaded.
@@ -93,10 +86,8 @@ Parameters Description:
     reboots. The path does not store hardware instance specific data.
 
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     WDF_DRIVER_CONFIG       config;
@@ -120,7 +111,7 @@ Return Value:
     EventRegisterOSRUSBFX2();
 
     //
-    // Initiialize driver config to control the attributes that
+    // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If you create any resources
     // in the DriverEntry and want to be cleaned in driver unload,
@@ -177,18 +168,11 @@ OsrFxEvtDriverContextCleanup(
     )
 /*++
 Routine Description:
-
     Free resources allocated in DriverEntry that are automatically
     cleaned up framework.
 
 Arguments:
-
     Driver - handle to a WDF Driver object.
-
-Return Value:
-
-    VOID.
-
 --*/
 {
     PAGED_CODE ();
