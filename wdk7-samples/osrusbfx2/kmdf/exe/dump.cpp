@@ -31,7 +31,7 @@ Environment:
 #pragma warning(disable:4214)  // bit field types other than int
 
 #include <basetyps.h>
-#include "usbdi.h"
+#include <usbdi.h>
 #include "public.h"
 
 #pragma warning(default:4200)

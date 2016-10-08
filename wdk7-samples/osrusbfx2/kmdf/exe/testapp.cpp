@@ -1147,7 +1147,7 @@ Return Value:
                 goto exit;
             }
 
-            pinBuf = malloc(G_ReadLen);
+            pinBuf = (char*)malloc(G_ReadLen);
         }
 
         if (G_fWrite) {
@@ -1166,7 +1166,7 @@ Return Value:
                goto exit;
             }
 
-            poutBuf = malloc(G_WriteLen);
+            poutBuf = (char*)malloc(G_WriteLen);
         }
 
         for (i = 0; i < G_IterationCount; i++) {

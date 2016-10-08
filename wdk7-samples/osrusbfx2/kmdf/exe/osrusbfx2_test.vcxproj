@@ -19,8 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="testapp.c" />
-    <ClCompile Include="dump.c" />
+    <ClCompile Include="testapp.cpp" />
+    <ClCompile Include="dump.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="testapp.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AAE14642-CB46-449B-B30F-201610080011}</ProjectGuid>
