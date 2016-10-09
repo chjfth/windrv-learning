@@ -33,7 +33,7 @@ Abstract:
     For further information on the endpoints, please refer to the spec
     http://www.osronline.com/hardware/OSRFX2_32.pdf.
 
-    Vendor ID of the device is 0x4705 and Product ID is 0x210.
+    Vendor ID of the device is *0x0547* and Product ID is *0x1002*.
 
 Environment:
     Kernel mode only
