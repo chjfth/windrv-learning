@@ -63,6 +63,10 @@ Return Value:
         return status;
     }
 
+	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP,
+		"OsrFxConfigContReaderForInterruptEndPoint success.\n",
+		status);
+
     return status;
 }
 
