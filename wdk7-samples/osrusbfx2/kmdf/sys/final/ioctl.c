@@ -1,24 +1,18 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Ioctl.c
 
 Abstract:
-
     USB device driver for OSR USB-FX2 Learning Kit
 
 Environment:
-
     Kernel mode only
-
 --*/
 
 #include <osrusbfx2.h>
@@ -47,9 +41,7 @@ OsrFxEvtIoDeviceControl(
     __in ULONG      IoControlCode    
     )
 /*++
-
 Routine Description:
-
     This event is called when the framework receives IRP_MJ_DEVICE_CONTROL
     requests from the system.
 
@@ -66,10 +58,6 @@ Arguments:
 
     IoControlCode - the driver-defined or system-defined I/O control code
                     (IOCTL) that is associated with the request.
-Return Value:
-
-    VOID
-
 --*/
 {
     WDFDEVICE           device;
@@ -308,7 +296,6 @@ Return Value:
         break;
 
     case IOCTL_OSRUSBFX2_GET_INTERRUPT_MESSAGE:
-
         //
         // Forward the request to an interrupt message queue and dont complete
         // the request until an interrupt from the USB device occurs.
@@ -758,9 +745,7 @@ GetSevenSegmentState(
     __out PUCHAR SevenSegment
     )
 /*++
-
 Routine Description
-
     This routine gets the state of the 7 segment display on the board
     by sending a synchronous control command.
 
@@ -772,13 +757,10 @@ Routine Description
           completes immediately b) and for demonstration.
 
 Arguments:
-
     DevContext - One of our device extensions
 
 Return Value:
-
     NT status value
-
 --*/
 {
     NTSTATUS status;
@@ -837,9 +819,7 @@ Return Value:
     }
 
     TraceEvents(TRACE_LEVEL_VERBOSE, DBG_IOCTL, "GetSetSevenSegmentState: Exit\n");
-
     return status;
-
 }
 
 __drv_requiresIRQL(PASSIVE_LEVEL)
@@ -849,19 +829,14 @@ SetSevenSegmentState(
     __in PUCHAR SevenSegment
     )
 /*++
-
 Routine Description
-
     This routine sets the state of the 7 segment display on the board
 
 Arguments:
-
     DevContext - One of our device extensions
 
 Return Value:
-
     NT status value
-
 --*/
 {
     NTSTATUS status;

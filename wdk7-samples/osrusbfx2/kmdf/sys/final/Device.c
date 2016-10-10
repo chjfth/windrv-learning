@@ -92,7 +92,6 @@ Return Value:
     // These two callbacks start and stop the wdfusb pipe continuous reader
     // as we go in and out of the D0-working state.
     //
-
     pnpPowerCallbacks.EvtDeviceD0Entry = OsrFxEvtDeviceD0Entry;
     pnpPowerCallbacks.EvtDeviceD0Exit  = OsrFxEvtDeviceD0Exit;
 
@@ -408,9 +407,7 @@ OsrFxEvtDeviceD0Entry(
     WDF_POWER_DEVICE_STATE PreviousState
     )
 /*++
-
 Routine Description:
-
     EvtDeviceD0Entry event callback must perform any operations that are
     necessary before the specified device is used.  It will be called every
     time the hardware needs to be (re-)initialized.
@@ -421,24 +418,20 @@ Routine Description:
     the fast resume behavior because the client driver will have to wait
     until the system drivers can service this page fault.
 
-    This function runs at PASSIVE_LEVEL, even though it is not paged.  A
-    driver can optionally make this function pageable if DO_POWER_PAGABLE
+    This function runs at *PASSIVE_LEVEL*, *even though* it is not paged. 
+    A driver can optionally make this function pageable if DO_POWER_PAGABLE
     is set.  Even if DO_POWER_PAGABLE isn't set, this function still runs
     at PASSIVE_LEVEL.  In this case, though, the function absolutely must
-    not do anything that will cause a page fault.
+    not do anything that will cause a page fault. // Chj: 注释有错吧! PASSIVE_LEVEL 的代码为什么不能 cause page fault?
 
 Arguments:
-
     Device - Handle to a framework device object.
-
     PreviousState - Device power state which the device was in most recently.
         If the device is being newly started, this will be
         PowerDeviceUnspecified.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     PDEVICE_CONTEXT         pDeviceContext;
@@ -464,16 +457,13 @@ OsrFxEvtDeviceD0Exit(
     WDF_POWER_DEVICE_STATE TargetState
     )
 /*++
-
 Routine Description:
-
-    This routine undoes anything done in EvtDeviceD0Entry.  It is called
+    This routine undo anything done in EvtDeviceD0Entry.  It is called
     whenever the device leaves the D0 state, which happens when the device is
     stopped, when it is removed, and when it is powered off.
 
     The device is still in D0 when this callback is invoked, which means that
     the driver can still touch hardware in this routine.
-
 
     EvtDeviceD0Exit event callback must perform any operations that are
     necessary before the specified device is moved out of the D0 state.  If the
@@ -488,21 +478,16 @@ Routine Description:
     anything that will cause a page fault.
 
 Arguments:
-
     Device - Handle to a framework device object.
-
     TargetState - Device power state which the device will be put in once this
         callback is complete.
 
 Return Value:
-
     Success implies that the device can be used.  Failure will result in the
     device stack being torn down.
-
 --*/
 {
     PDEVICE_CONTEXT         pDeviceContext;
-
     PAGED_CODE();
 
     TraceEvents(TRACE_LEVEL_INFORMATION, DBG_POWER,
@@ -691,18 +676,10 @@ GetDeviceEventLoggingNames(
     __in WDFDEVICE Device
     )
 /*++
-
 Routine Description:
 
     Retrieve the friendly name and the location string into WDFMEMORY objects
     and store them in the device context.
-
-Arguments:
-
-Return Value:
-
-    NT status
-
 --*/
 {
     PDEVICE_CONTEXT pDevContext = GetDeviceContext(Device);
@@ -785,10 +762,8 @@ DbgDevicePowerString(
     __in WDF_POWER_DEVICE_STATE Type
     )
 /*++
-
 Updated Routine Description:
     DbgDevicePowerString does not change in this stage of the function driver.
-
 --*/
 {
     switch (Type)

@@ -90,9 +90,6 @@ Arguments:
              can take an additional reference.
 
     Context - Provided in the WDF_USB_CONTINUOUS_READER_CONFIG_INIT macro
-
-Return Value:
-    NT status value
 --*/
 {
     PUCHAR          switchState = NULL;
@@ -127,17 +124,17 @@ Return Value:
     pDeviceContext->CurrentSwitchState = *switchState;
 
     //
-    // Handle any pending Interrupt Message IOCTLs. Note that the OSR USB device
-    // will generate an interrupt message when the the device resumes from a low
-    // power state. So if the Interrupt Message IOCTL was sent after the device
+    // Handle(=Complete) any pending Interrupt Message IOCTLs. 
+	// Note that the OSR USB device will generate an interrupt message(=endpoint 1 data) 
+	// when the the device resumes from a low power state. 
+    // So %if% the Interrupt Message IOCTL was sent after the device           // 操, 什么 %if%? 在 USB Resume 后故意从 EP1 送出上一个字节, 这明明就是 FX2 固件的行为嘛!
     // has gone to a low power state, the pending Interrupt Message IOCTL will
     // get completed in the function call below, before the user twiddles the
     // dip switches on the OSR USB device. If this is not the desired behavior
     // for your driver, then you could handle this condition by maintaining a
     // state variable on D0Entry to track interrupt messages caused by power up.
-    //
+    // --这段话的意思我看懂了, 虽然表达很含糊.
     OsrUsbIoctlGetInterruptMessage(device);
-
 }
 
 
