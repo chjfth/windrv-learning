@@ -566,20 +566,15 @@ SelectInterfaces(
     __in WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     This helper routine selects the configuration, interface and
     creates a context for every pipe (end point) in that interface.
 
 Arguments:
-
     Device - Handle to a framework device
 
 Return Value:
-
     NT status value
-
 --*/
 {
     WDF_USB_DEVICE_SELECT_CONFIG_PARAMS configParams;
@@ -614,10 +609,10 @@ Return Value:
             GUID activity = DeviceToActivityId(Device);
 
             TraceEvents(TRACE_LEVEL_ERROR, DBG_PNP,
-                            " On a 1.1 USB port on Windows Vista" 
+                            " On a 1.1 USB port on Windows" 
                             " this is expected as the OSR USB Fx2 board's Interrupt EndPoint descriptor" 
                             " doesn't conform to the USB specification. Windows Vista detects this and"
-                            " returns an error. \n"
+                            " returns an error. \n" // Q: 这个 error 是什么道理？
                             );
             EventWriteSelectConfigFailure(
                 &activity,
@@ -626,7 +621,6 @@ Return Value:
                 status
                 );
         }
-        
         return status;
     }
 
@@ -639,8 +633,8 @@ Return Value:
     //
     // Get pipe handles
     //
-    for(index=0; index < numberConfiguredPipes; index++) {
-
+    for(index=0; index < numberConfiguredPipes; index++) 
+	{
         WDF_USB_PIPE_INFORMATION_INIT(&pipeInfo);
 
         pipe = WdfUsbInterfaceGetConfiguredPipe(
@@ -673,19 +667,18 @@ Return Value:
                     "BulkOutput Pipe is 0x%p\n", pipe);
             pDeviceContext->BulkWritePipe = pipe;
         }
-
     }
 
     //
     // If we didn't find all the 3 pipes, fail the start.
     //
     if(!(pDeviceContext->BulkWritePipe
-            && pDeviceContext->BulkReadPipe && pDeviceContext->InterruptPipe)) {
+            && pDeviceContext->BulkReadPipe && pDeviceContext->InterruptPipe)) 
+	{
         status = STATUS_INVALID_DEVICE_STATE;
         TraceEvents(TRACE_LEVEL_ERROR, DBG_PNP,
-                            "Device is not configured properly %!STATUS!\n",
-                            status);
-
+            "Device is not configured properly(claims improper endpoints) %!STATUS!\n",
+            status);
         return status;
     }
 

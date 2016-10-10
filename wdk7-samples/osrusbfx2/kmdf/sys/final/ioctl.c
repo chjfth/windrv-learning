@@ -290,12 +290,9 @@ Return Value:
 
         }
 
-        //
         // Call our routine to get the state of the switches
-        //
         status = GetSwitchState(pDevContext, switchState);
 
-        //
         // If successful, return the user their data
         //
         if (NT_SUCCESS(status)) {
@@ -931,19 +928,14 @@ GetSwitchState(
     __in PSWITCH_STATE SwitchState
     )
 /*++
-
 Routine Description
-
     This routine gets the state of the switches on the board
 
 Arguments:
-
     DevContext - One of our device extensions
 
 Return Value:
-
     NT status value
-
 --*/
 {
     NTSTATUS status;
@@ -997,9 +989,7 @@ Return Value:
     }
 
     TraceEvents(TRACE_LEVEL_VERBOSE, DBG_IOCTL, "<-- GetSwitchState\n");
-
     return status;
-
 }
 
 
@@ -1008,20 +998,15 @@ OsrUsbIoctlGetInterruptMessage(
     __in WDFDEVICE Device
     )
 /*++
-
 Routine Description
-
     This method handles the completion of the pended request for the IOCTL
     IOCTL_OSRUSBFX2_GET_INTERRUPT_MESSAGE.
 
 Arguments:
-
     Device - Handle to a framework device.
 
 Return Value:
-
     None.
-
 --*/
 {
     NTSTATUS            status;
@@ -1033,7 +1018,6 @@ Return Value:
     pDevContext = GetDeviceContext(Device);
 
     do {
-
         //
         // Check if there are any pending requests in the Interrupt Message Queue.
         // If a request is found then complete the pending request.
@@ -1065,7 +1049,7 @@ Return Value:
             status = STATUS_SUCCESS;
 
         } else if (status != STATUS_NO_MORE_ENTRIES) {
-            KdPrint(("WdfIoQueueRetrieveNextRequest status %08x\n", status));
+            KdPrint(("WdfIoQueueRetrieveNextRequest got error-status %08x\n", status));
         }
 
         request = NULL;
@@ -1073,7 +1057,6 @@ Return Value:
     } while (status == STATUS_SUCCESS);
 
     return;
-
 }
 
 

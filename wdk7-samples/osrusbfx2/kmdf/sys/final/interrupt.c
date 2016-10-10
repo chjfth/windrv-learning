@@ -1,25 +1,19 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     Interrupt.c
 
 Abstract:
-
     This modules has routines configure a continuous reader on an
     interrupt pipe to asynchronously read toggle switch states.
 
 Environment:
-
     Kernel mode
-
 --*/
 
 #include <osrusbfx2.h>
@@ -35,19 +29,14 @@ OsrFxConfigContReaderForInterruptEndPoint(
     __in PDEVICE_CONTEXT DeviceContext
     )
 /*++
-
 Routine Description:
-
     This routine configures a continuous reader on the
     interrupt endpoint. It's called from the PrepareHarware event.
 
 Arguments:
 
-
 Return Value:
-
     NT status value
-
 --*/
 {
     WDF_USB_CONTINUOUS_READER_CONFIG contReaderConfig;
@@ -59,10 +48,10 @@ Return Value:
                                           sizeof(UCHAR));   // TransferLength
     //
     // Reader requests are not posted to the target automatically.
-    // Driver must explictly call WdfIoTargetStart to kick start the
-    // reader.  In this sample, it's done in D0Entry.
-    // By defaut, framework queues two requests to the target
-    // endpoint. Driver can configure up to 10 requests with CONFIG macro.
+    // Driver must explicitly call WdfIoTargetStart to kick start the reader.
+    // In this sample, it's done in D0Entry.
+    // By default, framework queues two requests to the target endpoint. 
+    // Driver can configure up to 10 requests with CONFIG macro.
     //
     status = WdfUsbTargetPipeConfigContinuousReader(DeviceContext->InterruptPipe,
                                                     &contReaderConfig);
@@ -85,26 +74,21 @@ OsrFxEvtUsbInterruptPipeReadComplete(
     WDFCONTEXT  Context
     )
 /*++
-
 Routine Description:
-
-    This the completion routine of the continour reader. This can
-    called concurrently on multiprocessor system if there are
+    This the completion routine of the continuous reader. This can
+    called *concurrently* on multiprocessor system if there are
     more than one readers configured. So make sure to protect
     access to global resources.
 
 Arguments:
-
     Buffer - This buffer is freed when this call returns.
              If the driver wants to delay processing of the buffer, it
-             can take an additional referrence.
+             can take an additional reference.
 
     Context - Provided in the WDF_USB_CONTINUOUS_READER_CONFIG_INIT macro
 
 Return Value:
-
     NT status value
-
 --*/
 {
     PUCHAR          switchState = NULL;
@@ -124,12 +108,10 @@ Return Value:
     if (NumBytesTransferred == 0) {
         TraceEvents(TRACE_LEVEL_WARNING, DBG_INIT,
                     "OsrFxEvtUsbInterruptPipeReadComplete Zero length read "
-                    "occured on the Interrupt Pipe's Continuous Reader\n"
+                    "occurred on the Interrupt Pipe's Continuous Reader\n"
                     );
         return;
     }
-
-
     ASSERT(NumBytesTransferred == sizeof(UCHAR));
 
     switchState = WdfMemoryGetBuffer(Buffer, NULL);

@@ -53,7 +53,7 @@ Environment:
 //
 #include "driver.tmh"
 #else
-ULONG DebugLevel = TRACE_LEVEL_INFORMATION;
+ULONG DebugLevel = TRACE_LEVEL_VERBOSE;
 ULONG DebugFlag = 0xff;
 #endif
 
@@ -204,9 +204,10 @@ Routine Description:
 Arguments:
     TraceEventsLevel - print level between 0 and 4, with 4 the most verbose
  --*/
- {
+{
 #if DBG
 #define     TEMP_BUFFER_SIZE        1024
+	static int s_seq = 0;
     va_list    list;
     CHAR       debugMessageBuffer[TEMP_BUFFER_SIZE];
     NTSTATUS   status;
@@ -231,7 +232,7 @@ Arguments:
             (DebugPrintLevel <= DebugLevel &&
              ((DebugPrintFlag & DebugFlag) == DebugPrintFlag))) 
 		{
-            DbgPrint("%s %s", _DRIVER_NAME_, debugMessageBuffer);
+            DbgPrint("[%d]%s %s", ++s_seq, _DRIVER_NAME_, debugMessageBuffer);
         }
     }
     va_end(list);
