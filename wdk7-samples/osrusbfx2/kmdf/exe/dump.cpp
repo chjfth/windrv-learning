@@ -356,6 +356,40 @@ Return Value:
         );
 }
 
+const char * sorf(BOOL b)
+{
+	return b?"success":"fail";
+}
+
+void chj_DumpUsbConfig_confd0(HANDLE hDev) // chj test
+{
+	BOOL success;
+	DWORD retbytes=0;
+	char buf[256];
+	int arlimits[] = {2, 9, 10, sizeof(buf)};
+	int i;
+	printf("\n");
+
+	for(i=0; i<sizeof(arlimits)/sizeof(arlimits[0]); i++)
+	{
+		memset(buf, 0, sizeof(buf));
+
+		int obufsize_limit = arlimits[i];
+		printf("=== Chj: Get USB conf-descriptor, try buffer of %d bytes. ===\n", obufsize_limit);
+
+		success = DeviceIoControl(hDev,
+			IOCTL_OSRUSBFX2_GET_CONFIG_DESCRIPTOR,
+			NULL, 0, // input buffer
+			buf, obufsize_limit,
+			&retbytes,
+			NULL);
+		
+		if(success)
+			printf("  Result: success, retbytes=%d \n", retbytes);
+		else
+			printf("  Result: fail,    retbytes=%d, WinErr=%d\n", retbytes, GetLastError());
+	}
+}
 
 BOOL
 DumpUsbConfig()
@@ -386,8 +420,9 @@ Return Value:
         return FALSE;
     }
 
-    siz = sizeof(buf);
+	chj_DumpUsbConfig_confd0(hDev);
 
+    siz = sizeof(buf);
     success = DeviceIoControl(hDev,
                     IOCTL_OSRUSBFX2_GET_CONFIG_DESCRIPTOR,
                     buf,

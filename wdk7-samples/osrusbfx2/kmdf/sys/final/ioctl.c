@@ -84,9 +84,12 @@ Arguments:
     switch(IoControlCode) {
 
     case IOCTL_OSRUSBFX2_GET_CONFIG_DESCRIPTOR: {
-
-        PUSB_CONFIGURATION_DESCRIPTOR   configurationDescriptor = NULL;
-        USHORT                          requiredSize = 0;
+		unsigned char confd_all[1024];
+        PUSB_CONFIGURATION_DESCRIPTOR   configurationDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)confd_all;
+        USHORT                          size_confd_all = 0;
+		void *p_outputbuffer = NULL;
+		const size_t size_confd0 = sizeof(USB_CONFIGURATION_DESCRIPTOR);
+		size_t size_user_obuffer = 0;
 
         //
         // First get the size of the config descriptor
@@ -94,7 +97,7 @@ Arguments:
         status = WdfUsbTargetDeviceRetrieveConfigDescriptor(
                                     pDevContext->UsbDevice,
                                     NULL,
-                                    &requiredSize);
+                                    &size_confd_all);
 
         if (status != STATUS_BUFFER_TOO_SMALL) {
             TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
@@ -105,30 +108,57 @@ Arguments:
         //
         // Get the buffer - make sure the buffer is big enough
         //
-        status = WdfRequestRetrieveOutputBuffer(Request,
-                                        (size_t)requiredSize,  // MinimumRequired
-                                        &configurationDescriptor,
-                                        NULL);
+//         status = WdfRequestRetrieveOutputBuffer(Request,
+//                                         (size_t)requiredSize,  // MinimumRequired
+//                                         &configurationDescriptor,
+//                                         NULL);
+		// Chj: modified the code to allow return only standalone-device-descriptor(only 9 bytes required).
+
+		status = WdfRequestRetrieveOutputBuffer(Request, 1, &p_outputbuffer, &size_user_obuffer);
         if(!NT_SUCCESS(status)){
             TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
-                "WdfRequestRetrieveInputBuffer failed 0x%x\n", status);
+                "WdfRequestRetrieveOutputBuffer failed 0x%x (first-try)!\n", status);
             break;
         }
 
         status = WdfUsbTargetDeviceRetrieveConfigDescriptor(
                                         pDevContext->UsbDevice,
                                         configurationDescriptor,
-                                        &requiredSize);
+                                        &size_confd_all);
         if (!NT_SUCCESS(status)) {
             TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
-                "WdfUsbTargetDeviceRetrieveConfigDescriptor failed 0x%x\n", status);
+                "WdfUsbTargetDeviceRetrieveConfigDescriptor failed 0x%x (Unexpect!)\n", status);
             break;
         }
 
-        bytesReturned = requiredSize;
+		if(size_user_obuffer<size_confd0) {
+			TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
+				"WdfRequestRetrieveOutputBuffer failed, user buffer<%d (not enough for a standalone-device-descriptor)!\n", size_confd0);
 
-        }
+			if(size_user_obuffer>0)
+				*(unsigned char*)p_outputbuffer = confd_all[0];
+
+			bytesReturned = 1; 
+				// [Win7] Actually, when Windows sees you return STATUS_BUFFER_TOO_SMALL, 
+				// it will always report *lpBytesReturned=0 to the app-layer caller.
+
+			status = STATUS_BUFFER_TOO_SMALL;
+		}
+		else if(size_user_obuffer<size_confd_all) {
+			// can only return standalone-device-descriptor(9 bytes)
+			memcpy(p_outputbuffer, confd_all, size_confd0);
+			bytesReturned = size_confd0;
+			status = STATUS_BUFFER_OVERFLOW;
+		}
+		else {
+			// return all device-descriptor cluster 
+			memcpy(p_outputbuffer, confd_all, size_confd_all);
+			bytesReturned = size_confd_all;
+			status = STATUS_SUCCESS;
+		}
+
         break;
+		} // case
 
     case IOCTL_OSRUSBFX2_RESET_DEVICE:
 
@@ -136,10 +166,8 @@ Arguments:
         break;
 
     case IOCTL_OSRUSBFX2_REENUMERATE_DEVICE:
-
         //
-        // Otherwise, call our function to reenumerate the
-        //  device
+        // call our function to reenumerate the  device
         //
         status = ReenumerateDevice(pDevContext);
 
@@ -147,7 +175,6 @@ Arguments:
         break;
 
     case IOCTL_OSRUSBFX2_GET_BAR_GRAPH_DISPLAY:
-
         //
         // Make sure the caller's output buffer is large enough
         //  to hold the state of the bar graph
