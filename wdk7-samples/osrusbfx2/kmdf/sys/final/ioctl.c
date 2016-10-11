@@ -256,13 +256,9 @@ Arguments:
         // If we succeeded return the user their data
         //
         if (NT_SUCCESS(status)) {
-
             bytesReturned = sizeof(UCHAR);
-
         } else {
-
             bytesReturned = 0;
-
         }
         break;
 
@@ -311,13 +307,9 @@ Arguments:
         // If successful, return the user their data
         //
         if (NT_SUCCESS(status)) {
-
             bytesReturned = sizeof(SWITCH_STATE);
-
         } else {
-            //
             // Don't return any data
-            //
             bytesReturned = 0;
         }
         break;
@@ -996,7 +988,7 @@ Return Value:
 
 
 VOID
-OsrUsbIoctlGetInterruptMessage(
+OsrUsbIoctlGetInterruptMessage( // Chj: better named: OsrUsb_WaitEp1_complete
     __in WDFDEVICE Device
     )
 /*++
