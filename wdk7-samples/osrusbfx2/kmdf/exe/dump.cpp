@@ -365,7 +365,7 @@ void chj_DumpUsbConfig_confd0(HANDLE hDev) // chj test
 {
 	BOOL success;
 	DWORD retbytes=0;
-	char buf[256];
+	char buf[64];
 	int arlimits[] = {2, 9, 10, sizeof(buf)};
 	int i;
 	printf("\n");
@@ -389,6 +389,20 @@ void chj_DumpUsbConfig_confd0(HANDLE hDev) // chj test
 		else
 			printf("  Result: fail,    retbytes=%d, WinErr=%d\n", retbytes, GetLastError());
 	}
+/*
+d:\ttest\fx2-final>osrusbfx2_test.exe  -u
+DeviceName = (\\?\usb#vid_0547&pid_1002#6&103465e1&0&1#{573e8c73-0cb4-4471-a1bf-fab26c31d384})
+Opened the device successfully.
+
+=== Chj: Get USB conf-descriptor, try buffer of 2 bytes. ===
+Result: fail,    retbytes=0, WinErr=122
+=== Chj: Get USB conf-descriptor, try buffer of 9 bytes. ===
+Result: fail,    retbytes=9, WinErr=234
+=== Chj: Get USB conf-descriptor, try buffer of 10 bytes. ===
+Result: fail,    retbytes=9, WinErr=234
+=== Chj: Get USB conf-descriptor, try buffer of 64 bytes. ===
+Result: success, retbytes=39
+*/
 }
 
 BOOL

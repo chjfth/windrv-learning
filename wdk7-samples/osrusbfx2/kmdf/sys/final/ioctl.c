@@ -136,11 +136,11 @@ Arguments:
 				"WdfRequestRetrieveOutputBuffer failed, user buffer<%d (not enough for a standalone-device-descriptor)!\n", size_confd0);
 
 			if(size_user_obuffer>0)
-				*(unsigned char*)p_outputbuffer = confd_all[0];
-
+				*(unsigned char*)p_outputbuffer = confd_all[0]; // no effect to app-layer caller
 			bytesReturned = 1; 
 				// [Win7] Actually, when Windows sees you return STATUS_BUFFER_TOO_SMALL, 
-				// it will always report *lpBytesReturned=0 to the app-layer caller.
+				// it will always report *lpBytesReturned=0 to the app-layer caller,
+				// and, data written to p_outputbuffer[] is also discarded(not seen by caller).
 
 			status = STATUS_BUFFER_TOO_SMALL;
 		}

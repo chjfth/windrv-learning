@@ -26,7 +26,7 @@ Environment:
 	// Chj: This needs a tweak to the generated fx2Events.h: 
 	//   Change PFN_WMIENTRY_CALLBACK's return type from LONG to NTSTATUS.
 	// I can't make the tweak permanent because fx2Events.h is re-generated on every Rebuild.
-	// so do the tweak when you really want to visualize NTSTATUS names.
+	// so do the tweak only temporarily when you really want to visualize NTSTATUS names.
 
 #pragma warning(disable:4200)  // nameless struct/union
 #pragma warning(disable:4201)  // nameless struct/union
