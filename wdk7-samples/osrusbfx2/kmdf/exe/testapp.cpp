@@ -1195,6 +1195,7 @@ Return Value:
                 }
                 printf("Write (%04.4d) : request %06.6d bytes -- %06.6d bytes written\n",
                         i, G_WriteLen, nBytesWrite);
+				Sleep(100); // chj test
 
                 assert(nBytesWrite == G_WriteLen);
             }
