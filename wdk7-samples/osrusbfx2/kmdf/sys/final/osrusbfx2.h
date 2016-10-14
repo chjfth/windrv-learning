@@ -127,6 +127,16 @@ typedef struct _DEVICE_CONTEXT {
     WDFMEMORY                       LocationMemory;
     PCWSTR                          Location;
 
+	// chj >>>
+	int my_milliseconds_before_idle;
+	int wdf_milliseconds_before_idle;
+	
+	WDFTIMER TimerToResumeIdle;
+	int isIdleStopped; // if set, will not recursively call WdfDeviceStopIdle.
+
+	WDFSPINLOCK spinlock;
+	// chj <<<
+
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_CONTEXT, GetDeviceContext)
@@ -151,6 +161,8 @@ EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL OsrFxEvtIoDeviceControl;
 EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestReadCompletionRoutine;
 
 EVT_WDF_REQUEST_COMPLETION_ROUTINE EvtRequestWriteCompletionRoutine;
+
+EVT_WDF_TIMER EvtTimer_ResumeIdle; // chj
 
 __drv_requiresIRQL(PASSIVE_LEVEL)
 NTSTATUS

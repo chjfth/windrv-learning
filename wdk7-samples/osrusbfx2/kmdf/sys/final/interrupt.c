@@ -95,6 +95,8 @@ Arguments:
     PUCHAR          switchState = NULL;
     WDFDEVICE       device;
     PDEVICE_CONTEXT pDeviceContext = Context;
+	NTSTATUS status;
+	BOOLEAN isok = 0, is_call_stopidle = FALSE;
 
     UNREFERENCED_PARAMETER(Pipe);
 
@@ -123,6 +125,32 @@ Arguments:
 
     pDeviceContext->CurrentSwitchState = *switchState;
 
+	// chj >>>
+	// TODO: sync with a spinlock.
+	WdfSpinLockAcquire(pDeviceContext->spinlock);
+	status = STATUS_SUCCESS;
+	if(!pDeviceContext->isIdleStopped)
+	{
+		pDeviceContext->isIdleStopped = TRUE;
+		status = WdfDeviceStopIdle(device, FALSE);
+		is_call_stopidle = TRUE;
+	}
+	WdfSpinLockRelease(pDeviceContext->spinlock);
+
+	if(is_call_stopidle)
+	{
+		if(NT_SUCCESS(status)) {
+			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() success(0x%x)\n", status);
+			// May show success with STATUS_PENDING(0x103), but no problem running on.
+		} else {
+			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() failed!(0x%x)\n", status);
+		}
+	}
+
+	isok = WdfTimerStart(pDeviceContext->TimerToResumeIdle, 
+		WDF_REL_TIMEOUT_IN_MS(pDeviceContext->my_milliseconds_before_idle));
+	// chj <<
+
     //
     // Handle(=Complete) any pending Interrupt Message IOCTLs. 
 	// Note that the OSR USB device will generate an interrupt message(=endpoint 1 data) 
@@ -137,4 +165,28 @@ Arguments:
     OsrUsbIoctlGetInterruptMessage(device);
 }
 
+
+VOID
+EvtTimer_ResumeIdle(WDFTIMER  timer)
+{
+	WDFDEVICE device = (WDFDEVICE)WdfTimerGetParentObject(timer);
+	PDEVICE_CONTEXT pDevContext = GetDeviceContext(device);
+
+	PAGED_CODE();
+
+	// TODO: sync with a spinlock.
+	WdfSpinLockAcquire(pDevContext->spinlock);
+
+	if(pDevContext->isIdleStopped==TRUE) // to be safe, imagining OsrFxEvtUsbInterruptPipeReadComplete() could be passive-level
+	{
+		WdfDeviceResumeIdle(device); // this reset's WDF's USB idle timer
+		pDevContext->isIdleStopped = FALSE;
+	}
+
+	WdfSpinLockRelease(pDevContext->spinlock);
+
+	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT,
+		"WdfDeviceResumeIdle() called. Tell WDF to restart counting %d millisec before idle.\n", 
+		pDevContext->wdf_milliseconds_before_idle);
+}
 

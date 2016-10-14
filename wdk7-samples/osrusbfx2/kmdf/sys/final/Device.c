@@ -124,6 +124,8 @@ Return Value:
     // the WDF_DECLARE_CONTEXT_TYPE_WITH_NAME macro for DEVICE_CONTEXT.
     //
     pDevContext = GetDeviceContext(device);
+	pDevContext->my_milliseconds_before_idle = 10000; 
+	pDevContext->wdf_milliseconds_before_idle = 5000; 
 
     //
     // Get the device's friendly name and location so that we can use it in 
@@ -261,6 +263,36 @@ Return Value:
             "WdfIoQueueCreate failed 0x%x\n", status);
         goto Error;
     }
+
+	// chj >>>
+	{{
+	WDF_TIMER_CONFIG timerconfig;
+	WDF_OBJECT_ATTRIBUTES objattr;
+	WDF_TIMER_CONFIG_INIT(&timerconfig, EvtTimer_ResumeIdle);
+	timerconfig.Period = 0; // need a non-periodic timer
+	timerconfig.AutomaticSerialization = TRUE;
+	WDF_OBJECT_ATTRIBUTES_INIT(&objattr);
+	objattr.ExecutionLevel = WdfExecutionLevelPassive; // explicitly request "passive-level"
+	objattr.ParentObject = device;
+	status = WdfTimerCreate(&timerconfig, &objattr, &pDevContext->TimerToResumeIdle);
+	if (!NT_SUCCESS(status)) {
+		TraceEvents(TRACE_LEVEL_ERROR, DBG_PNP,
+			"WdfTimerCreate() failed  %!STATUS!\n", status);
+		goto Error;
+	}
+	pDevContext->isIdleStopped = 0;
+
+	WDF_OBJECT_ATTRIBUTES_INIT(&objattr);
+	objattr.ParentObject = device;
+	status = WdfSpinLockCreate(&objattr, &pDevContext->spinlock);
+	if (!NT_SUCCESS(status)) {
+		TraceEvents(TRACE_LEVEL_ERROR, DBG_PNP,
+			"WdfSpinLockCreate() failed  %!STATUS!\n", status);
+		goto Error;
+	}
+	}}
+
+	// chj <<<
 
     //
     // Register a device interface so that app can find our device and talk to it.
@@ -513,6 +545,7 @@ OsrFxSetPowerPolicy(
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS idleSettings;
     WDF_DEVICE_POWER_POLICY_WAKE_SETTINGS wakeSettings;
     NTSTATUS    status = STATUS_SUCCESS;
+	PDEVICE_CONTEXT pDevContext = GetDeviceContext(Device);
 
     PAGED_CODE();
 
@@ -520,7 +553,7 @@ OsrFxSetPowerPolicy(
     // Init the idle policy structure.
     //
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleUsbSelectiveSuspend);
-    idleSettings.IdleTimeout = 10000; // 10-sec
+    idleSettings.IdleTimeout = pDevContext->wdf_milliseconds_before_idle;
 
     status = WdfDeviceAssignS0IdleSettings(Device, &idleSettings);
     if ( !NT_SUCCESS(status)) {
