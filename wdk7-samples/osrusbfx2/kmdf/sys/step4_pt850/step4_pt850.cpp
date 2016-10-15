@@ -210,6 +210,7 @@ EvtDevicePrepareHardware(
 	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
 	status = WdfDeviceAssignS0IdleSettings(Device, &idleSettings);
 	if (!NT_SUCCESS(status)) {
+		// typical: STATUS_POWER_STATE_INVALID(0x2d3)
 		KdPrint( ("WdfDeviceAssignS0IdleSettings failed 0x%x\n", status));
 		return status;
 	}
