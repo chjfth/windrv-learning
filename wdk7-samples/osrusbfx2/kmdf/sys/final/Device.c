@@ -444,17 +444,20 @@ Routine Description:
     necessary before the specified device is used.  It will be called every
     time the hardware needs to be (re-)initialized.
 
-    This function is not marked pageable because this function is in the
+    This function is *not* marked pageable because this function is in the
     device power up path. When a function is marked pagable and the code
     section is paged out, it will generate a page fault which could impact
     the fast resume behavior because the client driver will have to wait
     until the system drivers can service this page fault.
 
     This function runs at *PASSIVE_LEVEL*, *even though* it is not paged. 
-    A driver can optionally make this function pageable if DO_POWER_PAGABLE
-    is set.  Even if DO_POWER_PAGABLE isn't set, this function still runs
-    at PASSIVE_LEVEL.  In this case, though, the function absolutely must
-    not do anything that will cause a page fault. // Chj: 注释有错吧! PASSIVE_LEVEL 的代码为什么不能 cause page fault?
+    A driver can optionally make this function pageable if DO_POWER_PAGABLE is set.
+	.
+    Even if DO_POWER_PAGABLE isn't set, this function still runs
+    at PASSIVE_LEVEL.  In this case, though, the function absolutely _must_
+    not do anything that will cause a page fault. 
+	// Chj: 注释有错吧! PASSIVE_LEVEL 的代码为什么不能 cause page fault?
+	// 还是说，将 _must_ 改为 _should_ 更达意？
 
 Arguments:
     Device - Handle to a framework device object.
