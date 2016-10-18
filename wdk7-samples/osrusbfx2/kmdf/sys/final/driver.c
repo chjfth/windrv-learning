@@ -180,7 +180,7 @@ Arguments:
     UNREFERENCED_PARAMETER(Driver);
 
     TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT,
-                    "--> OsrFxEvtDriverContextCleanup\n");
+                    "In OsrFxEvtDriverContextCleanup()\n");
 
     WPP_CLEANUP( WdfDriverWdmGetDriverObject( Driver ));
     EventUnregisterOSRUSBFX2();
