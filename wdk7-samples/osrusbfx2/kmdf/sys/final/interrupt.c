@@ -179,6 +179,7 @@ OsrFxEvtUsbInterruptReadersFailed(
 {
 	WDFDEVICE device = WdfIoTargetGetDevice(WdfUsbTargetPipeGetIoTarget(Pipe));
 	PDEVICE_CONTEXT pDeviceContext = GetDeviceContext(device);
+	LARGE_INTEGER delay;
 
 	UNREFERENCED_PARAMETER(UsbdStatus);
 
@@ -195,7 +196,9 @@ OsrFxEvtUsbInterruptReadersFailed(
 	//
 	OsrUsbIoctlGetInterruptMessage(device, status);
 
-	return TRUE; // restart ctreader
+	delay.QuadPart = WDF_REL_TIMEOUT_IN_MS(10);
+	KeDelayExecutionThread(KernelMode, FALSE, &delay);
+	return TRUE; // try to restart ctreader
 }
 
 VOID

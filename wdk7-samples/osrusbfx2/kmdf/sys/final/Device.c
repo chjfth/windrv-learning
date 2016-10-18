@@ -123,6 +123,7 @@ Return Value:
     // interface and configure the device.
     //
     pnpPowerCallbacks.EvtDevicePrepareHardware = OsrFxEvtDevicePrepareHardware;
+	pnpPowerCallbacks.EvtDeviceReleaseHardware = OsrFxEvtDeviceReleaseHardware;
 
     //
     // These two callbacks start and stop the wdfusb pipe continuous reader
@@ -356,6 +357,20 @@ Error:
                             status);
 
     return status;
+}
+
+NTSTATUS // Chj add
+OsrFxEvtDeviceReleaseHardware(
+	WDFDEVICE device,
+	WDFCMRESLIST ResourceListTranslated
+	)
+{
+	PAGED_CODE();
+	UNREFERENCED_PARAMETER(ResourceListTranslated);
+
+	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP, "In OsrFxEvtDeviceReleaseHardware()\n");
+
+	OsrUsbIoctlGetInterruptMessage(device, STATUS_NO_SUCH_DEVICE);
 }
 
 NTSTATUS
