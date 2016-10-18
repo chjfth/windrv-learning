@@ -131,7 +131,8 @@ typedef struct _DEVICE_CONTEXT {
 	BOOLEAN DelayIdle;
 		// Chj new: If true, data arrival from continuous-reader will suppress idle.
 		// That is, every time our driver code gets data from OsrFxEvtUsbInterruptPipeReadComplete,
-		// we will restart the idle-timer. 
+		// we will restart our delay-timer. After the delay-timer expires, WDF idle timer 
+		// starts counting; after WDF idle timer expires, the device finally goes idle.
 		// This behavior can be configured by hwkey regitem DelayIdle(REG_DWORD)=1.
 
 	int DelayIdleMillisec;

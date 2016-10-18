@@ -232,7 +232,15 @@ Arguments:
             (DebugPrintLevel <= DebugLevel &&
              ((DebugPrintFlag & DebugFlag) == DebugPrintFlag))) 
 		{
-            DbgPrint("[%d]%s %s", ++s_seq, _DRIVER_NAME_, debugMessageBuffer);
+			LARGE_INTEGER jiff;
+			DWORD tail, tail1, tail2;
+			KeQuerySystemTime(&jiff);
+			tail = (DWORD)jiff.QuadPart/(1000*1000); // 0.1 second unit
+			tail1 = tail/10 % 100; // 0~99 seconds tail
+			tail2 = tail%10;       // 0.1 second tail
+
+            DbgPrint("[%d|%d.%d]%s %s", ++s_seq, tail1, tail2,
+				_DRIVER_NAME_, debugMessageBuffer);
         }
     }
     va_end(list);
