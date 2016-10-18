@@ -46,7 +46,9 @@ Return Value:
                                           OsrFxEvtUsbInterruptPipeReadComplete,
                                           DeviceContext,    // Context
                                           sizeof(UCHAR));   // TransferLength
-    //
+	contReaderConfig.EvtUsbTargetPipeReadersFailed = OsrFxEvtUsbInterruptReadersFailed; // WDK10 udpate
+	
+	//
     // Reader requests are not posted to the target automatically.
     // Driver must explicitly call WdfIoTargetStart to kick start the reader.
     // In this sample, it's done in D0Entry.
@@ -164,9 +166,37 @@ Arguments:
     // for your driver, then you could handle this condition by maintaining a
     // state variable on D0Entry to track interrupt messages caused by power up.
     // --这段话的意思我看懂了, 虽然表达很含糊.
-    OsrUsbIoctlGetInterruptMessage(device);
+    OsrUsbIoctlGetInterruptMessage(device, STATUS_SUCCESS);
 }
 
+
+BOOLEAN // from wdk10 update
+OsrFxEvtUsbInterruptReadersFailed(
+	__in WDFUSBPIPE Pipe,
+	__in NTSTATUS status,
+	__in USBD_STATUS UsbdStatus
+	)
+{
+	WDFDEVICE device = WdfIoTargetGetDevice(WdfUsbTargetPipeGetIoTarget(Pipe));
+	PDEVICE_CONTEXT pDeviceContext = GetDeviceContext(device);
+
+	UNREFERENCED_PARAMETER(UsbdStatus);
+
+	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, 
+		"Got OsrFxEvtUsbInterruptReadersFailed(). status=0x%x, UsbdStatus=0x%X\n", status, UsbdStatus);
+
+	//
+	// Clear the current switch state.
+	//
+	pDeviceContext->CurrentSwitchState = 0;
+
+	//
+	// Service the pending interrupt switch change request
+	//
+	OsrUsbIoctlGetInterruptMessage(device, status);
+
+	return TRUE; // restart ctreader
+}
 
 VOID
 EvtTimer_ResumeIdle(WDFTIMER  timer)

@@ -241,7 +241,8 @@ GetSwitchState(
 
 VOID
 OsrUsbIoctlGetInterruptMessage(
-    __in WDFDEVICE Device
+    __in WDFDEVICE Device,
+	__in NTSTATUS ReaderStatus
     );
 
 __drv_requiresIRQL(PASSIVE_LEVEL)
@@ -257,7 +258,6 @@ OsrFxConfigContReaderForInterruptEndPoint(
     );
 
 EVT_WDF_USB_READER_COMPLETION_ROUTINE OsrFxEvtUsbInterruptPipeReadComplete;
-
 EVT_WDF_USB_READERS_FAILED OsrFxEvtUsbInterruptReadersFailed;
 
 EVT_WDF_IO_QUEUE_IO_STOP OsrFxEvtIoStop;

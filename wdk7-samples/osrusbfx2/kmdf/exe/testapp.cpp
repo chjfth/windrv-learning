@@ -755,13 +755,13 @@ PlayWithDevice()
                              &switchState,           // Ptr to OutBuffer
                              sizeof(switchState),    // Length of OutBuffer
                              &index,                // BytesReturned
-                             0)) {                  // Ptr to Overlapped structure
-
+                             0))                    // Ptr to Overlapped structure
+		{
             code = GetLastError();
-
             printf("DeviceIoControl failed with error 0x%x\n", code);
 
-            goto Error;
+			// Chj: "break" out of "case" and user can try again. Don't quit EXE.
+            break; // goto Error; 
         }
 
         printf("Switches: %d\n",index);

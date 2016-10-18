@@ -999,7 +999,8 @@ Return Value:
 
 VOID
 OsrUsbIoctlGetInterruptMessage( // Chj: better named: OsrUsb_WaitEp1_complete
-    __in WDFDEVICE Device
+    __in WDFDEVICE Device,
+	__in NTSTATUS ReaderStatus // this new param is from wdk10 update.
     )
 /*++
 Routine Description
@@ -1008,9 +1009,6 @@ Routine Description
 
 Arguments:
     Device - Handle to a framework device.
-
-Return Value:
-    None.
 --*/
 {
     NTSTATUS            status;
@@ -1038,19 +1036,25 @@ Return Value:
 
                 TraceEvents(TRACE_LEVEL_ERROR, DBG_IOCTL,
                     "User's output buffer is too small for this IOCTL, expecting a SWITCH_STATE\n");
-                bytesReturned = sizeof(SWITCH_STATE);
+                bytesReturned = 0; // sizeof(SWITCH_STATE); // fix for WDK10 sample
 
             } else {
-
                 //
                 // Copy the state information saved by the continuous reader.
                 //
-                switchState->SwitchesAsUChar = pDevContext->CurrentSwitchState;
-                bytesReturned = sizeof(SWITCH_STATE);
+				if(NT_SUCCESS(ReaderStatus)) {
+					switchState->SwitchesAsUChar = pDevContext->CurrentSwitchState;
+					bytesReturned = sizeof(SWITCH_STATE);
+				} else {
+					bytesReturned = 0;
+				}
             }
 
-            WdfRequestCompleteWithInformation(request, status, bytesReturned);
-            status = STATUS_SUCCESS;
+            WdfRequestCompleteWithInformation(request, 
+				NT_SUCCESS(status) ? ReaderStatus : status, 
+				bytesReturned);
+
+            status = STATUS_SUCCESS; // to retrieve next wdfrequest from queue.
 
         } else if (status != STATUS_NO_MORE_ENTRIES) {
             KdPrint(("WdfIoQueueRetrieveNextRequest got error-status %08x\n", status));
