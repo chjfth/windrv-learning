@@ -165,5 +165,15 @@ typedef struct _SWITCH_STATE {
                                                     METHOD_OUT_DIRECT, \
                                                     FILE_READ_ACCESS)
 
+#define IOCTL_OSRUSBFX2_EnableDelayIdle CTL_CODE(FILE_DEVICE_OSRUSBFX2,\
+	IOCTL_INDEX + 12, \
+	METHOD_OUT_DIRECT, \
+	FILE_WRITE_ACCESS)
+
+#define IOCTL_OSRUSBFX2_DisableDelayIdle CTL_CODE(FILE_DEVICE_OSRUSBFX2,\
+	IOCTL_INDEX + 13, \
+	METHOD_OUT_DIRECT, \
+	FILE_WRITE_ACCESS)
+
 #endif
 

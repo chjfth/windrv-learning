@@ -133,7 +133,9 @@ typedef struct _DEVICE_CONTEXT {
 		// That is, every time our driver code gets data from OsrFxEvtUsbInterruptPipeReadComplete,
 		// we will restart our delay-timer. After the delay-timer expires, WDF idle timer 
 		// starts counting; after WDF idle timer expires, the device finally goes idle.
-		// This behavior can be configured by hwkey regitem DelayIdle(REG_DWORD)=1.
+		// This behavior can be configured by hwkey regitem DelayIdle(REG_DWORD)=1,
+		// or, control from osrusbfx2.exe with ioctl code
+		// IOCTL_OSRUSBFX2_EnableDelayIdle,IOCTL_OSRUSBFX2_DisableDelayIdle.
 
 	int DelayIdleMillisec;
 	int WdfIdleMillisec;

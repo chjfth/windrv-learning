@@ -323,8 +323,18 @@ Arguments:
         if (NT_SUCCESS(status)) {
             requestPending = TRUE;
         }
-
         break;
+
+	case IOCTL_OSRUSBFX2_EnableDelayIdle:
+		TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "== Ioctl Enable DelayIdle ==\n");
+		pDevContext->DelayIdle = TRUE;
+		status = STATUS_SUCCESS; bytesReturned = 0;
+		break;
+	case IOCTL_OSRUSBFX2_DisableDelayIdle:
+		TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "== Ioctl Disable DelayIdle ==\n");
+		pDevContext->DelayIdle = FALSE;
+		status = STATUS_SUCCESS; bytesReturned = 0;
+		break;
 
     default :
         status = STATUS_INVALID_DEVICE_REQUEST;

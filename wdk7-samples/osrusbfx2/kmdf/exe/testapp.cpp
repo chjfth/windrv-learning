@@ -81,6 +81,9 @@ typedef enum _INPUT_FUNCTION {
     SET_7_SEGEMENT_STATE,
     RESET_DEVICE,
     REENUMERATE_DEVICE,
+	
+	EnableDelayIdle, // chj
+	DisableDelayIdle,
 } INPUT_FUNCTION;
 
 #if defined(BUILT_IN_DDK)
@@ -508,18 +511,15 @@ PlayWithDevice()
     WHILE(TRUE)  {
 
         printf ("\nUSBFX TEST -- Functions:\n\n");
-        printf ("\t1.  Light Bar\n");
-        printf ("\t2.  Clear Bar\n");
-        printf ("\t3.  Light entire Bar graph\n");
-        printf ("\t4.  Clear entire Bar graph\n");
-        printf ("\t5.  Get bar graph state\n");
-        printf ("\t6.  Get Switch state\n");
-        printf ("\t7.  Get Switch Interrupt Message\n");
-        printf ("\t8.  Get 7 segment state\n");
-        printf ("\t9.  Set 7 segment state\n");
+        printf ("\t1. Light Bar               2. Clear Bar\n");
+        printf ("\t3. Light entire Bar graph  4. Clear entire Bar graph\n");
+        printf ("\t5. Get bar graph state\n");
+        printf ("\t6. Get Switch state        7. Get Switch Interrupt Message\n");
+        printf ("\t8. Get 7 segment state     9. Set 7 segment state\n");
         printf ("\t10. Reset the device\n");
         printf ("\t11. Reenumerate the device\n");
-        printf ("\n\t0. Exit\n");
+		printf ("\t12. Enable DelayIdle       13. Disable DelayIdle\n");
+        printf ("\t0. Exit\n");
         printf ("\n\tSelection: ");
 
         if (scanf_s ("%d", &function) <= 0) {
@@ -870,6 +870,17 @@ PlayWithDevice()
 
             goto Error;
         }
+
+		case EnableDelayIdle:
+		case DisableDelayIdle:
+			result = DeviceIoControl(deviceHandle, 
+				function==EnableDelayIdle ? IOCTL_OSRUSBFX2_EnableDelayIdle : IOCTL_OSRUSBFX2_DisableDelayIdle, 
+				NULL,0,NULL,0, &index, NULL); 
+			printf("%s %s.\n",
+				function==EnableDelayIdle ? "IOCTL_OSRUSBFX2_EnableDelayIdle" : "IOCTL_OSRUSBFX2_DisableDelayIdle", 
+				result ? "success" : "Fail(ioctl not support)"
+				);
+			break;
 
         //
         // Close the handle to the device and exit out so that
