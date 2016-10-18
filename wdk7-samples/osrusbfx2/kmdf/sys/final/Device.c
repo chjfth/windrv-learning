@@ -31,6 +31,47 @@ Environment:
 #pragma alloc_text(PAGE, GetDeviceEventLoggingNames)
 #endif
 
+void chjLoadDeviceSettings(WDFDEVICE device)
+{
+	NTSTATUS status = STATUS_SUCCESS;
+	PDEVICE_CONTEXT pDevContext = GetDeviceContext(device);
+	WDFKEY regkey;
+
+	status = WdfDeviceOpenRegistryKey(device, 
+		PLUGPLAY_REGKEY_DEVICE, 
+		STANDARD_RIGHTS_READ, // GENERIC_READ ok? // GENERIC_READ
+		NULL,
+		&regkey);
+	if(NT_SUCCESS(status))
+	{
+		ULONG DelayIdle = 0;
+		ULONG DelayIdleMillisec = 10000; // default
+		ULONG WdfIdleMillisec = 5000;    // default
+		DECLARE_CONST_UNICODE_STRING(usDelayIdle, L"DelayIdle");
+		DECLARE_CONST_UNICODE_STRING(usDelayIdleMillisec, L"DelayIdleMillisec");
+		DECLARE_CONST_UNICODE_STRING(usWdfIdleMillisec, L"WdfIdleMillisec");
+
+		WdfRegistryQueryULong(regkey, &usDelayIdle, &DelayIdle);
+		WdfRegistryQueryULong(regkey, &usDelayIdleMillisec, &DelayIdleMillisec);
+		WdfRegistryQueryULong(regkey, &usWdfIdleMillisec, &WdfIdleMillisec);
+
+		pDevContext->DelayIdle = DelayIdle;
+		pDevContext->DelayIdleMillisec = DelayIdleMillisec;
+		pDevContext->WdfIdleMillisec = WdfIdleMillisec;
+
+		if(pDevContext->DelayIdle) {
+			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP, 
+				"CtReader delay idle: %d millisec\n", pDevContext->DelayIdleMillisec);
+		} else {
+			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP, 
+				"CtReader delay idle: No.\n");
+		}
+		TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP, 
+			"CtReader WDF idle: %d millisec\n", pDevContext->WdfIdleMillisec);
+
+		WdfObjectDelete(regkey);
+	}
+}
 
 NTSTATUS
 OsrFxEvtDeviceAdd(
@@ -39,22 +80,17 @@ OsrFxEvtDeviceAdd(
     )
 /*++
 Routine Description:
-
     EvtDeviceAdd is called by the framework in response to AddDevice
     call from the PnP manager. We create and initialize a device object to
     represent a new instance of the device. All the software resources
     should be allocated in this callback.
 
 Arguments:
-
     Driver - Handle to a framework driver object created in DriverEntry
-
     DeviceInit - Pointer to a framework-allocated WDFDEVICE_INIT structure.
 
 Return Value:
-
     NTSTATUS
-
 --*/
 {
     WDF_PNPPOWER_EVENT_CALLBACKS        pnpPowerCallbacks;
@@ -124,8 +160,7 @@ Return Value:
     // the WDF_DECLARE_CONTEXT_TYPE_WITH_NAME macro for DEVICE_CONTEXT.
     //
     pDevContext = GetDeviceContext(device);
-	pDevContext->my_milliseconds_before_idle = 10000; 
-	pDevContext->wdf_milliseconds_before_idle = 5000; 
+	chjLoadDeviceSettings(device);
 
     //
     // Get the device's friendly name and location so that we can use it in 
@@ -556,7 +591,7 @@ OsrFxSetPowerPolicy(
     // Init the idle policy structure.
     //
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleUsbSelectiveSuspend);
-    idleSettings.IdleTimeout = pDevContext->wdf_milliseconds_before_idle;
+    idleSettings.IdleTimeout = pDevContext->WdfIdleMillisec;
 
     status = WdfDeviceAssignS0IdleSettings(Device, &idleSettings);
     if ( !NT_SUCCESS(status)) {

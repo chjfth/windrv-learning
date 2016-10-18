@@ -126,29 +126,31 @@ Arguments:
     pDeviceContext->CurrentSwitchState = *switchState;
 
 	// chj >>>
-	// TODO: sync with a spinlock.
-	WdfSpinLockAcquire(pDeviceContext->spinlock);
-	status = STATUS_SUCCESS;
-	if(!pDeviceContext->isIdleStopped)
+	if(pDeviceContext->DelayIdle)
 	{
-		pDeviceContext->isIdleStopped = TRUE;
-		status = WdfDeviceStopIdle(device, FALSE);
-		is_call_stopidle = TRUE;
-	}
-	WdfSpinLockRelease(pDeviceContext->spinlock);
-
-	if(is_call_stopidle)
-	{
-		if(NT_SUCCESS(status)) {
-			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() success(0x%x)\n", status);
-			// May show success with STATUS_PENDING(0x103), but no problem running on.
-		} else {
-			TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() failed!(0x%x)\n", status);
+		WdfSpinLockAcquire(pDeviceContext->spinlock); // sync with a spinlock.
+		status = STATUS_SUCCESS;
+		if(!pDeviceContext->isIdleStopped)
+		{
+			pDeviceContext->isIdleStopped = TRUE;
+			status = WdfDeviceStopIdle(device, FALSE);
+			is_call_stopidle = TRUE;
 		}
-	}
+		WdfSpinLockRelease(pDeviceContext->spinlock);
 
-	isok = WdfTimerStart(pDeviceContext->TimerToResumeIdle, 
-		WDF_REL_TIMEOUT_IN_MS(pDeviceContext->my_milliseconds_before_idle));
+		if(is_call_stopidle)
+		{
+			if(NT_SUCCESS(status)) {
+				TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() success(0x%x)\n", status);
+				// May show success with STATUS_PENDING(0x103), but no problem running on.
+			} else {
+				TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT, "WdfDeviceStopIdle() failed!(0x%x)\n", status);
+			}
+		}
+
+		isok = WdfTimerStart(pDeviceContext->TimerToResumeIdle, 
+			WDF_REL_TIMEOUT_IN_MS(pDeviceContext->DelayIdleMillisec));
+	}
 	// chj <<
 
     //
@@ -187,6 +189,6 @@ EvtTimer_ResumeIdle(WDFTIMER  timer)
 
 	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_INIT,
 		"WdfDeviceResumeIdle() called. Tell WDF to restart counting %d millisec before idle.\n", 
-		pDevContext->wdf_milliseconds_before_idle);
+		pDevContext->WdfIdleMillisec);
 }
 

@@ -128,8 +128,15 @@ typedef struct _DEVICE_CONTEXT {
     PCWSTR                          Location;
 
 	// chj >>>
-	int my_milliseconds_before_idle;
-	int wdf_milliseconds_before_idle;
+	BOOLEAN DelayIdle;
+		// Chj new: If true, data arrival from continuous-reader will suppress idle.
+		// That is, every time our driver code gets data from OsrFxEvtUsbInterruptPipeReadComplete,
+		// we will restart the idle-timer. 
+		// This behavior can be configured by hwkey regitem DelayIdle(REG_DWORD)=1.
+
+	int DelayIdleMillisec;
+	int WdfIdleMillisec;
+		// These two can be configured from hwkey regitem as well.
 	
 	WDFTIMER TimerToResumeIdle;
 	int isIdleStopped; // if set, will not recursively call WdfDeviceStopIdle.
