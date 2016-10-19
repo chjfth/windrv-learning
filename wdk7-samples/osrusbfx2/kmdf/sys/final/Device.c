@@ -371,6 +371,7 @@ OsrFxEvtDeviceReleaseHardware(
 	TraceEvents(TRACE_LEVEL_INFORMATION, DBG_PNP, "In OsrFxEvtDeviceReleaseHardware()\n");
 
 	OsrUsbIoctlGetInterruptMessage(device, STATUS_NO_SUCH_DEVICE);
+	return STATUS_SUCCESS;
 }
 
 NTSTATUS
@@ -858,7 +859,7 @@ Updated Routine Description:
         return "WdfPowerDeviceInvalid";
     case WdfPowerDeviceD0:
         return "WdfPowerDeviceD0";
-    case PowerDeviceD1:
+    case WdfPowerDeviceD1:
         return "WdfPowerDeviceD1";
     case WdfPowerDeviceD2:
         return "WdfPowerDeviceD2";
@@ -869,7 +870,7 @@ Updated Routine Description:
     case WdfPowerDevicePrepareForHibernation:
         return "WdfPowerDevicePrepareForHibernation";
     case WdfPowerDeviceMaximum:
-        return "PowerDeviceMaximum";
+        return "WdfPowerDeviceMaximum";
     default:
         return "UnKnown Device Power State";
     }
