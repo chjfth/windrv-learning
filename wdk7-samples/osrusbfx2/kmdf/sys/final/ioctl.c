@@ -352,27 +352,21 @@ Arguments:
 
 __drv_requiresIRQL(PASSIVE_LEVEL)
 NTSTATUS
-ResetPipe(
-    __in WDFUSBPIPE             Pipe
+ResetPipe(                // not used in this program
+    __in WDFUSBPIPE Pipe
     )
 /*++
-
 Routine Description:
-
     This routine resets the pipe.
 
 Arguments:
-
     Pipe - framework pipe handle
 
 Return Value:
-
     NT status value
-
 --*/
 {
     NTSTATUS          status;
-
     PAGED_CODE();
 
     //
@@ -424,25 +418,19 @@ ResetDevice(
     __in WDFDEVICE Device
     )
 /*++
-
 Routine Description:
-
     This routine calls WdfUsbTargetDeviceResetPortSynchronously to reset the device if it's still
     connected.
 
 Arguments:
-
     Device - Handle to a framework device
 
 Return Value:
-
     NT status value
-
 --*/
 {
     PDEVICE_CONTEXT pDeviceContext;
     NTSTATUS status;
-    
     PAGED_CODE();
  
     TraceEvents(TRACE_LEVEL_INFORMATION, DBG_IOCTL, "--> ResetDevice\n");
@@ -464,7 +452,7 @@ Return Value:
 
 __drv_requiresIRQL(PASSIVE_LEVEL)
 NTSTATUS
-AbortPipes(
+AbortPipes(                       // This function is not used, so removed in WDK10.
     __in WDFDEVICE Device
     )
 /*++

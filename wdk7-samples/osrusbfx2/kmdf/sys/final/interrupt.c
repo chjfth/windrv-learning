@@ -209,12 +209,11 @@ EvtTimer_ResumeIdle(WDFTIMER  timer)
 
 	PAGED_CODE();
 
-	// TODO: sync with a spinlock.
-	WdfSpinLockAcquire(pDevContext->spinlock);
+	WdfSpinLockAcquire(pDevContext->spinlock); // sync with a spinlock.
 
 	if(pDevContext->isIdleStopped==TRUE) // to be safe, imagining OsrFxEvtUsbInterruptPipeReadComplete() could be passive-level
 	{
-		WdfDeviceResumeIdle(device); // this reset's WDF's USB idle timer
+		WdfDeviceResumeIdle(device); // this restarts WDF's USB idle timer
 		pDevContext->isIdleStopped = FALSE;
 	}
 
