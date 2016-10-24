@@ -33,9 +33,9 @@ Environment:
 class CParent
 {
 public:
-	// virtual
+	 virtual
 	~CParent() {}
-	// virtual
+	 virtual
 	void work();
 };
 void CParent::work()

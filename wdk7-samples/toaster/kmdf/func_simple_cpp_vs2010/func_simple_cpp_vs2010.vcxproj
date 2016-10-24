@@ -219,6 +219,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="new_delete.cpp" />
     <ClCompile Include="toaster-simple.cpp" />
   </ItemGroup>
   <ItemGroup>
