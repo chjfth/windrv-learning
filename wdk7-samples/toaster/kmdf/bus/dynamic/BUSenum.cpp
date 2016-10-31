@@ -470,11 +470,11 @@ Returns:
         // driver is about to scan for dynamic children. After this call has
         // returned, all previously reported children associated with this will be
         // marked as potentially missing.  A call to either
-        // WdfChildListUpdateChildDescriptionAsPresent  or
-        // WdfChildListMarkAllChildDescriptionsPresent will mark all previously
+        // WdfChildListAddOrUpdateChildDescriptionAsPresent   or
+        // WdfChildListUpdateAllChildDescriptionsAsPresent  will mark all previously
         // reported missing children as present.  If any children currently
         // present are not reported present by calling
-        // WdfChildListUpdateChildDescriptionAsPresent at the time of
+        // WdfChildListAddOrUpdateChildDescriptionAsPresent  at the time of
         // WdfChildListEndScan, they will be reported as missing to the PnP subsystem
         // After WdfChildListEndScan call has returned, the framework will
         // invalidate the device relations for the FDO associated with the list
@@ -493,8 +493,8 @@ Returns:
 
         description.SerialNo = SerialNo;
         //
-        // WdfFdoUpdateChildDescriptionAsMissing indicates to the framework that a
-        // child device that was previously detected is no long present on the bus.
+        // WdfChildListUpdateChildDescriptionAsMissing indicates to the framework that 
+        // [a child device that was previously detected] is no long present on the bus.
         // This API can be called by itself or after a call to WdfChildListBeginScan.
         // After this call has returned, the framework will invalidate the device
         // relations for the FDO associated with the list and report the changes.
