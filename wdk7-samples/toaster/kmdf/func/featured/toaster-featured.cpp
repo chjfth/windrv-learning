@@ -854,6 +854,10 @@ Arguments:
         // This is just an example on how to hide your device in the
         // device manager. Please remove this code when you adapt
         // this sample for your hardware.
+		//
+		// [2016-11-06] Chj Note: [Win7]This does not cause Device Manager to 
+		// auto refresh its display. So, to see the Toaster device node hidden,
+		// we have to close and reopen Device Manager, or Scan for hardware changes.
         //
         WDF_DEVICE_STATE_INIT(&deviceState);
         deviceState.DontDisplayInUI = WdfTrue;
