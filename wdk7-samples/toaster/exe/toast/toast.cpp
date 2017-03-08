@@ -54,12 +54,16 @@ main(
     HANDLE                              file;
     int                                 i, ch;
     char                                buffer[10];
-    BOOL                                bHide = FALSE;
+	BOOL                                bDontShowInDevmgmt = FALSE;
+	BOOL                                bWantShowInDevmgmt = FALSE;
 
     if(argc == 2) {
         if(argv[1][0] == '-') {
-            if(argv[1][1] == 'h' || argv[1][1] == 'H') {
-                bHide = TRUE;
+			char c = argv[1][1];
+            if(c=='h' || c=='H') {
+                bDontShowInDevmgmt = TRUE;
+			} else if (c=='s' || c=='S') {
+				bWantShowInDevmgmt = TRUE;
             } else {
                 printf(USAGE);
                 exit(0);
@@ -224,13 +228,13 @@ main(
     //
     // Invalidate the Device State
     //
-    if(bHide)
+    if(bDontShowInDevmgmt || bWantShowInDevmgmt)
     {
         if (!DeviceIoControl (file,
-                              IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE,
-                              NULL, 0,
-                              NULL, 0,
-                              &bytes, NULL)) {
+                bDontShowInDevmgmt ? IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE : IOCTL_TOASTER_WANT_DISPLAY_IN_UI_DEVICE,
+                NULL, 0,
+                NULL, 0,
+                &bytes, NULL)) {
             printf("Invalidate device request failed:0x%x\n", GetLastError());
             free (deviceInterfaceDetailData);
             CloseHandle(file);

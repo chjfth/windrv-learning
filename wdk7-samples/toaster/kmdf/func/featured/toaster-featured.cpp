@@ -850,8 +850,9 @@ Arguments:
     switch (IoControlCode) 
 	{{
     case IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE:
+	case IOCTL_TOASTER_WANT_DISPLAY_IN_UI_DEVICE:
         //
-        // This is just an example on how to hide your device in the
+        // This is just an example on how to hide/show your device in the
         // device manager. Please remove this code when you adapt
         // this sample for your hardware.
 		//
@@ -860,7 +861,8 @@ Arguments:
 		// we have to close and reopen Device Manager, or Scan for hardware changes.
         //
         WDF_DEVICE_STATE_INIT(&deviceState);
-        deviceState.DontDisplayInUI = WdfTrue;
+        deviceState.DontDisplayInUI = 
+			IoControlCode==IOCTL_TOASTER_DONT_DISPLAY_IN_UI_DEVICE ? WdfTrue : WdfFalse;
         WdfDeviceSetDeviceState(
             hDevice,
             &deviceState
