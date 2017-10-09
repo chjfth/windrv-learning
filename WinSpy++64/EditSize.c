@@ -29,7 +29,7 @@ void SetupEdits(HWND hwndDlg, HWND hwndTarget, RECT *prect)
 	CopyRect(&rect, prect);
 
 	// Is this window a child control or not??
-	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwndTarget, GWL_STYLE);
 
 	// If this is a child window, then make it's coords
 	// relative to it's parent.
@@ -64,7 +64,7 @@ void SetTargetPos(HWND hwndDlg, HWND hwndTarget)
 //
 //	Dialog procedure for the edit size window
 //
-BOOL CALLBACK EditSizeDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EditSizeDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	RECT  rect;	
 

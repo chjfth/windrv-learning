@@ -70,7 +70,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	{
 	case IDM_WINSPY_ONTOP:
 
-		if(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST)
+		if(GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST)
 		{
 			// Not top-most any more
 			SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_ZONLY);

@@ -112,16 +112,16 @@ void DisplayWindowInfo(HWND hwnd)
 	GetClassName(hwnd, spy_szClassName, 70);
 
 	if(IsWindowUnicode(hwnd))
-		spy_WndProc = (WNDPROC)GetWindowLongW(hwnd, GWL_WNDPROC);
+		spy_WndProc = (WNDPROC)GetWindowLongW(hwnd, GWLP_WNDPROC);
 	else
-		spy_WndProc = (WNDPROC)GetWindowLongA(hwnd, GWL_WNDPROC);
+		spy_WndProc = (WNDPROC)GetWindowLongA(hwnd, GWLP_WNDPROC);
 
 	// If an password-edit control, then we can
 	// inject our thread to get the password text!
 	if(lstrcmpi(spy_szClassName, _T("Edit")) == 0)
 	{
 		// If a password control
-		DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+		DWORD dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 
 		if(dwStyle & ES_PASSWORD)
 			spy_fPassword = TRUE;
@@ -336,7 +336,7 @@ HWND CreateTooltip(HWND hwndDlg)
 	HWND hwndTT;
 	TOOLINFO ti;
 	int i;
-	BOOL fRet;
+	LRESULT fRet;
 
 	struct CtrlTipsTag
 	{
@@ -657,7 +657,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 				FlashWindowBorder((HWND)tvi.lParam, TRUE);
 				
 				// Return non-zero to prevent item from expanding when double-clicked
-				SetWindowLong(hwnd, DWL_MSGRESULT, TRUE);
+				SetWindowLongPtr(hwnd, DWL_MSGRESULT, TRUE);
 				return TRUE;
 			}*/
 		}
@@ -731,7 +731,7 @@ void DumpRect(HWND hwnd)
 //
 //	Dialog procedure for main window
 //
-BOOL WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg)
 	{
@@ -759,7 +759,7 @@ BOOL WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_Size(hwnd, wParam, lParam);
 	
 	case WM_SIZING:
-		return WinSpyDlg_Sizing(hwnd, wParam, (RECT *)lParam);
+		return WinSpyDlg_Sizing(hwnd, (UINT)wParam, (RECT *)lParam);
 
 	case WM_NCHITTEST:
 		return WinSpyDlg_FullWindowDrag(hwnd, wParam, lParam);

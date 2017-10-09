@@ -38,7 +38,7 @@ static int nLeftBorder;			// pixels between leftside + tab sheet
 static int nBottomBorder;		// pixels between bottomside + tab
 
 static BOOL fxMaxed, fyMaxed;	// Remember our sized state when a size/move starts
-static UINT uHitTest;			// Keep track of if sizing or moving
+static UINT_PTR uHitTest;			// Keep track of if sizing or moving
 
 //
 //	These two variables help us to position WinSpy++
@@ -231,8 +231,8 @@ void CalcDlgWindowSize(HWND hwnd, SIZE *szDlgUnits, SIZE *szClient, SIZE *szWind
 		szClient->cy = rect.bottom - rect.top;
 	}
 
-	dwStyle   = GetWindowLong(hwnd, GWL_STYLE);
-	dwStyleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
+	dwStyle   = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
+	dwStyleEx = (DWORD)GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
 	AdjustWindowRectEx(&rect, dwStyle, FALSE, dwStyleEx);
 
@@ -665,7 +665,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 		if(oldlayout != layout)
 		{
 			HWND  hwndExpand = GetDlgItem(hwnd, IDC_EXPAND);
-			DWORD dwStyle = GetWindowLong(hwndExpand, GWL_STYLE);
+			DWORD dwStyle = (DWORD)GetWindowLongPtr(hwndExpand, GWL_STYLE);
 
 			if(layout == WINSPY_NORMAL)
 			{
@@ -674,7 +674,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 
 				DestroyIcon(hOld);
 
-				SetWindowLong(hwndExpand, GWL_STYLE, dwStyle | BS_RIGHT);
+				SetWindowLongPtr(hwndExpand, GWL_STYLE, dwStyle | BS_RIGHT);
 				SetWindowText(hwndExpand, _T("&More"));
 			}
 			else
@@ -684,7 +684,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 
 				DestroyIcon(hOld);
 
-				SetWindowLong(hwndExpand, GWL_STYLE, dwStyle & ~BS_RIGHT);
+				SetWindowLongPtr(hwndExpand, GWL_STYLE, dwStyle & ~BS_RIGHT);
 				SetWindowText(hwndExpand, _T("L&ess"));
 			}
 			
@@ -699,7 +699,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 	// Has our Z-order changed?
 	if(wp && !(wp->flags & SWP_NOZORDER))
 	{
-		DWORD dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+		DWORD dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 	
 		// Set the global flag (just so we can remember it in the registry)
 		if(dwStyle & WS_EX_TOPMOST)
@@ -875,7 +875,7 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 	return 0;
 }
 
-UINT WinSpyDlg_FullWindowDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
+UINT_PTR WinSpyDlg_FullWindowDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
 	uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
 		
@@ -883,7 +883,7 @@ UINT WinSpyDlg_FullWindowDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	if(fFullDragging &&	uHitTest == HTCLIENT) 
 		uHitTest = HTCAPTION;
 
-	SetWindowLong(hwnd, DWL_MSGRESULT, uHitTest);
+	SetWindowLongPtr(hwnd, DWLP_MSGRESULT, uHitTest);
 	return uHitTest;
 }
 

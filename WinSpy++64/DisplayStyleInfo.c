@@ -216,7 +216,7 @@ StyleLookupEx ListBoxStyles[] =
 	STYLE_(LBS_SORT),				0, -1, 0,		//0x0002
 	STYLE_(LBS_NOREDRAW),			0, -1, 0,		//0x0004
 	STYLE_(LBS_MULTIPLESEL),		0, -1, 0,		//0x0008
-	STYLE_(LBS_OWNERDRAWFIXED,),	0, -1, 0,		//0x0010
+	STYLE_(LBS_OWNERDRAWFIXED),	0, -1, 0,		//0x0010
 	STYLE_(LBS_OWNERDRAWVARIABLE),	0, -1, 0,		//0x0020
 	STYLE_(LBS_HASSTRINGS),			0, -1, 0,		//0x0040
 	STYLE_(LBS_USETABSTOPS),		0, -1, 0,		//0x0080
@@ -902,7 +902,7 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 				dwStyle &= ~ (pStyle->style);
 			
 			// Add to list, and set the list's extra item data to the style's value
-			idx = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)pStyle->name);
+			idx = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)pStyle->name);
 			SendMessage(hwndList, LB_SETITEMDATA, idx, pStyle->style);
 
 			if(fAllStyles)
@@ -934,7 +934,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, B
 	GetClassName(hwndTarget, szClassName, sizeof(szClassName) / sizeof(TCHAR));
 
 	//normal window styles
-	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwndTarget, GWL_STYLE);
 	
 	if(hwndStyleList != 0)
 	{
@@ -966,7 +966,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, B
 			TCHAR ach[10];
 			
 			wsprintf(ach, szHexFmt, dwStyle);
-			idx = SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
+			idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
 			SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
 
 			if(fAllStyles)
@@ -982,7 +982,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, B
 		SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
 		
 		// Find extended styles
-		dwStyleEx = GetWindowLong(hwndTarget, GWL_EXSTYLE);
+		dwStyleEx = (DWORD)GetWindowLongPtr(hwndTarget, GWL_EXSTYLE);
 		
 		EnumStyles(StyleExList, hwndExStyleList, dwStyleEx, fAllStyles);
 		
@@ -996,7 +996,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, B
 			// Add them if required
 			if(StyleList != 0)
 			{
-				dwStyleEx = SendMessage(hwndTarget, dwMessage, 0, 0);
+				dwStyleEx = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
 				EnumStyles(StyleList, hwndExStyleList, dwStyleEx, fAllStyles);
 			}
 		}
@@ -1017,12 +1017,12 @@ void SetStyleInfo(HWND hwnd)
 	if(hwnd == 0) return;
 
 	// Display the window style in static label
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 	wsprintf(ach, szHexFmt, dwStyle);
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
-	dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 	wsprintf(ach, szHexFmt, dwStyle);
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 	

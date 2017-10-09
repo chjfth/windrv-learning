@@ -179,7 +179,7 @@ void FreeFinderResources()
 
 WNDFINDPROC GetWndFindProc(HWND hwnd)
 {
-	return (WNDFINDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	return (WNDFINDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
 UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
@@ -281,7 +281,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 	if(!(state & 0xC0000000))
 	{
 		// Find ASCII character
-		UINT ch = MapVirtualKey(wParam, 2);
+		UINT ch = MapVirtualKey((UINT)wParam, 2);
 
 		if(ch == _T('c') || ch == _T('C'))
 		{
@@ -425,7 +425,7 @@ BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp)
 	}
 
 	// Apply styles to make this a picture control
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 	
 	// Turn OFF styles we don't want
 	dwStyle &= ~(SS_RIGHT | SS_CENTER | SS_CENTERIMAGE);
@@ -436,16 +436,16 @@ BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp)
 	dwStyle |= SS_BITMAP;
 
 	// Now apply them..
-	SetWindowLong(hwnd, GWL_STYLE, dwStyle);
+	SetWindowLongPtr(hwnd, GWL_STYLE, dwStyle);
 	
 	// Set the default bitmap
 	SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
 
 	// Set the callback for this control
-	SetWindowLong(hwnd, GWL_USERDATA, (LONG)wfp);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)wfp);
 	
 	// Subclass the static control
-	oldstaticproc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (LONG)StaticProc);
+	oldstaticproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)StaticProc);
 
 	return TRUE;
 }

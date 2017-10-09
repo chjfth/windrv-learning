@@ -69,7 +69,7 @@ static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
 	DWORD   dwResult;
 
 	if(pInjData->fnGetWindowLong)
-		pInjData->wndproc = (WNDPROC)pInjData->fnGetWindowLong(pInjData->hwnd, GWL_WNDPROC);
+		pInjData->wndproc = (WNDPROC)pInjData->fnGetWindowLong(pInjData->hwnd, GWLP_WNDPROC);
 
 	if(pInjData->fnGetClassInfoEx)
 		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPTSTR)pInjData->szClassName, &pInjData->wcOutput);
@@ -137,8 +137,8 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 
 	// Setup the data the API calls will need
 	InjData.hwnd      = (HWND)hwnd;
-	InjData.atom      = (ATOM)GetClassLong(hwnd, GCW_ATOM);
-	InjData.hInst     = (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE);
+	InjData.atom      = (ATOM)GetClassLongPtr(hwnd, GCW_ATOM);
+	InjData.hInst     = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
 	InjData.wndproc   = 0;
 	InjData.nTextSize = sizeof(InjData.szText) / sizeof(TCHAR);
 

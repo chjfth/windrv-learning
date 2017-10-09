@@ -31,7 +31,7 @@ void SetScrollbarInfo(HWND hwnd)
 	si.cbSize = sizeof(SCROLLINFO);
 	si.fMask  = SIF_ALL;
 
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 
 	bartype = SB_HORZ;
 

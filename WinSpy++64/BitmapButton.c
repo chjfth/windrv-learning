@@ -67,7 +67,7 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 //
 static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	WNDPROC oldproc = (WNDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	WNDPROC oldproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	TRACKMOUSEEVENT tme = { sizeof(tme) };
 
 	static BOOL mouseOver;
@@ -165,7 +165,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	int   nTextLen;
 	
 	HICON hIcon;
-	DWORD dwStyle = GetWindowLong(dis->hwndItem, GWL_STYLE);
+	DWORD dwStyle = (DWORD)GetWindowLongPtr(dis->hwndItem, GWL_STYLE);
 
 	DWORD dwDTflags = DT_CENTER | DT_SINGLELINE | DT_VCENTER;
 	BOOL  fRightAlign;
@@ -345,17 +345,17 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 		MAKEINTRESOURCE(uIconId), IMAGE_ICON, 16, 16, 0);
 
 	// Add on BS_ICON and BS_OWNERDRAW styles
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE, dwStyle | BS_ICON | BS_OWNERDRAW);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
+	SetWindowLongPtr(hwnd, GWL_STYLE, dwStyle | BS_ICON | BS_OWNERDRAW);
 
 	// Assign icon to the button
 	SendMessage(hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
 	// Subclass (to reenable double-clicks)
-	oldproc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (LPARAM)BBProc);
+	oldproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LPARAM)BBProc);
 
 	// Store old procedure
-	SetWindowLong(hwnd, GWL_USERDATA, (LPARAM)oldproc);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LPARAM)oldproc);
 
 	if(g_fThemeApiAvailable)
 		SetWindowTheme(hwnd, L"explorer", NULL);

@@ -13,6 +13,7 @@
 
 #include <windows.h>
 #include <tchar.h>
+#include <stdlib.h>
 #include <commctrl.h>
 #include <shellapi.h>
 
@@ -210,7 +211,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[])
 	TCHAR *pszCaption;
 	DWORD dwStyle;
 	int len;
-	DWORD dwResult;
+	DWORD_PTR dwResult;
 
 	//
 	// Window handle in hex format
@@ -229,7 +230,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[])
 	//
 	GetClassName(hwnd, szClass, MAX_CLASS_LEN);
 
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 	idx = IconFromClassName(szClass, dwStyle);
 
 	if(uTreeInclude & WINLIST_INCLUDE_CLASS)
@@ -356,7 +357,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	int i, idx;
 
 	// Style is used to decide which bitmap to display in the tree
-	UINT uStyle = GetWindowLong(hwnd, GWL_STYLE);
+	UINT uStyle = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
 
 	// Need to know the current window's parent, so we know
 	// where to insert this window
@@ -623,11 +624,11 @@ void RefreshTreeView(HWND hwndTree)
 
 	EnableWindow(hwndTree, TRUE);
 		
-	dwStyle = GetWindowLong(hwndTree, GWL_STYLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwndTree, GWL_STYLE);
 		
 	// We need to hide the treeview temporarily (turn OFF WS_VISIBLE)
 	SendMessage(hwndTree, WM_SETREDRAW, FALSE, 0);
-	SetWindowLong(hwndTree, GWL_STYLE, dwStyle & ~WS_VISIBLE);
+	SetWindowLongPtr(hwndTree, GWL_STYLE, dwStyle & ~WS_VISIBLE);
 		
 	TreeView_DeleteAllItems(hwndTree);
 		
@@ -635,8 +636,8 @@ void RefreshTreeView(HWND hwndTree)
 
 	
 	SendMessage(hwndTree, WM_SETREDRAW, TRUE, 0);
-	dwStyle = GetWindowLong(hwndTree, GWL_STYLE);
-	SetWindowLong(hwndTree, GWL_STYLE, dwStyle | WS_VISIBLE);
+	dwStyle = (DWORD)GetWindowLongPtr(hwndTree, GWL_STYLE);
+	SetWindowLongPtr(hwndTree, GWL_STYLE, dwStyle | WS_VISIBLE);
 
 		
 	SetWindowPos(hwndTree, 0, 0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|

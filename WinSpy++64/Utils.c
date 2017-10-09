@@ -21,8 +21,8 @@ int atoi( const char *string );
 //
 UINT AddStyle(HWND hwnd, UINT style)
 {
-	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE,  oldstyle | style);
+	UINT oldstyle = (UINT)GetWindowLongPtr(hwnd, GWL_STYLE);
+	SetWindowLongPtr(hwnd, GWL_STYLE,  oldstyle | style);
 	return oldstyle;
 }
 
@@ -33,8 +33,8 @@ UINT AddDlgItemStyle(HWND hwnd, UINT nCtrlId, UINT style)
 
 UINT DelStyle(HWND hwnd, UINT style)
 {
-	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE, oldstyle & ~style);
+	UINT oldstyle = (UINT)GetWindowLongPtr(hwnd, GWL_STYLE);
+	SetWindowLongPtr(hwnd, GWL_STYLE, oldstyle & ~style);
 	return oldstyle;
 }
 

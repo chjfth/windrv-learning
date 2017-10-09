@@ -113,7 +113,7 @@ static unsigned char ANDMask[128] =
 
 void FreeHyperlink(HWND hwnd)
 {
-	void *mem = (void *)GetWindowLong(hwnd, GWL_USERDATA);
+	void *mem = (void *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	HeapFree(GetProcessHeap(), 0, mem);
 
@@ -125,7 +125,7 @@ void FreeHyperlink(HWND hwnd)
 		DestroyCursor(hCursor);
 	}
 
-	SetWindowLong(hwnd, GWL_USERDATA, 0);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 }
 
 static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -133,7 +133,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 	PAINTSTRUCT ps;
 	HDC		hdc;
 
-	URLCtrl *url = (URLCtrl *)GetWindowLong(hwnd, GWL_USERDATA);
+	URLCtrl *url = (URLCtrl *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	WNDPROC oldproc = url->oldproc;
 
 	RECT	rect;
@@ -160,7 +160,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 		SetTextColor(hdc, url->crLink);
 		SetBkMode(hdc, TRANSPARENT);
 		
-		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));//GetClassLong(GetParent(hwnd), GCL_HBRBACKGROUND));
+		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));//GetClassLongPtr(GetParent(hwnd), GCL_HBRBACKGROUND));
 		//SetBkColor(hdc, );//GetSysColor(COLOR_3DFACE));
 		
 		hOld = SelectObject(hdc, hfUnderlined);
@@ -199,7 +199,7 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 	HWND hwndCtrl = GetDlgItem(hwnd, staticid);
 
 	// If already a hyperlink
-	if((DWORD)GetWindowLong(hwndCtrl, GWL_WNDPROC) == (DWORD)URLCtrlProc)
+	if((void*)GetWindowLongPtr(hwndCtrl, GWLP_WNDPROC) == URLCtrlProc)
 		return;
 	
 	url = (URLCtrl *)HeapAlloc(GetProcessHeap(), 0, sizeof(URLCtrl));
@@ -219,8 +219,8 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 	}
 		
 	//turn on notify style
-    SetWindowLong(hwndCtrl, GWL_STYLE, GetWindowLong(hwndCtrl, GWL_STYLE) | SS_NOTIFY);
-	SetWindowLong(hwndCtrl, GWL_EXSTYLE, GetWindowLong(hwndCtrl, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
+    SetWindowLongPtr(hwndCtrl, GWL_STYLE, GetWindowLongPtr(hwndCtrl, GWL_STYLE) | SS_NOTIFY);
+	SetWindowLongPtr(hwndCtrl, GWL_EXSTYLE, GetWindowLongPtr(hwndCtrl, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
 
 
 	// setup colours
@@ -231,8 +231,8 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 	SendMessage(hwndCtrl, WM_SETFONT, (WPARAM)hfUnderlined, 0);
 
 	// subclass
-	url->oldproc = (WNDPROC)SetWindowLong(hwndCtrl, GWL_WNDPROC, (LONG)URLCtrlProc);
-	SetWindowLong(hwndCtrl, GWL_USERDATA, (LONG)url);
+	url->oldproc = (WNDPROC)SetWindowLongPtr(hwndCtrl, GWLP_WNDPROC, (LONG_PTR)URLCtrlProc);
+	SetWindowLongPtr(hwndCtrl, GWLP_USERDATA, (LONG_PTR)url);
 	
 	return;
 }
@@ -241,14 +241,14 @@ void RemoveHyperlink(HWND hwnd, UINT staticid)
 {
 	HWND hwndCtrl = GetDlgItem(hwnd, staticid);
 
-	URLCtrl *url = (URLCtrl *)GetWindowLong(hwndCtrl, GWL_USERDATA);
+	URLCtrl *url = (URLCtrl *)GetWindowLongPtr(hwndCtrl, GWLP_USERDATA);
 
 	// if this isn't a hyperlink control...
-	if(url == 0 || (DWORD)GetWindowLong(hwndCtrl, GWL_WNDPROC) != (DWORD)URLCtrlProc)
+	if(url == 0 || (void*)GetWindowLongPtr(hwndCtrl, GWLP_WNDPROC) != URLCtrlProc)
 		return;
 
 	// Restore the window procedure
-	SetWindowLong(hwndCtrl, GWL_WNDPROC, (LONG)url->oldproc);
+	SetWindowLongPtr(hwndCtrl, GWLP_WNDPROC, (LONG_PTR)url->oldproc);
 
 	FreeHyperlink(hwndCtrl);
 }

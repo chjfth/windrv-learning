@@ -211,7 +211,7 @@ void InitStockStyleLists()
 //
 //	Lookup the specified handle in the style list
 //
-int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT matchthis)
+int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT_PTR matchthis)
 {
 	int i;
 
@@ -239,7 +239,7 @@ void SetClassInfo(HWND hwnd)
 
 	int i, numstyles, classbytes;
 	HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
-	UINT style;
+	UINT_PTR style;
 
 	if(hwnd == 0) return;
 
@@ -257,7 +257,7 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	//atom
-	wsprintf(ach, _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
+	wsprintf(ach, _T("%04X"), GetClassLongPtr(hwnd, GCW_ATOM));
 	SetDlgItemText(hwndDlg, IDC_ATOM, ach);
 
 	//extra class bytes
@@ -269,21 +269,21 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_WINDOWBYTES, ach);
 
 	//menu (not implemented)
-	wsprintf(ach, szHexFmt, GetClassLong(hwnd, GCL_MENUNAME));
+	wsprintf(ach, szHexFmt, GetClassLongPtr(hwnd, GCLP_MENUNAME));
 	SetDlgItemText(hwndDlg, IDC_MENUHANDLE, _T("(None)"));
 
 	//cursor handle
-	style = (UINT)GetClassLong(hwnd, GCL_HCURSOR);
+	style = GetClassLongPtr(hwnd, GCLP_HCURSOR);
 	FormatStyle(ach, CursorLookup, NUM_CURSOR_STYLES, style);
 	SetDlgItemText(hwndDlg, IDC_CURSORHANDLE, ach);
 
 	//icon handle
-	style = GetClassLong(hwnd, GCL_HICON);
+	style = GetClassLongPtr(hwnd, GCLP_HICON);
 	FormatStyle(ach, IconLookup, NUM_ICON_STYLES, style);
 	SetDlgItemText(hwndDlg, IDC_ICONHANDLE, ach);
 
 	//background brush handle
-	style = GetClassLong(hwnd, GCL_HBRBACKGROUND);
+	style = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
 	
 	//first of all, search by COLOR_xxx value
 	if(-1 == FormatStyle(ach, BrushLookup, NUM_BRUSH_STYLES, style-1))
@@ -359,7 +359,7 @@ void SetClassInfo(HWND hwnd)
 	while(classbytes != 0)
 	{
 		if(classbytes >= 4)
-			wsprintf(ach, _T("+%-8d %08X"), i, GetClassLong(hwnd, i));
+			wsprintf(ach, _T("+%-8d %08X"), i, GetClassLongPtr(hwnd, i));
 		else
 			wsprintf(ach, _T("+%-8d (Unavailable)"), i);
 

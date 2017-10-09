@@ -44,8 +44,8 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD cbCodeS
 	HANDLE hRemoteThread = 0;	//handle to the injected thread
 	DWORD  dwRemoteThreadId =0;	//ID of the injected thread
 	
-	DWORD dwWritten = 0;		// Number of bytes written to the remote process
-	DWORD dwRead = 0;
+	SIZE_T dwWritten = 0;		// Number of bytes written to the remote process
+	SIZE_T dwRead = 0;
 	DWORD dwExitCode;
 	
 	void *pRemoteData = 0;
