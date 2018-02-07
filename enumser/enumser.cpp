@@ -8,7 +8,7 @@ History: PJN / 23-02-1999 Code now uses QueryDosDevice if running on NT to deter
                           the ports at all. It should operate a lot faster in addition.
          PJN / 12-12-1999 Fixed a problem in the Win9x code path when trying to detect 
                           deactivated IRDA-ports. When trying to open those, you will 
-                          get the error-code ERROR_GEN_FAILURE. 
+                          get the error-code ERROR_GEN_FAILURE.?
          PJN / 17-05-2000 Code now uses GetDefaultCommConfig in all cases to detect 
                           the ports.
          PJN / 29-03-2001 1. Reverted code to use CreateFile or QueryDosDevice as it is 
@@ -403,7 +403,8 @@ _Return_type_success_(return != 0) BOOL CEnumerateSerial::QueryRegistryPortName(
   return bAdded;
 }
 
-_Return_type_success_(return != 0) BOOL CEnumerateSerial::QueryUsingSetupAPI(const GUID& guid, _In_ DWORD dwFlags, _Inout_ CPortsArray& ports, _Inout_ CNamesArray& friendlyNames)
+_Return_type_success_(return != 0) BOOL 
+CEnumerateSerial::QueryUsingSetupAPI(const GUID& guid, _In_ DWORD dwFlags, _Inout_ CPortsArray& ports, _Inout_ CNamesArray& friendlyNames)
 {
   //Set our output parameters to sane defaults
 #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -483,25 +484,50 @@ _Return_type_success_(return != 0) BOOL CEnumerateSerial::QueryUsingSetupAPI(con
   return TRUE;
 }
 
-_Return_type_success_(return != 0) BOOL CEnumerateSerial::QueryDeviceDescription(HDEVINFO hDevInfoSet, SP_DEVINFO_DATA& devInfo, ATL::CHeapPtr<BYTE>& byFriendlyName)
+_Return_type_success_(return != 0) BOOL 
+CEnumerateSerial::QueryDeviceDescription(HDEVINFO hDevInfoSet, SP_DEVINFO_DATA& devInfo, ATL::CHeapPtr<BYTE>& byFriendlyName)
 {
-  DWORD dwType = 0;
-  DWORD dwSize = 0;
+  DWORD dwType1 = 0, dwType2 = 0;
+  DWORD dwSize1 = 0, dwSize2 = 0;
   //Query initially to get the buffer size required
-  if (!SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_DEVICEDESC, &dwType, nullptr, 0, &dwSize))
+  if (!SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_DEVICEDESC, &dwType1, nullptr, 0, &dwSize1))
   {
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
       return FALSE;
   }
+  if (!SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_FRIENDLYNAME, &dwType2, nullptr, 0, &dwSize2))
+  {
+	  if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+		  return FALSE;
+  }
 
   #pragma warning(suppress: 6102)
-  if (!byFriendlyName.Allocate(dwSize))
+  int bufbytes = dwSize1+dwSize2+10;
+  if (!byFriendlyName.Allocate(bufbytes))
   {
     SetLastError(ERROR_OUTOFMEMORY);
     return FALSE;
   }
 
-  return SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_DEVICEDESC, &dwType, byFriendlyName.m_pData, dwSize, &dwSize) && (dwType == REG_SZ);
+  ATL::CHeapPtr<BYTE> part1, part2;
+  part1.Allocate(dwSize1);
+  part2.Allocate(dwSize2);
+
+  BOOL b1 = SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_DEVICEDESC, 
+	  &dwType1, part1.m_pData, dwSize1, &dwSize1);
+  BOOL b2 = SetupDiGetDeviceRegistryProperty(hDevInfoSet, &devInfo, SPDRP_FRIENDLYNAME, 
+	  &dwType2, part2.m_pData, dwSize2, &dwSize2);
+	  
+  if( b1 && b2 && dwType1==REG_SZ && dwType2==REG_SZ) {
+	  _sntprintf_s((TCHAR*)byFriendlyName.m_pData, bufbytes/sizeof(TCHAR), bufbytes/sizeof(TCHAR),
+		  _T("%s ; %s"), 
+		  reinterpret_cast<LPCTSTR>(part1.m_pData),
+		  reinterpret_cast<LPCTSTR>(part2.m_pData));
+	  return TRUE;
+  }
+  else {
+	  return FALSE;
+  }
 }
 #endif //#if !defined(NO_CENUMERATESERIAL_USING_SETUPAPI1) || !defined(NO_CENUMERATESERIAL_USING_SETUPAPI2)
 
@@ -554,7 +580,7 @@ _Return_type_success_(return != 0) BOOL CEnumerateSerial::UsingQueryDosDevice(_I
 #endif //#ifndef CENUMERATESERIAL_MFC_EXTENSIONS
 
   //Use QueryDosDevice to look for all devices of the form COMx. Since QueryDosDevice does
-  //not consitently report the required size of buffer, lets start with a reasonable buffer size
+  //not consistently report the required size of buffer, lets start with a reasonable buffer size
   //of 4096 characters and go from there
   int nChars = 4096;
   BOOL bWantStop = FALSE;

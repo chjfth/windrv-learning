@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "enumser.h"
 
+void tprintf_title(const TCHAR *title)
+{
+	static int s_count = 0;
+	_tprintf(_T("\n==[Method %d]== %s"), ++s_count, title);
+}
 
 void main()
 {
@@ -33,7 +38,7 @@ void main()
 #endif
 
 #ifndef NO_CENUMERATESERIAL_USING_CREATEFILE
-  _tprintf(_T("CreateFile method reports\n"));
+  tprintf_title(_T("CreateFile method reports\n"));
   if (CEnumerateSerial::UsingCreateFile(ports))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -49,7 +54,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_CREATEFILE
 
 #ifndef NO_CENUMERATESERIAL_USING_QUERYDOSDEVICE
-  _tprintf(_T("QueryDosDevice method reports\n"));
+  tprintf_title(_T("QueryDosDevice method reports\n"));
   if (CEnumerateSerial::UsingQueryDosDevice(ports))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -65,7 +70,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_QUERYDOSDEVICE
 
 #ifndef NO_CENUMERATESERIAL_USING_GETDEFAULTCOMMCONFIG
-  _tprintf(_T("GetDefaultCommConfig method reports\n"));
+  tprintf_title(_T("GetDefaultCommConfig method reports\n"));
   if (CEnumerateSerial::UsingGetDefaultCommConfig(ports))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -81,7 +86,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_GETDEFAULTCOMMCONFIG
 
 #ifndef NO_CENUMERATESERIAL_USING_SETUPAPI1
-  _tprintf(_T("Device Manager (SetupAPI - GUID_DEVINTERFACE_COMPORT) reports\n"));
+  tprintf_title(_T("Device Manager (SetupAPI - GUID_DEVINTERFACE_COMPORT) reports\n"));
   if (CEnumerateSerial::UsingSetupAPI1(ports, names))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -97,15 +102,15 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_SETUPAPI1
 
 #ifndef NO_CENUMERATESERIAL_USING_SETUPAPI2
-  _tprintf(_T("Device Manager (SetupAPI - Ports Device information set) reports\n"));
+  tprintf_title(_T("Device Manager (SetupAPI - Ports Device information set) reports\n"));
   if (CEnumerateSerial::UsingSetupAPI2(ports, names))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
     for (i=0; i<ports.size(); i++)
-      _tprintf(_T("COM%u <%s>\n"), ports[i], names[i].c_str());
+      _tprintf(_T("COM%u : %s\n"), ports[i], names[i].c_str());
   #else
     for (i=0; i<ports.GetSize(); i++)
-      _tprintf(_T("COM%u <%s>\n"), ports[i], names[i].GetString());
+      _tprintf(_T("COM%u : %s\n"), ports[i], names[i].GetString());
   #endif //#ifndef CENUMERATESERIAL_MFC_EXTENSIONS
   }
   else
@@ -113,7 +118,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_SETUPAPI2
 
 #ifndef NO_CENUMERATESERIAL_USING_ENUMPORTS
-  _tprintf(_T("EnumPorts method reports\n"));
+  tprintf_title(_T("EnumPorts method reports\n"));
   if (CEnumerateSerial::UsingEnumPorts(ports, names))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
@@ -129,7 +134,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_ENUMPORTS
 
 #ifndef NO_CENUMERATESERIAL_USING_WMI
-  _tprintf(_T("WMI method reports\n"));
+  tprintf_title(_T("WMI method reports\n"));
   hr = CEnumerateSerial::UsingWMI(ports, names);
   if (SUCCEEDED(hr))
   {
@@ -162,7 +167,7 @@ void main()
 #endif //#ifndef NO_CENUMERATESERIAL_USING_COMDB
 
 #ifndef NO_CENUMERATESERIAL_USING_REGISTRY
-  _tprintf(_T("Registry method reports\n"));
+  tprintf_title(_T("Registry method reports\n"));
   if (CEnumerateSerial::UsingRegistry(names))
   {
   #ifndef CENUMERATESERIAL_MFC_EXTENSIONS
