@@ -278,7 +278,6 @@ ToasterWmiDeRegistration(
     __in PFDO_DATA               FdoData
 )
 /*++
-
 New Routine Description:
     ToasterWmiDeRegistration deregisters the function driver from providing WMI
     data for the hardware instance described by the FdoData parameter.
@@ -295,7 +294,6 @@ Return Value Description:
     ToasterWmiDeRegistration returns the value returned by
     IoWMIRegistrationControl. STATUS_SUCCESS indicates the function driver
     successfully deregistered from providing WMI data.
-
 --*/
 {
     PAGED_CODE();
@@ -323,7 +321,6 @@ ToasterSystemControl (
     PIRP            Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterSystemControl passes the incoming WMI IRP to the WMI library to be
     processed. The WMI library will call the appropriate function driver provided
@@ -334,7 +331,6 @@ Updated Return Value Description:
     represented by DeviceObject has been removed. Otherwise ToasterSystemControl
     returns the status of the WMI operation returned by WmiSystemControl, or the
     status of the incoming WMI IRP from the underlying bus driver.
-
 --*/
 {
     PFDO_DATA               fdoData;
@@ -1589,26 +1585,20 @@ Error:
     return (status);
 }
 
-
-
 PCHAR
 WMIMinorFunctionString (
     __in UCHAR MinorFunction
 )
 /*++
-
 New Routine Description:
     WMIMinorFunctionString converts the minor function code of a WMI IRP to a
     text string that is more helpful when tracing the execution of WMI IRPs.
-
 Parameters Description:
     MinorFunction
     MinorFunction specifies the minor function code of a WMI IRP.
-
 Return Value Description:
     WMIMinorFunctionString returns a pointer to a string that represents the
     text description of the incoming minor function code.
-
 --*/
 {
     switch (MinorFunction)
@@ -1637,7 +1627,3 @@ Return Value Description:
         return "unknown_syscontrol_irp";
     }
 }
-
-
-
-
