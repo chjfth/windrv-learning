@@ -311,7 +311,6 @@ Return Value Description:
     return IoWMIRegistrationControl(FdoData->Self,
                                  WMIREG_ACTION_DEREGISTER
                                  );
-
 }
 
 

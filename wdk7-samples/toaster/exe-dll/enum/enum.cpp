@@ -41,12 +41,12 @@ OpenBusInterface (
     );
 
 
-#define USAGE  \
-"Usage: Enum [-p SerialNo] Plugs in a device. SerialNo must be greater than zero.\n\
-             [-u SerialNo or 0] Unplugs device(s) - specify 0 to unplug all \
-                                the devices enumerated so far.\n\
-             [-e SerialNo or 0] Ejects device(s) - specify 0 to eject all \
-                                the devices enumerated so far.\n"
+#define USAGE  "Usage: \n\
+Enum [-p SerialNo] Plugs in a device. SerialNo must be greater than zero.\n\
+     [-u SerialNo or 0] Unplugs device(s) - specify 0 to unplug all \n\
+                        the devices enumerated so far.\n\
+     [-e SerialNo or 0] Ejects device(s) - specify 0 to eject all \n\
+                        the devices enumerated so far.\n"
 
 BOOLEAN     bPlugIn, bUnplug, bEject;
 ULONG       SerialNo;
