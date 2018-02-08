@@ -119,7 +119,7 @@ WMIGUIDREGINFO ToasterWmiGuidList[] =
     //
     {
         &TOASTER_WMI_STD_DATA_GUID,
-         1,
+        1,
         0
     },
     //
@@ -149,7 +149,7 @@ WMIGUIDREGINFO ToasterWmiGuidList[] =
     //
     // The meaning of GUID_POWER_DEVICE_ENABLE is up to the hardware instance.
     //
-     {
+    {
         &GUID_POWER_DEVICE_WAKE_ENABLE,
         1,
         0
@@ -172,10 +172,9 @@ ToasterWmiRegistration(
     __in PFDO_DATA               FdoData
 )
 /*++
-
 New Routine Description:
     ToasterWmiRegistration registers the function driver as a WMI data provider
-     for the hardware instance described by the FdoData parameter.
+    for the hardware instance described by the FdoData parameter.
 
     The function driver calls ToasterWmiRegistration when ToasterDispatchPnP
     processes IRP_MN_START_DEVICE and calls ToasterStartDevice.
@@ -190,7 +189,6 @@ Return Value Description:
     STATUS_SUCCESS indicates the function driver successfully registered to be a
     WMI data provider. Any other return value indicates that the function driver
     did not successfully register to be a WMI data provider.
-
 --*/
 {
     NTSTATUS status;
@@ -203,7 +201,7 @@ Return Value Description:
     //
     // -The number of GUIDs the function driver exposes
     //
-    // -The list of GUIDs exposed by the function driver (ToasterWmiGuidLst).
+    // -The list of GUIDs exposed by the function driver (ToasterWmiGuidList).
     //
     // -The function driver's callback routine that provides information about the
     //  data blocks and event blocks to be registered by the function driver

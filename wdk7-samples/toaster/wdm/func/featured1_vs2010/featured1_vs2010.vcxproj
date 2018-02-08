@@ -213,7 +213,10 @@
     <ClCompile Include="..\featured1\wmi.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\kmdf\inc\driver.h" />
+    <ClInclude Include="..\..\..\kmdf\inc\public.h" />
     <ClInclude Include="..\featured1\Power.h" />
+    <ClInclude Include="..\shared\toaster.H" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\featured1\toaster.mof">
