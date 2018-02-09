@@ -91,7 +91,7 @@ Revision History:
 // Define the number of GUIDs, and their respective index (order) in the
 // ToasterWmiGuidList array. When the function driver registers the array and
 // calculates the number of data blocks in the array, the calculation is compared
-// with the NUMBER_OF_GUIDS contstnace. They must be equal.
+// with the NUMBER_OF_GUIDS constant. They must be equal.
 //
 #define NUMBER_OF_WMI_GUIDS             4
 #define WMI_TOASTER_DRIVER_INFORMATION  0
@@ -111,7 +111,7 @@ Revision History:
 // an event.
 //
 WMIGUIDREGINFO ToasterWmiGuidList[] =
- {
+{
     //
     // The first data block corresponds to the "class ToasterDeviceInformation" data
     // block in the Toaster.mof file. The ToasterDeviceInformation block contains six
@@ -416,7 +416,6 @@ Updated Return Value Description:
             // processed by the underlying bus driver.
             //
             IoSkipCurrentIrpStackLocation (Irp);
-
             status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
             break;
@@ -441,7 +440,6 @@ Updated Return Value Description:
             ASSERT(FALSE);
 
             IoSkipCurrentIrpStackLocation (Irp);
-
             status = IoCallDriver (fdoData->NextLowerDriver, Irp);
 
             break;
@@ -452,7 +450,6 @@ Updated Return Value Description:
 
     return(status);
 }
-
 
 
 //
@@ -1125,14 +1122,13 @@ ToasterFunctionControl(
     BOOLEAN Enable
     )
 /*++
-
 New Routine Description:
     The WMI library calls back ToasterFunctionControl to enable or disable
     notification of events, and to enable or disable collection for data blocks
     that the function driver registered as expensive to collect. A function driver
-    should only expect a single enable when the first event or data consumer
-    enables events or data collection and a single disable when the last event or
-    data consumer disables events or data collection. Data blocks only receive
+    should only expect [a single enable when the first event or data consumer
+    enables events or data collection] and [a single disable when the last event or
+    data consumer disables events or data collection]. Data blocks only receive
     enable and disable notifications if the function driver registered them as
     requiring notification.
 
@@ -1147,34 +1143,32 @@ New Routine Description:
     Normally a function driver should save the value of the incoming Enable
     parameter in the device extension and then check the value before firing an
     event. However, since the function driver fires an event to indicate a new
-    device arrival, the it cannot wait for WMI to send an IRP_MN_ENABLE_EVENTS WMI
+    device arrival, then it cannot wait for WMI to send an IRP_MN_ENABLE_EVENTS WMI
     IRP. Thus the function driver does not check the Enable value.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is an FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the set WMI data item operation associated with DeviceObject.
 
-    GuidIndex
+    [GuidIndex]
     GuidIndex represents the index of the WMI data item in the ToasterWmiGuidList
     array passed to the WMI library when the function driver called
     ToasterWmiRegistration.
 
-    Function
+    [Function]
     Function represents the functionality to enable or disable.
 
-    Enable
+    [Enable]
     Enable represents whether to enable the function specified in the Function
     parameter. TRUE specifies that the function is to be enabled. FALSE specifies
     that the function is to be disabled.
 
 Return Value Description:
     ToasterFunctionControl returns the value returned by WmiCompleteRequest.
-
 --*/
 {
     NTSTATUS status;
@@ -1184,12 +1178,11 @@ Return Value Description:
     // processing the WMI IRP with STATUS_SUCCESS.
     //
     status = WmiCompleteRequest(
-                                     DeviceObject,
-                                     Irp,
-                                     STATUS_SUCCESS,
-                                     0,
-                                     IO_NO_INCREMENT);
-
+                                DeviceObject,
+                                Irp,
+                                STATUS_SUCCESS,
+                                0,
+                                IO_NO_INCREMENT);
     return(status);
 }
 
@@ -1204,18 +1197,17 @@ NTSTATUS ToasterFireArrivalEvent(
     __in PDEVICE_OBJECT DeviceObject
     )
 /*++
-
 New Routine Description:
     ToasterFireArrivalEvent notifies WMI that the new hardware instance
     represented by the DeviceObject parameter has been started. WMI then notifies
-    any applications that have registered for device arrival notification that the
+    [any applications who have registered for device arrival notification] that the
     new hardware instance has started.
 
     ToasterStartDevice calls ToasterFireArrivalEvent after the hardware instance
     is fully powered and ready to process requests.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance to fire an arrival event for.
     DeviceObject is an FDO created earlier in ToasterAddDevice.
 
@@ -1223,16 +1215,14 @@ Return Value Description:
     ToasterFireArrivalEvent returns STATUS_INSUFFICIENT_RESOURCES if it cannot
     allocate memory to fire the arrival event. Otherwise, ToasterFireArrivalEvent
     returns the value from the IoWMIWriteEvent call.
-
 --*/
 {
-
     PWNODE_SINGLE_INSTANCE  wnode;
     ULONG                   wnodeSize;
     ULONG                   wnodeDataBlockSize;
     ULONG                   wnodeInstanceNameSize;
     PUCHAR                  ptmp;
-    ULONG                   size;
+    ULONG                   size_all_ret;
     UNICODE_STRING          deviceName;
     UNICODE_STRING          modelName;
     NTSTATUS                status;
@@ -1259,18 +1249,18 @@ Return Value Description:
 
     wnodeDataBlockSize = modelName.Length + sizeof(USHORT);
 
-    size = wnodeSize + wnodeInstanceNameSize + wnodeDataBlockSize;
+    size_all_ret = wnodeSize + wnodeInstanceNameSize + wnodeDataBlockSize;
 
     //
     // Allocate memory for the WNODE from the non-paged pool.
     //
-    wnode = ExAllocatePoolWithTag (NonPagedPool, size, TOASTER_POOL_TAG);
+    wnode = ExAllocatePoolWithTag (NonPagedPool, size_all_ret, TOASTER_POOL_TAG);
 
     if (NULL != wnode)
     {
-        RtlZeroMemory(wnode, size);
+        RtlZeroMemory(wnode, size_all_ret);
 
-        wnode->WnodeHeader.BufferSize = size;
+        wnode->WnodeHeader.BufferSize = size_all_ret;
 
         wnode->WnodeHeader.ProviderId =
                             IoWMIDeviceObjectToProviderId(DeviceObject);
@@ -1366,7 +1356,7 @@ Return Value Description:
     }
 
     //
-    // Release the memory that was allocated earlier in the GetDeviceFriendName
+    // Release the memory that was allocated earlier in the GetDeviceFriendlyName
     // routine to hold the hardware instance's friendly name.
     //
     ExFreePool(deviceName.Buffer);
@@ -1385,7 +1375,6 @@ ToasterQueryWmiRegInfo(
     PDEVICE_OBJECT *Pdo
     )
 /*++
-
 New Routine Description:
     The WMI library calls ToasterQueryWmiRegInfo to provide information about the
     data blocks and event blocks to register for the function driver.
@@ -1394,12 +1383,12 @@ New Routine Description:
     thread executing it.
 
 Parameters Description:
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is being queried
     by the WMI library to provide data. DeviceObject is an FDO created
     earlier in ToasterAddDevice.
 
-    RegFlags
+    [RegFlags] // out
     RegFlags represents the flags to return to the caller (the WMI library). The
     flags describe the GUIDs being registered for the hardware instance described
     by the DeviceObject parameter. ToasterQueryWmiRegInfo specifies the
@@ -1408,7 +1397,7 @@ Parameters Description:
     return the WMIREG_FLAG_INSTANCE_PDO flag, then it must return a unique name
     in the InstanceName parameter.
 
-    InstanceName
+    [InstanceName] // out(?)
     InstanceName represents the unique base name for all instances of all blocks
     registered by the function driver. Because ToasterQueryRegInfo does not
     return the WMIREG_FLAG_INSTANCE_BASENAME flag, the InstanceName parameter is
@@ -1417,18 +1406,18 @@ Parameters Description:
     name in this parameter, the WMI library calls ExFreePool to release the
     memory for the unique instance name.
 
-    RegistryPath
+    [RegistryPath] // out
     RegistryPath represents driver specific path in the Registry to return to the
     caller (the WMI library). The system passed the driver specific path to the
     DriverEntry routine.
 
-    MofResourceName
+    [MofResourceName]
     MofResourceName represents the MOF (managed object format) resource name that
     is attached to the function driver's binary image. If the function driver does
     not have a MOF resource attached to the its binary image, then MofResourceName
     can be set to NULL.
 
-    Pdo
+    [Pdo] // out
     Pdo represents the hardware instance's physical device object to return to the
     caller (the WMI library). Because ToasterQueryWmiRegInfo returns the
     WMIREG_FLAG_INSTANCE_PDO, WMI uses the device instance path of the PDO
@@ -1436,13 +1425,10 @@ Parameters Description:
 
 Return Value Description:
     ToasterQueryWmiRegInfo always returns STATUS_SUCCESS.
-
 --*/
 {
     PFDO_DATA fdoData;
-
     PAGED_CODE();
-
     ToasterDebugPrint(TRACE, "Entered ToasterQueryWmiRegInfo\n");
 
     fdoData = DeviceObject->DeviceExtension;
@@ -1479,7 +1465,6 @@ GetDeviceFriendlyName(
     __out PUNICODE_STRING DeviceName
     )
 /*++
-
 New Routine Description:
     GetDeviceFriendlyName returns the friendly name of the hardware instance, or
     its device description if the hardware instance does not have a friendly name.
@@ -1492,11 +1477,11 @@ New Routine Description:
     documentation for a more thorough explanation of friendly names.
 
 Parameters Description:
-    Pdo
+    [Pdo]
     Pdo represents the physical device object of the hardware instance to return
     the friendly name of. Pdo is a PDO created by the underlying bus driver.
 
-    DeviceName
+    [DeviceName] // out
     DeviceName represents caller allocated space that the hardware instance's
     friendly device name is copied to if GetDeviceFriendlyName succeeds.
 
@@ -1504,7 +1489,6 @@ Return Value Description:
     GetDeviceFriendlyName returns STATUS_INSUFFICIENT_RESOURCES if it cannot
     allocate memory to store the friendly name. Otherwise GetFriendlyName returns
     STATUS_SUCCESS.
-
 --*/
 {
     NTSTATUS                    status;
@@ -1593,7 +1577,7 @@ New Routine Description:
     WMIMinorFunctionString converts the minor function code of a WMI IRP to a
     text string that is more helpful when tracing the execution of WMI IRPs.
 Parameters Description:
-    MinorFunction
+    [MinorFunction]
     MinorFunction specifies the minor function code of a WMI IRP.
 Return Value Description:
     WMIMinorFunctionString returns a pointer to a string that represents the
