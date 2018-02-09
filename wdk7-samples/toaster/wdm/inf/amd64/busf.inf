@@ -98,10 +98,10 @@ LoadOrderGroup = PNP Filter
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "MicrosoftDemo (WDM toaster bus filter)"
+MSFT = "MicrosoftDemo (wdm_filter2)"
 StdMfg = "(Standard system devices)"
 DiskId1 = "Toaster Bus Installation Disk #1"
-ToasterBus.DeviceDesc = "Toaster Bus Enumerator with filters"
+ToasterBus.DeviceDesc = "<Toaster Bus Enumerator with filters>"
 busenum.SVCDESC = "Toaster Bus Enumerator"
 busupper.SVCDESC = "Toaster Bus FDO Upper Filter"
 buslower.SVCDESC = "Toaster Bus FDO Lower Filter"
