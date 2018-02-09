@@ -93,11 +93,21 @@ Revision History:
 // calculates the number of data blocks in the array, the calculation is compared
 // with the NUMBER_OF_GUIDS constant. They must be equal.
 //
-#define NUMBER_OF_WMI_GUIDS             4
-#define WMI_TOASTER_DRIVER_INFORMATION  0
-#define TOASTER_NOTIFY_DEVICE_ARRIVAL   1
-#define WMI_POWER_DEVICE_WAKE_ENABLE    2
-#define WMI_POWER_DEVICE_ENABLE         3
+
+enum {
+	WMI_TOASTER_DRIVER_INFORMATION = 0,
+	TOASTER_NOTIFY_DEVICE_ARRIVAL = 1,
+	WMI_POWER_DEVICE_ENABLE,
+	WMI_POWER_DEVICE_WAKE_ENABLE,
+	NUMBER_OF_WMI_GUIDS,
+
+	// -- chj: comment WMI_POWER_DEVICE_ENABLE or/and WMI_POWER_DEVICE_WAKE_ENABLE
+	//    to see Device property dialog Power Management tab display change.
+	//    To experiment, you should also change ToasterWmiGuidList[] content as well.
+
+//	WMI_POWER_DEVICE_ENABLE = 102,
+//	WMI_POWER_DEVICE_WAKE_ENABLE = 103,
+};
 
 //
 // Declare the WMI data blocks to export from the function driver. The first two
@@ -149,16 +159,16 @@ WMIGUIDREGINFO ToasterWmiGuidList[] =
     //
     // The meaning of GUID_POWER_DEVICE_ENABLE is up to the hardware instance.
     //
-    {
-        &GUID_POWER_DEVICE_WAKE_ENABLE,
-        1,
-        0
-    },
-    {
-        &GUID_POWER_DEVICE_ENABLE,
-        1,
-        0
-    }
+ 	{
+ 		&GUID_POWER_DEVICE_ENABLE,
+ 		1,
+ 		0
+ 	},
+	{
+		&GUID_POWER_DEVICE_WAKE_ENABLE,
+		1,
+		0
+	},
 };
 
 //
@@ -390,12 +400,10 @@ Updated Return Value Description:
 
         case IrpNotCompleted:
         {
-            //
             // If the WMI IRP's disposition indicates that the IRP has not been
             // completed, then the function driver must complete it.
             //
             IoCompleteRequest(Irp, IO_NO_INCREMENT);
-
             break;
         }
 
@@ -468,7 +476,6 @@ ToasterSetWmiDataItem(
     PUCHAR Buffer
     )
 /*++
-
 New Routine Description:
     The WMI library calls back ToasterQueryWmiDataBlock to set the contents of a
     data block.
@@ -482,44 +489,28 @@ New Routine Description:
     after the data has changed.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+	[DeviceObject,Irp,GuidIndex,InstanceIndex] same as those of ToasterQueryWmiDataBlock()
 
-    Irp
-    Irp represents the set WMI data item operation associated with the DeviceObject
-    parameter.
-
-    GuidIndex
-    GuidIndex represents the index of the WMI data item in the ToasterWmiGuidList
-    array that was passed to the WMI library when the function driver called
-    ToasterWmiRegistration.
-
-    InstanceIndex
-    InstanceIndex represents the instance of the WMI data block being set.
-
-    DataItemId
+    [DataItemId]
     DataItemId represents the Id of the data item being set as the data item is
     specified in the Toaster.mof file.
 
-    BufferSize
+    [BufferSize] // in
     BufferSize represents the size of the caller-allocated buffer described by the
     Buffer parameter.
 
-    Buffer
+    [Buffer] // in
     Buffer represents the data buffer for the WMI data item.
 
 Return Value Description:
-    ToasterSetWmiDataItem returns STATUS_BUFFER_TOO_SMALL if the BufferSize
-    parameter is less than the size that is required to fulfill the IRP.
     ToasterSetWmiDataItem returns STATUS_WMI_READ_ONLY if the DataItemId parameter
     specifies a data item that cannot be written to.
+
     ToasterSetWmiDataItem returns STATUS_WMI_GUID_NOT_FOUND if the incoming WMI
     IRP does not correspond to a GUID supported by the function driver.
+
     Otherwise ToasterSetWmiDataItem returns the value returned by
     WmiCompleteRequest.
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -568,7 +559,6 @@ Return Value Description:
         }
         else
         {
-            //
             // Fail the incoming WMI IRP if the DataItemId parameter is for a data
             // item that is read-only.
             //
@@ -577,77 +567,68 @@ Return Value Description:
 
         break;
 
-    case WMI_POWER_DEVICE_WAKE_ENABLE:
-        //
-        // WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third entry in the
-        // ToasterWmiGuidList array, which must match the third data block in the
-        // Toaster.mof file. Set the device extension's wait/wake arming member to
-        // fulfill the set WMI data item IRP.
-        //
-        requiredSize = sizeof(BOOLEAN);
+	case WMI_POWER_DEVICE_ENABLE:
+		//
+		// Meaning of this request ("Allow the computer to turn off this
+		// device to save power") is device dependent. For example NDIS
+		// driver interpretation of this checkbox is different from Serial
+		// class drivers.
+		//
+		requiredSize = sizeof(BOOLEAN);
 
-        if (BufferSize < requiredSize)
-        {
-            //
-            // Fail the WMI IRP if the BufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            //
-            status = STATUS_BUFFER_TOO_SMALL;
+		if (BufferSize < requiredSize)
+		{
+			// Fail the WMI IRP if the BufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
 
-            break;
-        }
+		//
+		// Set the device extension's AllowIdleDetectionRegistration member to the
+		// value passed from WMI. WMI passes the value in the Buffer parameter.
+		//
+		fdoData->AllowIdleDetectionRegistration = *(PBOOLEAN) Buffer;
 
-        //
-        // Set the device extension's AllowWakeArming member to the value passed from
-        // WMI. WMI passes the value in the Buffer parameter.
-        //
-        // The Featured2 stage of the function driver demonstrates how to process
-        // wait/wake power operations.
-        //
-        fdoData->AllowWakeArming = *(PBOOLEAN) Buffer;
+		status = STATUS_SUCCESS;
+		break;
 
-        status = STATUS_SUCCESS;
+	case WMI_POWER_DEVICE_WAKE_ENABLE:
+		//
+		// WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third entry in the
+		// ToasterWmiGuidList array, which must match the third data block in the
+		// Toaster.mof file. Set the device extension's wait/wake arming member to
+		// fulfill the set WMI data item IRP.
+		//
+		requiredSize = sizeof(BOOLEAN);
 
-        break;
+		if (BufferSize < requiredSize)
+		{
+			// Fail the WMI IRP if the BufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			//
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
 
-    case WMI_POWER_DEVICE_ENABLE:
-        //
-        // Meaning of this request ("Allow the computer to turn off this
-        // device to save power") is device dependent. For example NDIS
-        // driver interpretation of this checkbox is different from Serial
-        // class drivers.
-        //
-        requiredSize = sizeof(BOOLEAN);
+		//
+		// Set the device extension's AllowWakeArming member to the value passed from
+		// WMI. WMI passes the value in the Buffer parameter.
+		//
+		// The Featured2 stage of the function driver demonstrates how to process
+		// wait/wake power operations.
+		//
+		fdoData->AllowWakeArming = *(PBOOLEAN) Buffer;
 
-        if (BufferSize < requiredSize)
-        {
-            //
-            // Fail the WMI IRP if the BufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            //
-            status = STATUS_BUFFER_TOO_SMALL;
-
-            break;
-        }
-
-        //
-        // Set the device extension's AllowIdleDetectionRegistration member to the
-        // value passed from WMI. WMI passes the value in the Buffer parameter.
-        //
-        fdoData->AllowIdleDetectionRegistration = *(PBOOLEAN) Buffer;
-
-        status = STATUS_SUCCESS;
-
-        break;
+		status = STATUS_SUCCESS;
+		break;
 
      default:
-        //
         // Fail any incoming WMI IRP that does not correspond to a GUID in the
         // ToasterWmiGuidList array that the function driver registered earlier in
         // ToasterWmiRegistration.
         //
         status = STATUS_WMI_GUID_NOT_FOUND;
-
     }
 
     //
@@ -659,7 +640,6 @@ Return Value Description:
                                   status,
                                   requiredSize,
                                   IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -687,36 +667,21 @@ New Routine Description:
     after the data has changed.
 
 Parameters Description:
-    DeviceObject
-    DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    [DeviceObject,Irp,GuidIndex,InstanceIndex] same as those of ToasterQueryWmiDataBlock()
 
-    Irp
-    Irp represents the set WMI data block operation associated with DeviceObject.
-
-    GuidIndex represents the index of the WMI data item in the ToasterWmiGuidList
-    array that was passed to the WMI library when the function driver called
-    ToasterWmiRegistration.
-
-    InstanceIndex
-    InstanceIndex represents the instance of the WMI data block being set.
-
-    BufferSize
+    [BufferSize] // in
     BufferSize represents the size of the caller-allocated buffer described by the
     Buffer parameter.
 
-    Buffer
+    [Buffer] // in, const ptr
     Buffer represents the data buffer for the WMI data item.
 
 Return Value Description:
-    ToasterSetWmiDataBlock returns STATUS_BUFFER_TOO_SMALL if the OutBufferSize
-    parameter is less than the size that is required to fulfill the IRP.
     ToasterSetWmiDataBlock returns STATUS_WMI_GUID_NOT_FOUND if the incoming WMI
     IRP does not correspond to a GUID supported by the function driver.
+
     Otherwise ToasterSetWmiDataBlock returns the value returned by
     WmiCompleteRequest.
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -759,69 +724,66 @@ Return Value Description:
 
         break;
 
-    case WMI_POWER_DEVICE_WAKE_ENABLE:
-        //
-        // WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third entry in the
-        // ToasterWmiGuidList array, which must match the third data block in the
-        // Toaster.mof file. Set the device extension's wait/wake arming member to
-        // fulfill the set WMI data item IRP.
-        //
+	case WMI_POWER_DEVICE_ENABLE:
+		//
+		// Meaning of this request ("Allow the computer to turn off this
+		// device to save power") is device dependent. For example NDIS
+		// driver interpretation of this checkbox is different from Serial
+		// class drivers.
+		//
+		requiredSize = sizeof(BOOLEAN);
 
-        requiredSize = sizeof(BOOLEAN);
+		if (BufferSize < requiredSize)
+		{
+			//
+			// Fail the WMI IRP if the BufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			//
+			status = STATUS_BUFFER_TOO_SMALL;
 
-        if (BufferSize < requiredSize)
-        {
-            //
-            // Fail the WMI IRP if the BufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            //
-            status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
 
-            break;
-        }
+		//
+		// Set the device extension's AllowIdleDetectionRegistration member to the
+		// value passed from WMI. WMI passes the value in the Buffer parameter.
+		//
+		fdoData->AllowIdleDetectionRegistration = *(PBOOLEAN) Buffer;
 
-        //
-        // Set the device extension's AllowWakeArming member to the value passed from
-        // WMI. WMI passes the value in the Buffer parameter.
-        //
-        // The Featured2 stage of the function driver demonstrates how to process
-        // wait/wake power operations.
-        //
-        fdoData->AllowWakeArming = *(PBOOLEAN) Buffer;
+		status = STATUS_SUCCESS;
+		break;
 
-        status = STATUS_SUCCESS;
+	case WMI_POWER_DEVICE_WAKE_ENABLE:
+		//
+		// WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third entry in the
+		// ToasterWmiGuidList array, which must match the third data block in the
+		// Toaster.mof file. Set the device extension's wait/wake arming member to
+		// fulfill the set WMI data item IRP.
+		//
 
-        break;
+		requiredSize = sizeof(BOOLEAN);
 
-    case WMI_POWER_DEVICE_ENABLE:
-        //
-        // Meaning of this request ("Allow the computer to turn off this
-        // device to save power") is device dependent. For example NDIS
-        // driver interpretation of this checkbox is different from Serial
-        // class drivers.
-        //
-        requiredSize = sizeof(BOOLEAN);
+		if (BufferSize < requiredSize)
+		{
+			//
+			// Fail the WMI IRP if the BufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			//
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
 
-        if (BufferSize < requiredSize)
-        {
-            //
-            // Fail the WMI IRP if the BufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            //
-            status = STATUS_BUFFER_TOO_SMALL;
+		//
+		// Set the device extension's AllowWakeArming member to the value passed from
+		// WMI. WMI passes the value in the Buffer parameter.
+		//
+		// The Featured2 stage of the function driver demonstrates how to process
+		// wait/wake power operations.
+		//
+		fdoData->AllowWakeArming = *(PBOOLEAN) Buffer;
 
-            break;
-        }
-
-        //
-        // Set the device extension's AllowIdleDetectionRegistration member to the
-        // value passed from WMI. WMI passes the value in the Buffer parameter.
-        //
-        fdoData->AllowIdleDetectionRegistration = *(PBOOLEAN) Buffer;
-
-        status = STATUS_SUCCESS;
-
-        break;
+		status = STATUS_SUCCESS;
+		break;
 
     default:
         //
