@@ -118,9 +118,9 @@ WMIGUIDREGINFO ToasterWmiGuidList[] =
     // individual data items, such as ConnectorType and DebugPrintLevel.
     //
     {
-        &TOASTER_WMI_STD_DATA_GUID,
-        1,
-        0
+        &TOASTER_WMI_STD_DATA_GUID, // WMI GUID
+        1, // instance count
+        0  // flags
     },
     //
     // The second data block corresponds to the "class ToasterNotifyDeviceArrival"
@@ -674,12 +674,11 @@ ToasterSetWmiDataBlock(
     PUCHAR Buffer
     )
 /*++
-
 New Routine Description:
     The WMI library calls back ToasterQueryWmiDataBlock to set the contents of a
     data block.
 
-    If the function driver can complete the query WMI IRP within the callback,
+    If the function driver can complete the *query WMI IRP* within the callback,
     then it should call WmiCompleteRequest to complete the incoming WMI IRP before
     returning to the caller.
 
@@ -860,7 +859,6 @@ ToasterQueryWmiDataBlock(
     PUCHAR Buffer
     )
 /*++
-
 New Routine Description:
     The WMI library calls back ToasterQueryWmiDataBlock to query for the contents
     of a data block.
@@ -875,34 +873,33 @@ New Routine Description:
 
 Parameters Description:
     DeviceObject is the device whose data block is being queried
-    DeviceObject
+    [DeviceObject]
     DeviceObject represents the hardware instance that is associated with the
-    incoming Irp parameter. DeviceObject is an FDO created earlier in
-    ToasterAddDevice.
+    incoming Irp parameter. DeviceObject is an FDO created earlier in ToasterAddDevice.
 
-    Irp
+    [Irp]
     Irp represents the query WMI data block operation associated with DeviceObject.
 
-    GuidIndex
+    [GuidIndex]
     GuidIndex represents the index of the WMI data item in the ToasterWmiGuidList
-    array that was passed to the WMI library when the function driver called
-    ToasterWmiRegistration.
+    array [that was passed to the WMI library when the function driver called
+    ToasterWmiRegistration].
 
-    InstanceIndex
+    [InstanceIndex]
     InstanceIndex represents the instance of the WMI data block being queried.
 
-    InstanceCount
+    [InstanceCount]
     InstanceCount represents the number of instances the WMI library expects the
     function driver to return for the data block.
 
-    InstanceLengthArray
+    [InstanceLengthArray]
     InstanceLengthArray represents a pointer to an array of ULONG values that
     describe the lengths of each instance of the data block. If this is NULL then
     there was not enough space in the output buffer to fulfill the request so the
     function driver should complete the WMI IRP with the buffer size the function
     driver requires to fulfill the IRP.
 
-    OutBufferSize
+    [OutBufferSize]
     OutBufferSize represents the size of the caller-allocated buffer described by
     the Buffer parameter.
 
@@ -911,16 +908,17 @@ Parameters Description:
 Return Value Description:
     ToasterQueryWmiDataBlock returns STATUS_BUFFER_TOO_SMALL if the OutBufferSize
     parameter is less than the size that is required to fulfill the IRP.
+
     ToasterQueryWmiDataBlock returns STATUS_WMI_GUID_NOT_FOUND if the incoming WMI
     IRP does not correspond to a GUID supported by the function driver.
+
     Otherwise ToasterQueryWmiDataBlock returns the value returned by
     WmiCompleteRequest.
-
 --*/
 {
     PFDO_DATA               fdoData;
     NTSTATUS    status;
-    ULONG       size = 0;
+    ULONG       size_all_ret = 0;
 
     //
     // Terminate the model name with 2 NULLs because the data type is a WCHAR
@@ -942,8 +940,7 @@ Return Value Description:
     // per GUID in the ToasterWmiGuidList array. That is, the InstanceCount member of
     // the array's WMIGUIDREGINFO data type equals 1.
     //
-    ASSERT((InstanceIndex == 0) &&
-           (InstanceCount == 1));
+    ASSERT((InstanceIndex == 0) && (InstanceCount == 1));
 
     fdoData = (PFDO_DATA) DeviceObject->DeviceExtension;
 
@@ -959,17 +956,15 @@ Return Value Description:
 
         //
         // Calculate the required buffer size to fulfill the query WMI IRP.
+		// 此块信息对应 toaster.mof 中 'class ToasterDeviceInformation' 数据结构定义.
         //
-        size = sizeof (TOASTER_WMI_STD_DATA) + modelNameLen + sizeof(USHORT);
+        size_all_ret = sizeof (TOASTER_WMI_STD_DATA) + modelNameLen + sizeof(USHORT);
 
-        if (OutBufferSize < size )
+        if (OutBufferSize < size_all_ret )
         {
-            //
             // Fail the WMI IRP if the OutBufferSize parameter is less than the size
             // that is required to fulfill the IRP.
-            //
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
@@ -1010,7 +1005,7 @@ Return Value Description:
         // Return the size of the data copied into the query WMI IRP's Buffer
         // parameter.
         //
-        *InstanceLengthArray = size;
+        *InstanceLengthArray = size_all_ret;
 
         status = STATUS_SUCCESS;
 
@@ -1018,25 +1013,23 @@ Return Value Description:
 
     case WMI_POWER_DEVICE_WAKE_ENABLE:
         //
-        // WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third entry in the
-        // ToasterWmiGuidList array, which must match the third data block in the
-        // Toaster.mof file. Set the device extension's wait/wake arming member to
+        // WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third(offset=2) entry in the
+        // ToasterWmiGuidList array, which must match the third data block in the 
+        // Toaster.mof file. <== 后半句注释明显不对, 这个是系统内置 GUID, 并非 toaster.mof 自定义的.
+		//
+		// Set the device extension's wait/wake arming member to
         // fulfill the set WMI data item IRP.
         //
-        size = sizeof(BOOLEAN);
+        size_all_ret = sizeof(BOOLEAN);
 
-        if (OutBufferSize < size)
+        if (OutBufferSize < size_all_ret)
         {
-            //
             // Fail the WMI IRP if the OutBufferSize parameter is less than the size
             // that is required to fulfill the IRP.
-            //
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
-        //
         // Return the user's preference for wait/waking the system to the WMI
         // library. The function driver should read the default value written to the
         // Registry by the INF file that was used to install the driver. To read the
@@ -1053,7 +1046,7 @@ Return Value Description:
         //
         *(PBOOLEAN) Buffer = fdoData->AllowWakeArming;
 
-        *InstanceLengthArray = size;
+        *InstanceLengthArray = size_all_ret;
 
         status = STATUS_SUCCESS;
 
@@ -1063,27 +1056,24 @@ Return Value Description:
         //
         // Here we return the current preference of the user for wait-waking
         // the system. We read(IoOpenDeviceRegistryKey/ZwQueryValueKey)
-        // the default value written by the INF file in the HW registery.
+        // the default value written by the INF file in the HW registry.
         // If the user changes his preference, then we must record
         // the changes in the registry to have that in affect across
         // boots.
         // Note: Featured2 WMI.C implements this.
-        size = sizeof(BOOLEAN);
+        size_all_ret = sizeof(BOOLEAN);
 
-        if (OutBufferSize < size)
+        if (OutBufferSize < size_all_ret)
         {
-            //
             // Fail the WMI IRP if the OutBufferSize parameter is less than the size
             // that is required to fulfill the IRP.
-            //
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
         *(PBOOLEAN) Buffer = fdoData->AllowIdleDetectionRegistration;
 
-        *InstanceLengthArray = size;
+        *InstanceLengthArray = size_all_ret;
 
         status = STATUS_SUCCESS;
 
@@ -1106,9 +1096,8 @@ Return Value Description:
     status = WmiCompleteRequest(  DeviceObject,
                                   Irp,
                                   status,
-                                  size,
+                                  size_all_ret,
                                   IO_NO_INCREMENT);
-
     return status;
 }
 

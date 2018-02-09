@@ -587,8 +587,8 @@ typedef struct _FDO_DATA
     BOOLEAN             AllowIdleDetectionRegistration;
 
     // AllowWakeArming represents whether requests to arm the hardware instance to
-    // signal wake-up are acknowledged. This member equals TRUE if WMI requests to
-    // arm the hardware instance to signal wake-up should be acknowledged.
+    // signal wake-up are acknowledged. This member equals TRUE if WMI's [request to
+    // arm the hardware instance to signal wake-up] should be acknowledged.
     //
     BOOLEAN             AllowWakeArming;
 
