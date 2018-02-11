@@ -1,30 +1,29 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
-
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
     KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
     PURPOSE.
 
 Module Name:
-
     filter.h
 
 Abstract:
-
     Contains structure definitions and function prototypes for filter driver.
 
 Environment:
-
     Kernel mode
 
 Revision History:
 --*/
+
+#include <VisualDDKHelpers.h>
+
 #include <ntddk.h>
 #include <wdmsec.h> // for IoCreateDeviceSecure
 #include <initguid.h>
 #include <dontuse.h>
+
 
 // {41966169-3FD7-4392-AFE4-E6A9D0A92C72}  - generated using guidgen.exe
 DEFINE_GUID (GUID_SD_FILTER_CONTROL_OBJECT,
@@ -38,49 +37,7 @@ DEFINE_GUID (GUID_SD_FILTER_CONTROL_OBJECT,
 #if !defined(_FILTER_H_)
 #define _FILTER_H_
 
-#define DRIVERNAME "filter.sys: "
-
-#if BUS_LOWER
-
-#undef DRIVERNAME
-#define DRIVERNAME "BFdoLwr.sys: "
-
-#endif
-
-#if BUS_UPPER
-
-#undef DRIVERNAME
-#define DRIVERNAME "BFdoUpr.sys: "
-
-#endif
-
-#if DEVICE_LOWER
-
-#undef DRIVERNAME
-#define DRIVERNAME "DevLower.sys: "
-
-#endif
-
-#if DEVICE_UPPER
-
-#undef DRIVERNAME
-#define DRIVERNAME "DevUpper.sys: "
-
-#endif
-
-#if CLASS_LOWER
-
-#undef DRIVERNAME
-#define DRIVERNAME "ClsLower.sys: "
-
-#endif
-
-#if CLASS_UPPER
-
-#undef DRIVERNAME
-#define DRIVERNAME "ClsUpper.sys: "
-
-#endif
+#include "filter-drivername.h" // different names according to different preprocessor macro
 
 #if DBG
 #define DebugPrint(_x_) \

@@ -15,15 +15,10 @@ Environment:
     Kernel mode
 
 Revision History:
-
     Fixed bugs - March 15, 2001
-
     Added Ioctl interface - Aug 16, 2001
-    
     Updated to use IoCreateDeviceSecure function - Sep 17, 2002
-
     Updated to use RemLocks - Oct 29, 2002
-    
 --*/
 
 #include "filter.h"
@@ -59,24 +54,17 @@ DriverEntry(
     __in PUNICODE_STRING RegistryPath
     )
 /*++
-
 Routine Description:
-
     Installable driver initialization entry point.
     This entry point is called directly by the I/O system.
 
 Arguments:
-
     DriverObject - pointer to the driver object
-
     RegistryPath - pointer to a unicode string representing the path,
                    to driver-specific key in the registry.
-
 Return Value:
-
     STATUS_SUCCESS if successful,
     STATUS_UNSUCCESSFUL otherwise.
-
 --*/
 {
     NTSTATUS            status = STATUS_SUCCESS;

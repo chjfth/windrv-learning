@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toastmon", "kmdf\toast
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmdf_toast_simple_cpp", "kmdf\func_simple_cpp_vs2010\func_simple_cpp_vs2010.vcxproj", "{AAE14642-CB46-449B-B30F-2016CCCC002C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wdm_devupper_filter", "wdm\filter\devupper_vs2010\devupper.vcxproj", "{8DFA3AFC-7522-4FEA-B604-201802110001}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -139,6 +141,14 @@ Global
 		{AAE14642-CB46-449B-B30F-2016CCCC002C}.Release|Win32.Build.0 = Release|Win32
 		{AAE14642-CB46-449B-B30F-2016CCCC002C}.Release|x64.ActiveCfg = Release|x64
 		{AAE14642-CB46-449B-B30F-2016CCCC002C}.Release|x64.Build.0 = Release|x64
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Debug|Win32.Build.0 = Debug|Win32
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Debug|x64.ActiveCfg = Debug|x64
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Debug|x64.Build.0 = Debug|x64
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Release|Win32.ActiveCfg = Release|Win32
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Release|Win32.Build.0 = Release|Win32
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Release|x64.ActiveCfg = Release|x64
+		{8DFA3AFC-7522-4FEA-B604-201802110001}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

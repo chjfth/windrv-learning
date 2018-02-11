@@ -1,6 +1,7 @@
 #include <windows.h>
-#include <filter.h>
 #include <ntverp.h>
+
+#include "filter-drivername.h"
 
 #define VER_FILETYPE                VFT_DRV
 #define VER_FILESUBTYPE             VFT2_DRV_SYSTEM
