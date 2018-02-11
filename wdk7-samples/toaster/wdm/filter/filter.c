@@ -267,16 +267,15 @@ FilterPass (
     PIRP Irp
     )
 /*++
-
 Routine Description:
 
     The default dispatch routine.  If this driver does not recognize the
     IRP, then it should send it down, unmodified.
-    If the device holds iris, this IRP must be queued in the device extension
+    If the device holds IRPs, this IRP must be queued in the device extension
     No completion routine is required.
 
     For demonstrative purposes only, we will pass all the (non-PnP) Irps down
-    on the stack (as we are a filter driver). A real driver might choose to
+    on the stack (because we are a filter driver). A real driver might choose to
     service some of these Irps.
 
     As we have NO idea which function we are happily passing on, we can make
@@ -285,15 +284,8 @@ Routine Description:
     (aka the default location).
 
 Arguments:
-
    DeviceObject - pointer to a device object.
-
    Irp - pointer to an I/O Request Packet.
-
-Return Value:
-
-      NT status code
-
 --*/
 {
     PDEVICE_EXTENSION           deviceExtension;
@@ -312,9 +304,6 @@ Return Value:
    IoReleaseRemoveLock(&deviceExtension->RemoveLock, Irp); 
    return status;
 }
-
-
-
 
 
 
