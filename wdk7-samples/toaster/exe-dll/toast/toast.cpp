@@ -34,7 +34,8 @@ Revision History:
 // #include <dontuse.h>
 
 #define USAGE  \
-"Usage: Toast <-h> {-h option causes the device to hide from Device Manager UI}\n"
+	"Usage: Toast [-h|-s]\n"\
+	"      -h|-s : hide|show from Device Manager UI\n"
 
 enum findmethod_st { find_setupclass=0, find_ifaceclass=1 };
 
@@ -127,7 +128,6 @@ main(
                                  i, //
                                  &deviceInterfaceData)) 
 		{
-
             if(deviceInterfaceDetailData) {
                 free (deviceInterfaceDetailData);
                 deviceInterfaceDetailData = NULL;
@@ -163,8 +163,7 @@ main(
             deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(predictedLength);
 
             if(deviceInterfaceDetailData) {
-                deviceInterfaceDetailData->cbSize =
-                                sizeof (SP_DEVICE_INTERFACE_DETAIL_DATA);
+                deviceInterfaceDetailData->cbSize = sizeof (SP_DEVICE_INTERFACE_DETAIL_DATA);
             } else {
                 printf("Couldn't allocate %d bytes for device interface details.\n", predictedLength);
                 SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
@@ -184,10 +183,14 @@ main(
                 free (deviceInterfaceDetailData);
                 return FALSE;
             }
-            printf("%d) %s\n", ++i,
+
+			// Chj: print out the so-called DevOpenPath for this enumerated devnode.
+            printf("(%d) %s\n", ++i,
                     deviceInterfaceDetailData->DevicePath);
         }
-        else if (ERROR_NO_MORE_ITEMS != GetLastError()) {
+        else if (ERROR_NO_MORE_ITEMS != GetLastError()) 
+		{
+			// weird error case
             free (deviceInterfaceDetailData);
             deviceInterfaceDetailData = NULL;
             continue;
@@ -208,7 +211,7 @@ main(
     //
     // Open the last toaster device interface
     //
-    printf("\nOpening the last interface:\n %s\n",
+    printf("\nOpening the last-enumerated interface:\n %s\n",
                     deviceInterfaceDetailData->DevicePath);
 
     file = CreateFile ( deviceInterfaceDetailData->DevicePath,

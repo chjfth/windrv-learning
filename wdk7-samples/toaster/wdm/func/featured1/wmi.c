@@ -973,73 +973,71 @@ Return Value Description:
 
         break;
 
-    case WMI_POWER_DEVICE_WAKE_ENABLE:
-        //
-        // WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third(offset=2) entry in the
-        // ToasterWmiGuidList array, which must match the third data block in the 
-        // Toaster.mof file. <== 后半句注释明显不对, 这个是系统内置 GUID, 并非 toaster.mof 自定义的.
+	case WMI_POWER_DEVICE_ENABLE:
+		//
+		// Here we return the current preference of the user for wait-waking
+		// the system. We read(IoOpenDeviceRegistryKey/ZwQueryValueKey)
+		// the default value written by the INF file in the HW registry.
+		// If the user changes his preference, then we must record
+		// the changes in the registry to have that in affect across
+		// boots.
+		// Note: Featured2 WMI.C implements this.
+		size_all_ret = sizeof(BOOLEAN);
+
+		if (OutBufferSize < size_all_ret)
+		{
+			// Fail the WMI IRP if the OutBufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		*(PBOOLEAN) Buffer = fdoData->AllowIdleDetectionRegistration;
+
+		*InstanceLengthArray = size_all_ret;
+
+		status = STATUS_SUCCESS;
+		break;
+
+	case WMI_POWER_DEVICE_WAKE_ENABLE:
+		//
+		// WMI_POWER_DEVICE_WAKE_ENABLE corresponds to the third(offset=2) entry in the
+		// ToasterWmiGuidList array, which must match the third data block in the 
+		// Toaster.mof file. <== 后半句注释明显不对, 这个是系统内置 GUID, 并非 toaster.mof 自定义的.
 		//
 		// Set the device extension's wait/wake arming member to
-        // fulfill the set WMI data item IRP.
-        //
-        size_all_ret = sizeof(BOOLEAN);
+		// fulfill the set WMI data item IRP.
+		//
+		size_all_ret = sizeof(BOOLEAN);
 
-        if (OutBufferSize < size_all_ret)
-        {
-            // Fail the WMI IRP if the OutBufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            status = STATUS_BUFFER_TOO_SMALL;
-            break;
-        }
+		if (OutBufferSize < size_all_ret)
+		{
+			// Fail the WMI IRP if the OutBufferSize parameter is less than the size
+			// that is required to fulfill the IRP.
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
 
-        // Return the user's preference for wait/waking the system to the WMI
-        // library. The function driver should read the default value written to the
-        // Registry by the INF file that was used to install the driver. To read the
-        // default value from the Registry, the function driver should use the
-        // IoOpenDeviceRegistryKey and ZwQueryValueKey system calls.
-        //
-        // If the user changes his preference, then the function driver must record
-        // the change to the Registry so that the change persists between reboots.
-        // To save the value to the Registry, the function driver should use the
-        // ZwSetValueKey system call.
-        //
-        // The Featured2 stage of the function driver demonstrates how to process
-        // wait/wake power operations.
-        //
-        *(PBOOLEAN) Buffer = fdoData->AllowWakeArming;
+		// Return the user's preference for wait/waking the system to the WMI
+		// library. The function driver should read the default value written to the
+		// Registry by the INF file that was used to install the driver. To read the
+		// default value from the Registry, the function driver should use the
+		// IoOpenDeviceRegistryKey and ZwQueryValueKey system calls.
+		//
+		// If the user changes his preference, then the function driver must record
+		// the change to the Registry so that the change persists between reboots.
+		// To save the value to the Registry, the function driver should use the
+		// ZwSetValueKey system call.
+		//
+		// The Featured2 stage of the function driver demonstrates how to process
+		// wait/wake power operations.
+		//
+		*(PBOOLEAN) Buffer = fdoData->AllowWakeArming;
 
-        *InstanceLengthArray = size_all_ret;
+		*InstanceLengthArray = size_all_ret;
 
-        status = STATUS_SUCCESS;
-
-        break;
-
-    case WMI_POWER_DEVICE_ENABLE:
-        //
-        // Here we return the current preference of the user for wait-waking
-        // the system. We read(IoOpenDeviceRegistryKey/ZwQueryValueKey)
-        // the default value written by the INF file in the HW registry.
-        // If the user changes his preference, then we must record
-        // the changes in the registry to have that in affect across
-        // boots.
-        // Note: Featured2 WMI.C implements this.
-        size_all_ret = sizeof(BOOLEAN);
-
-        if (OutBufferSize < size_all_ret)
-        {
-            // Fail the WMI IRP if the OutBufferSize parameter is less than the size
-            // that is required to fulfill the IRP.
-            status = STATUS_BUFFER_TOO_SMALL;
-            break;
-        }
-
-        *(PBOOLEAN) Buffer = fdoData->AllowIdleDetectionRegistration;
-
-        *InstanceLengthArray = size_all_ret;
-
-        status = STATUS_SUCCESS;
-
-        break;
+		status = STATUS_SUCCESS;
+		break;
 
     default:
         //
