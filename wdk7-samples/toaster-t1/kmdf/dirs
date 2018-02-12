@@ -1,6 +1,0 @@
-DIRS= \
-     bus \
-     exe \
-     filter \
-     func \
-     toastmon
