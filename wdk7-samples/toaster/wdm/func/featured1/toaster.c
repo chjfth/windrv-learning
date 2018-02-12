@@ -2191,7 +2191,7 @@ Updated Routine Description:
         }
         if (DebugPrintLevel <= DebugLevel)
         {
-            KdPrint (("[%d]" _DRIVER_NAME_": %s", s_seq++, debugMessageBuffer));
+            KdPrint (("[T%d]" _DRIVER_NAME_": %s", s_seq++, debugMessageBuffer));
         }
     }
     va_end(list);

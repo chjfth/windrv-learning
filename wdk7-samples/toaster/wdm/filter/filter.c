@@ -23,6 +23,8 @@ Revision History:
 
 #include "filter.h"
 
+int g_seq = 0;
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
 #pragma alloc_text (PAGE, FilterAddDevice)
@@ -83,7 +85,7 @@ Return Value:
          ulIndex <= IRP_MJ_MAXIMUM_FUNCTION;
          ulIndex++, dispatch++) {
 
-        *dispatch = FilterPass;
+        *dispatch = FilterPass; // default IRP pass-through processing
     }
 
     DriverObject->MajorFunction[IRP_MJ_PNP]            = FilterDispatchPnp;
@@ -121,31 +123,22 @@ FilterAddDevice(
     __in PDEVICE_OBJECT PhysicalDeviceObject
     )
 /*++
-
 Routine Description:
-
     The Plug & Play subsystem is handing us a brand new PDO, for which we
     (by means of INF registration) have been asked to provide a driver.
 
     We need to determine if we need to be in the driver stack for the device.
-    Create a function device object to attach to the stack
-    Initialize that device object
-    Return status success.
+    * Create a function(?) device object to attach to the stack                  // function device object 不是指 FDO 吧, 本例创建的可是 FiDO
+    * Initialize that device object
+    * Return status success.
 
     Remember: We can NOT actually send ANY non pnp IRPS to the given driver
     stack, UNTIL we have received an IRP_MN_START_DEVICE.
 
 Arguments:
-
     DeviceObject - pointer to a device object.
-
     PhysicalDeviceObject -  pointer to a device object created by the
                             underlying bus driver.
-
-Return Value:
-
-    NT status code.
-
 --*/
 {
     NTSTATUS                status = STATUS_SUCCESS;
@@ -154,7 +147,6 @@ Return Value:
     ULONG                   deviceType = FILE_DEVICE_UNKNOWN;
 
     PAGED_CODE ();
-
 
     //
     // IoIsWdmVersionAvailable(1, 0x20) returns TRUE on os after Windows 2000.
@@ -176,7 +168,6 @@ Return Value:
     //
     // Create a filter device object.
     //
-
     status = IoCreateDevice (DriverObject,
                              sizeof (DEVICE_EXTENSION),
                              NULL,  // No Name
@@ -184,8 +175,6 @@ Return Value:
                              FILE_DEVICE_SECURE_OPEN,
                              FALSE,
                              &deviceObject);
-
-
     if (!NT_SUCCESS (status)) {
         //
         // Returning failure here prevents the entire stack from functioning,
@@ -208,17 +197,17 @@ Return Value:
     //
     // Failure for attachment is an indication of a broken plug & play system.
     //
-
     if (NULL == deviceExtension->NextLowerDriver) {
 
         IoDeleteDevice(deviceObject);
         return STATUS_UNSUCCESSFUL;
     }
 
+	// chj: What could NextLowerDriver->Flags be? Why should we copy those flags?
+	//
     deviceObject->Flags |= deviceExtension->NextLowerDriver->Flags &
                             (DO_BUFFERED_IO | DO_DIRECT_IO |
                             DO_POWER_PAGABLE );
-
 
     deviceObject->DeviceType = deviceExtension->NextLowerDriver->DeviceType;
 
@@ -229,12 +218,11 @@ Return Value:
 
     //
     // Let us use remove lock to keep count of IRPs so that we don't 
-    // deteach and delete our deviceobject until all pending I/Os in our
+    // detach and delete our deviceobject until all pending I/Os in our
     // devstack are completed. Remlock is required to protect us from
     // various race conditions where our driver can get unloaded while we
     // are still running dispatch or completion code.
     //
-    
     IoInitializeRemoveLock (&deviceExtension->RemoveLock , 
                             POOL_TAG,
                             1, // MaxLockedMinutes 
@@ -247,7 +235,6 @@ Return Value:
     //
     // Set the initial state of the Filter DO
     //
-
     INITIALIZE_PNP_STATE(deviceExtension);
 
     DebugPrint(("AddDevice: %p to %p->%p \n", deviceObject,
@@ -257,7 +244,6 @@ Return Value:
     deviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
 
     return STATUS_SUCCESS;
-
 }
 
 
@@ -692,19 +678,11 @@ FilterUnload(
     __in PDRIVER_OBJECT DriverObject
     )
 /*++
-
 Routine Description:
-
     Free all the allocated resources in DriverEntry, etc.
 
 Arguments:
-
     DriverObject - pointer to a driver object.
-
-Return Value:
-
-    VOID.
-
 --*/
 {
     PAGED_CODE ();

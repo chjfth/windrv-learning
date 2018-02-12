@@ -102,7 +102,7 @@ extern int g_seq;
 
 #define Bus_KdPrint(_d_,_l_, _x_) \
             if (!(_l_) | (_d_)->DebugLevel & (_l_)) { \
-               DbgPrint ("[%d]BusEnum.SYS: ", g_seq++); \
+               DbgPrint ("[B%d]BusEnum.SYS: ", g_seq++); \
                DbgPrint _x_; \
             }
 
@@ -113,7 +113,7 @@ extern int g_seq;
 
 #define Bus_KdPrint_Def(_l_, _x_) \
             if (!(_l_) | BusEnumDebugLevel & (_l_)) { \
-               DbgPrint ("[%d]BusEnum.SYS: ", g_seq++); \
+               DbgPrint ("[B%d]BusEnum.SYS: ", g_seq++); \
                DbgPrint _x_; \
             }
 

@@ -39,9 +39,11 @@ DEFINE_GUID (GUID_SD_FILTER_CONTROL_OBJECT,
 
 #include "filter-drivername.h" // different names according to different preprocessor macro
 
+extern int g_seq;
+
 #if DBG
 #define DebugPrint(_x_) \
-               DbgPrint (DRIVERNAME); \
+               DbgPrint ("[F%d]" DRIVERNAME, g_seq++); \
                DbgPrint _x_;
 
 #define TRAP() DbgBreakPoint()
