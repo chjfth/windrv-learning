@@ -843,24 +843,16 @@ FilterDispatchIo(
     PIRP              Irp
     )
 /*++
-
 Routine Description:
-
-    This routine is the dispatch routine for non passthru irps.
+    This routine is the dispatch routine for non-passthru irps.
     We will check the input device object to see if the request
     is meant for the control device object. If it is, we will
     handle and complete the IRP, if not, we will pass it down to 
     the lower driver.
     
 Arguments:
-
     DeviceObject - Pointer to the device object.
-
     Irp - Pointer to the request packet.
-
-Return Value:
-
-    NT Status code
 --*/
 {
     PIO_STACK_LOCATION  irpStack;
@@ -872,7 +864,6 @@ Return Value:
 
    commonData = (PCOMMON_DEVICE_DATA)DeviceObject->DeviceExtension;
 
-
     //
     // Please note that this is a common dispatch point for controlobject and
     // filter deviceobject attached to the pnp stack. 
@@ -881,6 +872,7 @@ Return Value:
         //
         // We will just  the request down as we are not interested in handling
         // requests that come on the PnP stack.
+		// Chj: For example, IRP_MJ_CREATE, IRP_MJ_CLEANUP, IPR_MJ_CLOSE initiated by toast.exe
         //
         return FilterPass(DeviceObject, Irp);    
     }
@@ -894,31 +886,32 @@ Return Value:
     // Here we will handle the IOCTl requests that come from the app.
     // We don't have to worry about acquiring remlocks for I/Os that come 
     // on our control object because the I/O manager takes reference on our 
-    // deviceobject when it initiates a request to our device and that keeps
+    // deviceobject when it initiates a request to our device and that prevents
     // our driver from unloading when we have pending I/Os. But we still
     // have to watch out for a scenario where another driver can send 
-    // requests to our deviceobject directly without opening an handle.
+    // requests to our deviceobject directly without opening an handle(chj: without get a FILE_OBJECT?).
     //
     if (!deviceExtension->Deleted) { //if not deleted
-        status = STATUS_SUCCESS;
+
+		status = STATUS_SUCCESS;
         Irp->IoStatus.Information = 0;
         irpStack = IoGetCurrentIrpStackLocation (Irp);
 
         switch (irpStack->MajorFunction) {
             case IRP_MJ_CREATE:
-                DebugPrint(("Create \n"));
+                DebugPrint(("Create~ \n"));
                 break;
                 
+			case IRP_MJ_CLEANUP:
+				DebugPrint(("Cleanup~ \n"));
+				break;
+
             case IRP_MJ_CLOSE:
-                DebugPrint(("Close \n"));
-                break;
-                
-            case IRP_MJ_CLEANUP:
-                DebugPrint(("Cleanup \n"));
+                DebugPrint(("Close~ \n"));
                 break;
                 
              case  IRP_MJ_DEVICE_CONTROL:
-                DebugPrint(("DeviceIoControl\n"));
+                DebugPrint(("DeviceIoControl~ \n"));
                 switch (irpStack->Parameters.DeviceIoControl.IoControlCode) {
                     //
                     //case IOCTL_CUSTOM_CODE: 
