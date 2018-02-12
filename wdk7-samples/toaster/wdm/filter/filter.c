@@ -204,7 +204,7 @@ Arguments:
     }
 
 	// chj: What could NextLowerDriver->Flags be? Why should we copy those flags?
-	//
+	// I see NextLowerDriver->Flags==0x00002004 .
     deviceObject->Flags |= deviceExtension->NextLowerDriver->Flags &
                             (DO_BUFFERED_IO | DO_DIRECT_IO |
                             DO_POWER_PAGABLE );
@@ -720,20 +720,18 @@ FilterCreateControlObject(
     PAGED_CODE();    
 
     //
-    // IoCreateDeviceSecure & IoCreateSymbolicLink must be called at
-    // PASSIVE_LEVEL.
+    // IoCreateDeviceSecure & IoCreateSymbolicLink must be called at PASSIVE_LEVEL.
     // Hence we use an event and not a fast mutex.
     //
     KeEnterCriticalRegion();
     KeWaitForSingleObject(&ControlLock, Executive, KernelMode, FALSE, NULL);
 
     //
-    // If this is a first instance of the device, then create a controlobject
+    // If this is the first instance of the device, then create a controlobject
     // and register dispatch points to handle ioctls.
     //
     if (1 == ++InstanceCount)
     {
-
         //
         // Initialize the unicode strings
         //
@@ -748,7 +746,7 @@ FilterCreateControlObject(
 
         //
         // Create a named deviceobject so that applications or drivers
-        // can directly talk to us without going throuhg the entire stack.
+        // can directly talk to us without going through the entire stack.
         // This call could fail if there are not enough resources or
         // another deviceobject of same name exists (name collision).
         // Let us use the new IoCreateDeviceSecure and specify a security
@@ -760,7 +758,6 @@ FilterCreateControlObject(
         // An admin can override the SD specified in the below call by modifying
         // the registry.
         //
-        
         status = IoCreateDeviceSecure(DeviceObject->DriverObject,
                                 sizeof(CONTROL_DEVICE_EXTENSION),
                                 &ntDeviceName,
@@ -796,12 +793,10 @@ FilterCreateControlObject(
     }
 
 End:
-    
     KeSetEvent(&ControlLock, IO_NO_INCREMENT, FALSE);
     KeLeaveCriticalRegion();
     
     return status;
-    
 }
 
 VOID
@@ -855,42 +850,42 @@ Arguments:
     Irp - Pointer to the request packet.
 --*/
 {
-    PIO_STACK_LOCATION  irpStack;
-    NTSTATUS            status;
-    PCONTROL_DEVICE_EXTENSION   deviceExtension;
-    PCOMMON_DEVICE_DATA commonData;
+	PIO_STACK_LOCATION  irpStack;
+	NTSTATUS            status;
+	PCONTROL_DEVICE_EXTENSION   deviceExtension;
+	PCOMMON_DEVICE_DATA commonData;
 
-    PAGED_CODE();
+	PAGED_CODE();
 
-   commonData = (PCOMMON_DEVICE_DATA)DeviceObject->DeviceExtension;
+	commonData = (PCOMMON_DEVICE_DATA)DeviceObject->DeviceExtension;
 
-    //
-    // Please note that this is a common dispatch point for controlobject and
-    // filter deviceobject attached to the pnp stack. 
-    //
-    if (commonData->Type == DEVICE_TYPE_FIDO) {
-        //
-        // We will just  the request down as we are not interested in handling
-        // requests that come on the PnP stack.
+	//
+	// Please note that this is a common dispatch point for controlobject and
+	// filter deviceobject attached to the pnp stack. 
+	//
+	if (commonData->Type == DEVICE_TYPE_FIDO) {
+		//
+		// We will just  the request down as we are not interested in handling
+		// requests that come on the PnP stack.
 		// Chj: For example, IRP_MJ_CREATE, IRP_MJ_CLEANUP, IPR_MJ_CLOSE initiated by toast.exe
-        //
-        return FilterPass(DeviceObject, Irp);    
-    }
+		//
+		return FilterPass(DeviceObject, Irp);    
+	}
  
-    ASSERT(commonData->Type == DEVICE_TYPE_CDO);
+	ASSERT(commonData->Type == DEVICE_TYPE_CDO);
 
-    deviceExtension = (PCONTROL_DEVICE_EXTENSION)DeviceObject->DeviceExtension;
+	deviceExtension = (PCONTROL_DEVICE_EXTENSION)DeviceObject->DeviceExtension;
     
-    //
-    // Else this is targeted at our control deviceobject so let's handle it.
-    // Here we will handle the IOCTl requests that come from the app.
-    // We don't have to worry about acquiring remlocks for I/Os that come 
-    // on our control object because the I/O manager takes reference on our 
-    // deviceobject when it initiates a request to our device and that prevents
-    // our driver from unloading when we have pending I/Os. But we still
-    // have to watch out for a scenario where another driver can send 
-    // requests to our deviceobject directly without opening an handle(chj: without get a FILE_OBJECT?).
-    //
+	//
+	// Else this is targeted at our control deviceobject so let's handle it.
+	// Here we will handle the IOCTL requests that come from the app.
+	// We don't have to worry about acquiring remlocks for I/Os that come 
+	// on our control object because the I/O manager takes reference on our 
+	// deviceobject when it initiates a request to our device and that prevents
+	// our driver from unloading when we have pending I/Os. But we still
+	// have to watch out for a scenario where another driver can send 
+	// requests to our deviceobject directly without opening an handle(chj: without getting a FILE_OBJECT?).
+	//
     if (!deviceExtension->Deleted) { //if not deleted
 
 		status = STATUS_SUCCESS;
