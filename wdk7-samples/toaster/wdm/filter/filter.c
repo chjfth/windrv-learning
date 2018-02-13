@@ -292,38 +292,26 @@ Arguments:
 }
 
 
-
 NTSTATUS
 FilterDispatchPnp (
     PDEVICE_OBJECT DeviceObject,
     PIRP Irp
     )
 /*++
-
 Routine Description:
-
     The plug and play dispatch routines.
-
     Most of these the driver will completely ignore.
     In all cases it must pass on the IRP to the lower driver.
 
 Arguments:
-
    DeviceObject - pointer to a device object.
-
    Irp - pointer to an I/O Request Packet.
-
-Return Value:
-
-      NT status code
-
 --*/
 {
     PDEVICE_EXTENSION           deviceExtension;
     PIO_STACK_LOCATION         irpStack;
     NTSTATUS                            status;
     KEVENT                               event;
-
     PAGED_CODE();
 
     deviceExtension = (PDEVICE_EXTENSION) DeviceObject->DeviceExtension;
@@ -342,7 +330,6 @@ Return Value:
 
     switch (irpStack->MinorFunction) {
     case IRP_MN_START_DEVICE:
-
         //
         // The device is starting.
         // We cannot touch the device (send it any non pnp irps) until a
@@ -372,12 +359,10 @@ Return Value:
         }
 
         if (NT_SUCCESS (status)) {
-
             //
             // As we are successfully now back, we will
             // first set our state to Started.
             //
-
             SET_NEW_PNP_STATE(deviceExtension, Started);
 
             //
@@ -549,16 +534,10 @@ Routine Description:
     which our filter deviceobject is attached.
 
 Arguments:
-
     DeviceObject - Pointer to deviceobject
     Irp          - Pointer to a PnP Irp.
-    Context      - NULL
-Return Value:
-
-    NT Status is returned.
-
+    Context      - an KEVENT address passed in by FilterDispatchPnp()
 --*/
-
 {
     PKEVENT             event = (PKEVENT)Context;
 
@@ -576,9 +555,7 @@ Return Value:
     //
     // The dispatch routine will have to call IoCompleteRequest
     //
-
     return STATUS_MORE_PROCESSING_REQUIRED;
-
 }
 
 NTSTATUS
