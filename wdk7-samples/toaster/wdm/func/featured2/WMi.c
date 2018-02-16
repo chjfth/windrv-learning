@@ -1,5 +1,4 @@
 /*++
-
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
     THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
@@ -8,15 +7,14 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
     PURPOSE.
 
 Module Name:
-
-    Wmi.c
+    WMi.c
 
 Abstract:
 
     This stage of Wmi.c builds upon the support implemented in the previous
     stage, Featured1\Wmi.c.
 
-    New features implemented in this stage of Wmi.c:
+    New features implemented in this stage of WMi.c:
 
     -The list of GUIDs supported by the function driver is changed to support WPP
      software tracing.
@@ -27,11 +25,9 @@ Abstract:
      signal wake-up.
 
 Environment:
-
     Kernel mode
 
 Revision History:
-
 --*/
 
 
@@ -73,7 +69,7 @@ Revision History:
 #define MOFRESOURCENAME L"ToasterWMI"
 
 #if defined(WIN2K) && defined(EVENT_TRACING)
-#define NUMBER_OF_WMI_GUIDS             4
+#define NUMBER_OF_WMI_GUIDS             4  // Not using this on WinXP+
 #else
 #define NUMBER_OF_WMI_GUIDS             3
 #endif
@@ -116,10 +112,8 @@ ToasterWmiRegistration(
     __in PFDO_DATA               FdoData
 )
 /*++
-
 Updated Routine Description:
     ToasterWmiRegistration does not change in this stage of the function driver.
-
 --*/
 {
     NTSTATUS status;
@@ -130,12 +124,12 @@ Updated Routine Description:
                                  sizeof (WMIGUIDREGINFO);
     ASSERT (NUMBER_OF_WMI_GUIDS == FdoData->WmiLibInfo.GuidCount);
     FdoData->WmiLibInfo.GuidList = ToasterWmiGuidList;
-    FdoData->WmiLibInfo.QueryWmiRegInfo = ToasterQueryWmiRegInfo;
-    FdoData->WmiLibInfo.QueryWmiDataBlock = ToasterQueryWmiDataBlock;
-    FdoData->WmiLibInfo.SetWmiDataBlock = ToasterSetWmiDataBlock;
-    FdoData->WmiLibInfo.SetWmiDataItem = ToasterSetWmiDataItem;
-    FdoData->WmiLibInfo.ExecuteWmiMethod = NULL;
-    FdoData->WmiLibInfo.WmiFunctionControl = ToasterFunctionControl;
+    FdoData->WmiLibInfo.QueryWmiRegInfo = ToasterQueryWmiRegInfo;      // DpWmiQueryReginfo
+    FdoData->WmiLibInfo.QueryWmiDataBlock = ToasterQueryWmiDataBlock;  // DpWmiQueryDataBlock 
+    FdoData->WmiLibInfo.SetWmiDataBlock = ToasterSetWmiDataBlock;      // DpWmiSetDataBlock 
+    FdoData->WmiLibInfo.SetWmiDataItem = ToasterSetWmiDataItem;        // DpWmiSetDataItem 
+    FdoData->WmiLibInfo.ExecuteWmiMethod = NULL;                       // DpWmiExecuteMethod 
+    FdoData->WmiLibInfo.WmiFunctionControl = ToasterFunctionControl;   // DpWmiFunctionControl 
 
     status = IoWMIRegistrationControl(FdoData->Self,
                              WMIREG_ACTION_REGISTER
@@ -156,10 +150,8 @@ ToasterWmiDeRegistration(
     __in PFDO_DATA               FdoData
 )
 /*++
-
 Updated Routine Description:
     ToasterWmiDeRegistration does not change in this stage of the function driver.
-
 --*/
 {
     PAGED_CODE();
@@ -167,7 +159,6 @@ Updated Routine Description:
     return IoWMIRegistrationControl(FdoData->Self,
                                  WMIREG_ACTION_DEREGISTER
                                  );
-
 }
 
 
@@ -283,12 +274,10 @@ ToasterSetWmiDataItem(
     PUCHAR Buffer
     )
 /*++
-
 Updated Routine Description:
     ToasterSetWmiDataItem arms or disarms the hardware instance to signal wake-up,
     if the function driver's WaitWakeEnabled Registry key indicates the hardware
     instance can support wait/wake.
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -311,7 +300,6 @@ Updated Routine Description:
             if (BufferSize < requiredSize)
             {
                 status = STATUS_BUFFER_TOO_SMALL;
-
                 break;
             }
 
@@ -327,43 +315,34 @@ Updated Routine Description:
 
         break;
 
-    case WMI_POWER_DEVICE_WAKE_ENABLE:
-
+    case WMI_POWER_DEVICE_WAKE_ENABLE: // chj: same as in ToasterSetWmiDataBlock()
         requiredSize = sizeof(BOOLEAN);
         if (BufferSize < requiredSize)
         {
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
-        //
         // The wait/wake value passed from WMI is based on the result of the function
         // driver's call attempt to wait/wake.
-        //
         waitWakeEnabled = *(PBOOLEAN) Buffer;
 
         ToasterSetWaitWakeEnableState(fdoData, waitWakeEnabled);
 
         if (TRUE == waitWakeEnabled)
         {
-            //
             // If wait/wake is supported, then arm the hardware instance to signal
             // wake-up.
-            //
             ToasterArmForWake(fdoData, FALSE);
         }
         else
         {
-            //
             // If wait/wake is not supported, then disarm the hardware instance from
             // signaling wake-up.
-            //
             ToasterDisarmWake(fdoData, FALSE);
         }
 
         status = STATUS_SUCCESS;
-
         break;
 
     default:
@@ -376,7 +355,6 @@ Updated Routine Description:
                                   status,
                                   requiredSize,
                                   IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -417,7 +395,6 @@ Updated Routine Description:
         if (BufferSize < requiredSize)
         {
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
@@ -425,7 +402,6 @@ Updated Routine Description:
                     ((PTOASTER_WMI_STD_DATA)Buffer)->DebugPrintLevel;
 
         status = STATUS_SUCCESS;
-
         break;
 
     case WMI_POWER_DEVICE_WAKE_ENABLE:
@@ -435,7 +411,6 @@ Updated Routine Description:
         if (BufferSize < requiredSize)
         {
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
@@ -445,7 +420,7 @@ Updated Routine Description:
         //
         waitWakeEnabled = *(PBOOLEAN) Buffer;
 
-        ToasterSetWaitWakeEnableState(fdoData, waitWakeEnabled);
+        ToasterSetWaitWakeEnableState(fdoData, waitWakeEnabled); // set dev-regitem WaitWakeEnabled=0/1
 
         if (TRUE == waitWakeEnabled)
         {
@@ -495,18 +470,16 @@ ToasterQueryWmiDataBlock(
     PUCHAR Buffer
     )
 /*++
-
 Updated Routine Description:
     ToasterQueryWmiDataBlocks returns whether the hardware instance can arm to
     signal wake-up.
-
 --*/
 {
     PFDO_DATA               fdoData;
     NTSTATUS    status;
     ULONG       size = 0;
 
-    WCHAR       modelName[]=L"Aishwarya\0\0";
+    WCHAR       modelName[]=L"Aishwarya2\0\0";
 
     ULONG      modelNameLen = (ULONG) (wcslen(modelName) + 1) * sizeof(WCHAR);
 
@@ -527,7 +500,6 @@ Updated Routine Description:
         if (OutBufferSize < size )
         {
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
@@ -553,11 +525,10 @@ Updated Routine Description:
         if (OutBufferSize < size)
         {
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
-        *(PBOOLEAN) Buffer = ToasterGetWaitWakeEnableState(fdoData);
+        *(PBOOLEAN) Buffer = ToasterGetWaitWakeEnableState(fdoData); // get dev-regitem WaitWakeEnabled=0/1
 
         *InstanceLengthArray = size;
 
@@ -575,7 +546,6 @@ Updated Routine Description:
                                   status,
                                   size,
                                   IO_NO_INCREMENT);
-
     return status;
 }
 
@@ -589,21 +559,18 @@ ToasterFunctionControl(
     BOOLEAN Enable
     )
 /*++
-
 Updated Routine Description:
     ToasterFunctionControl does not change in this stage of the function driver.
-
 --*/
 {
     NTSTATUS status;
 
     status = WmiCompleteRequest(
-                                     DeviceObject,
-                                     Irp,
-                                     STATUS_SUCCESS,
-                                     0,
-                                     IO_NO_INCREMENT);
-
+                                DeviceObject,
+                                Irp,
+                                STATUS_SUCCESS,
+                                0,
+                                IO_NO_INCREMENT);
     return(status);
 }
 

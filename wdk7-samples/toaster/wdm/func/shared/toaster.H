@@ -614,7 +614,7 @@ typedef struct _FDO_DATA
     // WakeDisableEnableLock represents the kernel event to prevent against
     // simultaneous arming and disarming requests.
     //
-    KEVENT              WakeDisableEnableLock;
+    KEVENT              WakeDisableEnableLock; // chj: actually a mutex
 
 }  FDO_DATA, *PFDO_DATA;
 

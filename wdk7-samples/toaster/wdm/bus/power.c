@@ -159,8 +159,7 @@ Bus_PDO_Power (
 /*++
     Handles power Irps sent to the PDOs.
     Typically a bus driver, that is not a power policy owner for the device, does nothing
-    more than starting the next power IRP and
-    completing this one.
+    more than starting the next power IRP and completing this one.
 
 Arguments:
     PdoData - Pointer to the PDO device extension.
@@ -235,6 +234,8 @@ Return Value:
         // will be called. There you just complete the IRP with STATUS_CANCELLED.
         //
 		// Chj: 由于此处没有实现代码, 因此无法测试"设备唤醒系统"的场景.
+		// 
+		// [2018-02-16] Chj: 不, 应该说是"用旁路手段将'设备对象'唤醒"的场景.
 
 		status = status; // chj test, easy set breakpoint
 		// fall through

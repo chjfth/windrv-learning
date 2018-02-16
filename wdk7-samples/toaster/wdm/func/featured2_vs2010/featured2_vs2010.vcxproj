@@ -211,7 +211,7 @@
     <ClCompile Include="..\featured2\POwer.C" />
     <ClCompile Include="..\featured2\TOaster.c" />
     <ClCompile Include="..\featured2\wake.c" />
-    <ClCompile Include="..\featured2\wmi.c" />
+    <ClCompile Include="..\featured2\WMi.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\featured2\POwer.h" />

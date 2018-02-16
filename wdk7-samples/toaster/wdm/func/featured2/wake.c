@@ -258,7 +258,8 @@ Return Value Description:
     NTSTATUS     status;
     WAKESTATE    oldWakeState;
     POWER_STATE  powerState;
-    PAGED_CODE();
+    
+	PAGED_CODE();
 
     ToasterDebugPrint(TRACE, "Entered ArmForWake\n");
 
@@ -289,7 +290,7 @@ Return Value Description:
                            Executive,
                            KernelMode,
                            FALSE,
-                           NULL ); // Chj Q: ²»»áÓÀ¾Ã¿¨×¡Âð?
+                           NULL ); // Chj: WakeDisableEnableLock is like a mutex, here we acquire the mutex
 
     if (TRUE == DeviceStateChange)
     {
@@ -395,7 +396,7 @@ Return Value Description:
     //
     KeSetEvent( &FdoData->WakeDisableEnableLock,
                 IO_NO_INCREMENT,
-                FALSE );
+                FALSE ); // Chj: WakeDisableEnableLock is like a mutex, here we release the mutex
 
     // Re-enable the delivery of normal kernel-mode APCs. The system was prevented
     // from sending normal kernel-mode asynchronous procedure calls (APCs) earlier
