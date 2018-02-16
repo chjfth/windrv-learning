@@ -1315,7 +1315,7 @@ Return Value Description:
 
 
 NTSTATUS
-ToasterQueryWmiRegInfo(
+ToasterQueryWmiRegInfo(             // MSDN:  DpWmiQueryReginfo
     PDEVICE_OBJECT DeviceObject,
     ULONG *RegFlags,
     PUNICODE_STRING InstanceName,
@@ -1332,7 +1332,7 @@ New Routine Description:
     thread executing it.
 
 Parameters Description:
-    [DeviceObject]
+    [DeviceObject] // in
     DeviceObject represents the hardware instance that is being queried
     by the WMI library to provide data. DeviceObject is an FDO created
     earlier in ToasterAddDevice.
@@ -1340,13 +1340,14 @@ Parameters Description:
     [RegFlags] // out
     RegFlags represents the flags to return to the caller (the WMI library). The
     flags describe the GUIDs being registered for the hardware instance described
-    by the DeviceObject parameter. ToasterQueryWmiRegInfo specifies the
-    WMIREG_FLAG_INSTANCE_PDO to request WMI to generate a static instance name
-    from the device instance ID for the PDO. If ToasterQueryWmiRegInfo does not
-    return the WMIREG_FLAG_INSTANCE_PDO flag, then it must return a unique name
-    in the InstanceName parameter.
+    by the DeviceObject parameter. 
 
-    [InstanceName] // out(?)
+	- ToasterQueryWmiRegInfo specifies the WMIREG_FLAG_INSTANCE_PDO to request 
+	  WMI to generate a static instance name from the device instance ID for the PDO. 
+	- If ToasterQueryWmiRegInfo does not return the WMIREG_FLAG_INSTANCE_PDO flag, 
+	  then it must return a unique name in the InstanceName parameter.
+
+    [InstanceName] // out
     InstanceName represents the unique base name for all instances of all blocks
     registered by the function driver. Because ToasterQueryRegInfo does not
     return the WMIREG_FLAG_INSTANCE_BASENAME flag, the InstanceName parameter is
@@ -1360,7 +1361,7 @@ Parameters Description:
     caller (the WMI library). The system passed the driver specific path to the
     DriverEntry routine.
 
-    [MofResourceName]
+    [MofResourceName] // out
     MofResourceName represents the MOF (managed object format) resource name that
     is attached to the function driver's binary image. If the function driver does
     not have a MOF resource attached to the its binary image, then MofResourceName

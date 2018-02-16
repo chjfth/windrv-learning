@@ -1439,9 +1439,9 @@ Updated Routine Description:
     ToasterQueueRequest sets the IRP's [cancel routine to be called by the system
     if the incoming IRP is canceled]. 注意 if 的修饰对象!
 
-    In addition, ToasterQueueRequests also tests [if the incoming IRP (+has) not been
+    In addition, ToasterQueueRequests also tests {if the incoming IRP (+has) not been
     canceled between the time [it was created] and [the time it is processed by      
-    ToasterQueueRequest]] before adding it to the tail of the driver-managed IRP queue.
+    ToasterQueueRequest]} before adding it to the tail of the driver-managed IRP queue.
 	// Chj: 注意断句! 意即:如果从在[该Irp生成 到 此函数拿到该Irp]这个时间窗口内
 	// 恰巧被另一个线程给 cancel 了, 那么就不用将该 Irp 加入等候队列了.
 	.    

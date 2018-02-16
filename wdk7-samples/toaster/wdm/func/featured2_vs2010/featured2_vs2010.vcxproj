@@ -217,18 +217,22 @@
     <ClInclude Include="..\featured2\POwer.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\featured2\toaster.mof">
+    <CustomBuild Include="..\featured2\TOaster.mof">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mofcomp -B:toaster.bmf ..\featured2\toaster.mof</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mofcomp -B:..\featured2\toaster.bmf ..\featured2\toaster.mof
+..\..\..\wmimofck.exe -m -h.\toasterMof.h -w.\htm ..\featured2\toaster.bmf</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling the MOF file toaster.mof ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">toaster.bmf</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mofcomp -B:toaster.bmf ..\featured2\toaster.mof</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\featured2\toaster.bmf</Outputs>
+
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mofcomp -B:..\featured2\toaster.bmf ..\featured2\toaster.mof
+..\..\..\wmimofck.exe -m -h.\toasterMof.h -w.\htm ..\featured2\toaster.bmf</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling the MOF file toaster.mof ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">toaster.bmf</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\featured2\toaster.bmf</Outputs>
+
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\featured2\toaster.RC" />
+    <ResourceCompile Include="..\featured2\TOaster.RC" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

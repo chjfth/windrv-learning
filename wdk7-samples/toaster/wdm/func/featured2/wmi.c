@@ -177,11 +177,9 @@ ToasterSystemControl (
     PIRP            Irp
     )
 /*++
-
 Updated Routine Description:
     ToasterSystemControl calls the WPP_TRACE_CONTROL macro to log the execution of
     the function driver through WPP software tracing.
-
 --*/
 {
     PFDO_DATA               fdoData;
@@ -241,7 +239,6 @@ Updated Routine Description:
         case IrpNotCompleted:
         {
             IoCompleteRequest(Irp, IO_NO_INCREMENT);
-
             break;
         }
 
@@ -250,20 +247,15 @@ Updated Routine Description:
         case IrpNotWmi:
         {
             IoSkipCurrentIrpStackLocation (Irp);
-
             status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
             break;
         }
 
         default:
         {
             ASSERT(FALSE);
-
             IoSkipCurrentIrpStackLocation (Irp);
-
             status = IoCallDriver (fdoData->NextLowerDriver, Irp);
-
             break;
         }
     }
@@ -399,12 +391,10 @@ ToasterSetWmiDataBlock(
     PUCHAR Buffer
     )
 /*++
-
 Updated Routine Description:
     ToasterSetWmiDataItem arms or disarms the hardware instance to signal wake-up,
     if the function driver's WaitWakeEnabled Registry key indicates the hardware
     instance can support wait/wake.
-
 --*/
 {
     PFDO_DATA   fdoData;
@@ -737,10 +727,8 @@ ToasterQueryWmiRegInfo(
     PDEVICE_OBJECT *Pdo
     )
 /*++
-
 Updated Routine Description:
     ToasterQueryWmiRegInfo does not change in this stage of the function driver.
-
 --*/
 {
     PFDO_DATA fdoData;
