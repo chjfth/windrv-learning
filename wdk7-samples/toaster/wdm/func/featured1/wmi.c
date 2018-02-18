@@ -708,12 +708,9 @@ Return Value Description:
 
         if (BufferSize < requiredSize)
         {
-            //
             // Fail the WMI IRP if the BufferSize parameter is less than the size
             // that is required to fulfill the IRP.
-            //
             status = STATUS_BUFFER_TOO_SMALL;
-
             break;
         }
 
@@ -735,12 +732,9 @@ Return Value Description:
 
 		if (BufferSize < requiredSize)
 		{
-			//
 			// Fail the WMI IRP if the BufferSize parameter is less than the size
 			// that is required to fulfill the IRP.
-			//
 			status = STATUS_BUFFER_TOO_SMALL;
-
 			break;
 		}
 
@@ -765,10 +759,8 @@ Return Value Description:
 
 		if (BufferSize < requiredSize)
 		{
-			//
 			// Fail the WMI IRP if the BufferSize parameter is less than the size
 			// that is required to fulfill the IRP.
-			//
 			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}

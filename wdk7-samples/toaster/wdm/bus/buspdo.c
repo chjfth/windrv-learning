@@ -380,9 +380,9 @@ Return Value:
     // A (child device) driver can specify a lower(less-powered) state than the
     // bus driver.  For eg: Suppose the toaster bus controller supports
     // D0, D2, and D3; and the Toaster Device supports D0, D1, D2, and D3.
-    // Following the above rule, the device cannot specify D1 as one of
-    // it's power state.  // Chj Q: 喂, 这句话表达有悖论吧!! 到底是 DEVICE_CAPABILITIES 的哪些成员受 "less" 的限制?
-    // A driver can make the rules more restrictive but cannot loosen them.
+    // Following the above rule, the device *cannot* specify D1 as one of
+    // it's power state. // [2018-02-18]Chj: 那所谓 *cannot*, 其实质约束体现在哪里?
+    // A driver(of child device) can make the rules more restrictive but cannot loosen them.
     // First copy the parent's S to D state mapping
     //
     RtlCopyMemory(
@@ -392,7 +392,7 @@ Return Value:
         ); // 拷贝的是数组 DEVICE_CAPABILITIES.DeviceState[POWER_SYSTEM_MAXIMUM]
     //
     // Adjust the caps to what your device supports.
-    // Our device just supports D0 and D3. (喂，下面明明说可以支持 D1 的)
+    // Our device just supports D0 and D3. (喂，下面明明说可以支持 D1 的, 注释和代码有矛盾!)
     //
     deviceCapabilities->DeviceState[PowerSystemWorking] = PowerDeviceD0;
 	//
@@ -406,6 +406,7 @@ Return Value:
         deviceCapabilities->DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
 
     // We can wake the system from D1
+	// Chj: "physical (child) device" can wake the system when the child devnode is in D1 state.
     deviceCapabilities->DeviceWake = PowerDeviceD1;
 
     // Specifies whether the device hardware supports the D1 and D2

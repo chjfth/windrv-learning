@@ -246,7 +246,7 @@ Return Value:
 
     // Initialize WDF_FILEOBJECT_CONFIG_INIT struct to tell the
     // framework whether you are interested in handling Create, Close and
-    // Cleanup requests that gets genereate when an application or another
+    // Cleanup requests that gets generated when an application or another
     // kernel component opens an handle to the device. If you don't register,
     // the framework default behaviour would be: complete these requests
     // with STATUS_SUCCESS. A driver might be interested in registering these
