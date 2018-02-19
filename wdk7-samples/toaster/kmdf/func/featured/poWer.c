@@ -134,9 +134,9 @@ Return Value:
     UNREFERENCED_PARAMETER(Device);
     PAGED_CODE();
 
-    KdPrint(( "--> ToasterEvtDeviceArmWakeFromS0\n"));
-
-    KdPrint(( "<-- ToasterEvtDeviceArmWakeFromS0\n"));
+	KdPrint(( "ToasterEvtDeviceArmWakeFromS0\n"));
+// 	KdPrint(( "--> ToasterEvtDeviceArmWakeFromS0\n"));
+// 	KdPrint(( "<-- ToasterEvtDeviceArmWakeFromS0\n"));
     return STATUS_SUCCESS;
 }
 
@@ -164,9 +164,9 @@ Return Value:
     UNREFERENCED_PARAMETER(Device);
     PAGED_CODE();
 
-    KdPrint(( "--> ToasterEvtDeviceArmWakeFromSx\n"));
-
-    KdPrint(( "<-- ToasterEvtDeviceArmWakeFromSx\n"));
+	KdPrint(( "ToasterEvtDeviceArmWakeFromSx\n"));
+//	KdPrint(( "--> ToasterEvtDeviceArmWakeFromSx\n"));
+//	KdPrint(( "<-- ToasterEvtDeviceArmWakeFromSx\n"));
     return STATUS_SUCCESS;
 }
 
@@ -189,9 +189,10 @@ Arguments:
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-    KdPrint(( "--> ToasterEvtDeviceDisarmWakeFromS0\n"));
 
-    KdPrint(( "<-- ToasterEvtDeviceDisarmWakeFromS0\n"));
+ 	KdPrint(( "ToasterEvtDeviceDisarmWakeFromS0\n"));
+// 	KdPrint(( "--> ToasterEvtDeviceDisarmWakeFromS0\n"));
+// 	KdPrint(( "<-- ToasterEvtDeviceDisarmWakeFromS0\n"));
     return ;
 }
 
@@ -239,9 +240,10 @@ Arguments:
 {
     UNREFERENCED_PARAMETER(Device);
     PAGED_CODE();
-    KdPrint(( "--> ToasterEvtDeviceWakeFromS0Triggered\n"));
 
-    KdPrint(( "<-- ToasterEvtDeviceWakeFromS0Triggered\n"));
+	KdPrint(( "ToasterEvtDeviceWakeFromS0Triggered\n"));
+//	KdPrint(( "--> ToasterEvtDeviceWakeFromS0Triggered\n"));
+//	KdPrint(( "<-- ToasterEvtDeviceWakeFromS0Triggered\n"));
 }
 
 VOID
@@ -267,9 +269,10 @@ Arguments:
 --*/
 {
     UNREFERENCED_PARAMETER(Device);
-    KdPrint(( "--> ToasterEvtDeviceWakeFromSxTriggered\n"));
-
-    KdPrint(( "<-- ToasterEvtDeviceWakeFromSxTriggered\n"));
+    
+ 	KdPrint(( "ToasterEvtDeviceWakeFromSxTriggered\n"));
+// 	KdPrint(( "--> ToasterEvtDeviceWakeFromSxTriggered\n"));
+// 	KdPrint(( "<-- ToasterEvtDeviceWakeFromSxTriggered\n"));
 }
 
 PCHAR

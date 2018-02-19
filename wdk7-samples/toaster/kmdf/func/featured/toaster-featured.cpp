@@ -155,8 +155,8 @@ Return Value:
     KdPrint(("KMDF Toaster Function Driver Sample - Featured version\n"));
     KdPrint(("Built on %s %s\n", __DATE__, __TIME__));
 
-	CTest mytest("waha.");
-	ZLbook_test();
+//	CTest mytest("waha.");
+//	ZLbook_test();
 
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
@@ -188,6 +188,30 @@ Return Value:
     return status;
 }
 
+
+ULONG Toaster_ReadUlongParam(WDFDEVICE device, const WCHAR *regitem_name, ULONG default_val)
+{
+	WDFKEY regkey;
+	NTSTATUS status = WdfDeviceOpenRegistryKey(device,
+		PLUGPLAY_REGKEY_DEVICE,  // IN ULONG  DeviceInstanceKeyType,
+		GENERIC_READ, // IN ACCESS_MASK  DesiredAccess,
+		WDF_NO_OBJECT_ATTRIBUTES, // IN OPTIONAL PWDF_OBJECT_ATTRIBUTES  KeyAttributes,
+		&regkey);
+
+	if(!NT_SUCCESS(status))
+		return false;
+	
+	ULONG value;
+	UNICODE_STRING us_itemname;
+	RtlInitUnicodeString(&us_itemname, regitem_name);
+	status = WdfRegistryQueryULong(regkey, &us_itemname, &value);
+	WdfRegistryClose(regkey);
+	
+	if(NT_SUCCESS(status))
+		return value;
+	else
+		return default_val;
+}
 
 NTSTATUS
 ToasterEvtDeviceAdd(
@@ -369,7 +393,7 @@ Return Value:
     // the system.
 	//
 	// [2018-02-19] Chj: 
-	// Change IdleCannotWakeFromS0 to IdleCanWakeFromS0, so that we can use
+	// Support both IdleCannotWakeFromS0 and IdleCanWakeFromS0. If latter, we can use
 	// `enum -w 1` to wake up a toaster child device, i.e. out-of-band waking(=the
 	// so-called "external event").
 	// "Waking" here means: bring toaster power-state from D1 to D0.
@@ -377,15 +401,19 @@ Return Value:
 	// * Using IdleCannotWakeFromS0, the ToasterEvtDeviceArmWakeFromS0 will NOT be called.
 	// * Using IdleCanWakeFromS0, the ToasterEvtDeviceArmWakeFromS0 will be called.
     //
+	ULONG is_exwakup = Toaster_ReadUlongParam(device, L"IsAllowExternalWakeup", 1);
+	
     WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, 
-		// IdleCannotWakeFromS0
-		IdleCanWakeFromS0 // <= Chj use this
-		);
-    idleSettings.IdleTimeout = 10000; // 10 seconds idle timeout
+		is_exwakup ? IdleCanWakeFromS0 : IdleCannotWakeFromS0);
+    idleSettings.IdleTimeout = Toaster_ReadUlongParam(device, L"IdleTimeoutMsec", 10000); 
+		// default 10 seconds idle timeout
 	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
     status = WdfDeviceAssignS0IdleSettings(device, &idleSettings);
-    if (!NT_SUCCESS(status)) {
-        KdPrint( ("WdfDeviceAssignS0IdleSettings failed 0x%x\n", status));
+	KdPrint( ("WdfDeviceAssignS0IdleSettings (%s, %dms) result-status: 0x%x\n", 
+		is_exwakup ? "IdleCanWakeFromS0" : "IdleCannotWakeFromS0",
+		idleSettings.IdleTimeout,
+		status));
+	if (!NT_SUCCESS(status)) {
         return status;
     }
 
