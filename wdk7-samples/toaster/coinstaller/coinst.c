@@ -16,6 +16,14 @@
 //                  - July 28, 2000
 //
 
+// Chj: Effect of this coinstaller:
+// After using `enum -p 1` to add a toaster device, new child device's initial
+// friendly name will be ToasterDevice01 in Device Manager.
+// After using `enum -p 4` to add a toaster device, new child device's initial 
+// friendly name will be ToasterDevice04 in Device Manager.
+// Without this CoInstaller, all child device initial friendly name will be 
+// the same.
+
 //
 // Annotation to indicate to prefast that this is nondriver user-mode code.
 //
