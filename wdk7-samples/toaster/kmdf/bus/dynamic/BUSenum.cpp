@@ -25,7 +25,26 @@ Environment:
 #pragma alloc_text (PAGE, Bus_EjectDevice)
 #endif
 
-int g_dbgseq = 0;
+ULONG my_GetMillisec() // Get millisec count since driver loading
+{
+	static LARGE_INTEGER s_wintick_start; // 100 nanosec unit
+
+	if(s_wintick_start.QuadPart==0)
+	{
+		KeQuerySystemTime(&s_wintick_start);
+	}
+
+	LARGE_INTEGER wintick_now;
+	KeQuerySystemTime(&wintick_now);
+
+	return (ULONG) ((wintick_now.QuadPart-s_wintick_start.QuadPart)/10000);
+}
+//
+void my_PrintTimestampPrefix(void)
+{
+	ULONG msec = my_GetMillisec();
+	DbgPrint("[KB%d.%03d] ", msec/1000, msec%1000);
+}
 
 NTSTATUS
 DriverEntry(

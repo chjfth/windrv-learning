@@ -6,13 +6,14 @@ extern"C"{
 #endif
 
 
+
 #if DBG
 
-extern int g_dbgseq;
+void my_PrintTimestampPrefix(void);
 
 #undef KdPrint
 #define KdPrint(_x_) \
-	DbgPrint("[KB%d] ", ++g_dbgseq); \
+	my_PrintTimestampPrefix(); \
 	DbgPrint _x_
 
 #endif // DBG
