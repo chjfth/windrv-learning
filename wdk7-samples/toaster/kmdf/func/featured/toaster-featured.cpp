@@ -370,7 +370,8 @@ Return Value:
 	//
 	// [2018-02-19] Chj: 
 	// Change IdleCannotWakeFromS0 to IdleCanWakeFromS0, so that we can use
-	// `enum -w 1` to wake up a toaster child device, i.e. out-of-band waking.
+	// `enum -w 1` to wake up a toaster child device, i.e. out-of-band waking(=the
+	// so-called "external event").
 	// "Waking" here means: bring toaster power-state from D1 to D0.
 	// BTW:
 	// * Using IdleCannotWakeFromS0, the ToasterEvtDeviceArmWakeFromS0 will NOT be called.

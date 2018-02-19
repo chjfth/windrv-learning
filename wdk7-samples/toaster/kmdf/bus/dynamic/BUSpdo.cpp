@@ -225,6 +225,8 @@ Return Value:
 }
 
 
+void myRegisterPowerPolicyStateChangeNotification(PWDFDEVICE_INIT DeviceInit);
+
 NTSTATUS
 Bus_CreatePdo(
     __in WDFDEVICE       Device,
@@ -327,6 +329,8 @@ Return Value:
         return status;
     }
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
+
+//	myRegisterPowerPolicyStateChangeNotification(DeviceInit); // Chj test, ok
 
     //
     // Initialize the attributes to specify the size of PDO device extension.
@@ -493,3 +497,155 @@ Return Value:
     return TRUE;
 }
 
+void Evt_ChildPowerPolicyStateChange(
+	WDFDEVICE  Device,
+	PCWDF_DEVICE_POWER_POLICY_NOTIFICATION_DATA  NotificationData
+	)
+{
+	KdPrint( ("Evt_ChildPowerPolicyStateChange() current state: 0x%X\n", NotificationData->Data) );
+}
+
+void myRegisterPowerPolicyStateChangeNotification(PWDFDEVICE_INIT DeviceInit)
+{
+	// You can try this inside Bus_CreatePdo().
+
+	WDF_DEVICE_POWER_POLICY_STATE ar_pps[] =
+	{
+//		WdfDevStatePwrPolInvalid ,
+		WdfDevStatePwrPolObjectCreated ,
+		WdfDevStatePwrPolStarting ,
+		WdfDevStatePwrPolStartingSucceeded ,
+		WdfDevStatePwrPolStartingFailed ,
+		WdfDevStatePwrPolStartingDecideS0Wake ,
+		WdfDevStatePwrPolStartedIdleCapable ,
+		WdfDevStatePwrPolTimerExpiredNoWake ,
+		WdfDevStatePwrPolTimerExpiredNoWakeCompletePowerDown ,
+		WdfDevStatePwrPolWaitingUnarmed ,
+		WdfDevStatePwrPolWaitingUnarmedQueryIdle ,
+		WdfDevStatePwrPolS0NoWakePowerUp ,
+		WdfDevStatePwrPolS0NoWakeCompletePowerUp ,
+		WdfDevStatePwrPolSystemSleepFromDeviceWaitingUnarmed ,
+		WdfDevStatePwrPolSystemSleepNeedWake ,
+		WdfDevStatePwrPolSystemSleepNeedWakeCompletePowerUp ,
+		WdfDevStatePwrPolSystemSleepPowerRequestFailed ,
+		WdfDevStatePwrPolCheckPowerPageable ,
+		WdfDevStatePwrPolSleepingWakeWakeArrived ,
+		WdfDevStatePwrPolSleepingWakeRevertArmWake ,
+		WdfDevStatePwrPolSystemAsleepWakeArmed ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeEnabled ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeEnabledWakeCanceled ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeDisarm ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeTriggered ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeTriggeredS0 ,
+		WdfDevStatePwrPolSystemWakeDeviceWokeDisarm ,
+		WdfDevStatePwrPolSleepingWakeWakeArrivedNP ,
+		WdfDevStatePwrPolSleepingWakeRevertArmWakeNP ,
+		WdfDevStatePwrPolSleepingWakePowerDownFailed ,
+		WdfDevStatePwrPolSleepingWakePowerDownFailedWakeCanceled ,
+		WdfDevStatePwrPolSystemAsleepWakeArmedNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeEnabledNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeEnabledWakeCanceledNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeDisarmNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeTriggeredNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeTriggeredS0NP ,
+		WdfDevStatePwrPolSystemWakeDeviceWokeDisarmNP ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeCompletePowerUp ,
+		WdfDevStatePwrPolSleeping ,
+		WdfDevStatePwrPolSleepingNoWakePowerDown ,
+		WdfDevStatePwrPolSleepingNoWakeCompletePowerDown ,
+		WdfDevStatePwrPolSleepingNoWakeDxRequestFailed ,
+		WdfDevStatePwrPolSleepingWakePowerDown ,
+		WdfDevStatePwrPolSleepingSendWake ,
+		WdfDevStatePwrPolSystemAsleepNoWake ,
+		WdfDevStatePwrPolSystemWakeDeviceWakeDisabled ,
+		WdfDevStatePwrPolSystemWakeDeviceToD0 ,
+		WdfDevStatePwrPolSystemWakeDeviceToD0CompletePowerUp ,
+		WdfDevStatePwrPolSystemWakeQueryIdle ,
+		WdfDevStatePwrPolStartedWakeCapable ,
+		WdfDevStatePwrPolTimerExpiredDecideUsbSS ,
+		WdfDevStatePwrPolTimerExpiredWakeCapablePowerDown ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableSendWake ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableUsbSS ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableWakeArrived ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableCancelWake ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableWakeCanceled ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableCleanup ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableDxAllocFailed ,
+		WdfDevStatePwrPolTimerExpiredWakeCompletedPowerDown ,
+		WdfDevStatePwrPolTimerExpiredWakeCompletedPowerUp ,
+		WdfDevStatePwrPolWaitingArmedUsbSS ,
+		WdfDevStatePwrPolWaitingArmed ,
+		WdfDevStatePwrPolWaitingArmedQueryIdle ,
+		WdfDevStatePwrPolIoPresentArmed ,
+		WdfDevStatePwrPolIoPresentArmedWakeCanceled ,
+		WdfDevStatePwrPolS0WakeDisarm ,
+		WdfDevStatePwrPolS0WakeCompletePowerUp ,
+		WdfDevStatePwrPolTimerExpiredWakeSucceeded ,
+		WdfDevStatePwrPolTimerExpiredWakeCompletedDisarm ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableWakeSucceeded ,
+		WdfDevStatePwrPolTimerExpiredWakeCapableWakeFailed ,
+		WdfDevStatePwrPolWakeFailedUsbSS ,
+		WdfDevStatePwrPolTimerExpiredWakeCapablePowerDownFailedCancelWake ,
+		WdfDevStatePwrPolTimerExpiredWakeCapablePowerDownFailedWakeCanceled ,
+		WdfDevStatePwrPolTimerExpiredWakeCapablePowerDownFailedUsbSS ,
+		WdfDevStatePwrPolCancelingWakeForSystemSleep ,
+		WdfDevStatePwrPolCancelingWakeForSystemSleepWakeCanceled ,
+		WdfDevStatePwrPolDisarmingWakeForSystemSleepCompletePowerUp ,
+		WdfDevStatePwrPolPowerUpForSystemSleepFailed ,
+		WdfDevStatePwrPolWokeFromS0UsbSS ,
+		WdfDevStatePwrPolWokeFromS0 ,
+		WdfDevStatePwrPolWokeFromS0NotifyDriver ,
+		WdfDevStatePwrPolStoppingResetDevice ,
+		WdfDevStatePwrPolStoppingResetDeviceCompletePowerUp ,
+		WdfDevStatePwrPolStoppingResetDeviceFailed ,
+		WdfDevStatePwrPolStoppingD0 ,
+		WdfDevStatePwrPolStoppingD0Failed ,
+		WdfDevStatePwrPolStoppingDisarmWake ,
+		WdfDevStatePwrPolStoppingDisarmWakeCancelWake ,
+		WdfDevStatePwrPolStoppingDisarmWakeWakeCanceled ,
+		WdfDevStatePwrPolStopping ,
+		WdfDevStatePwrPolStoppingFailed ,
+		WdfDevStatePwrPolStoppingSendStatus ,
+		WdfDevStatePwrPolStoppingCancelTimer ,
+		WdfDevStatePwrPolStoppingWaitForIdleTimeout ,
+		WdfDevStatePwrPolStoppingCancelUsbSS ,
+		WdfDevStatePwrPolStoppingWaitForUsbSSCompletion ,
+		WdfDevStatePwrPolStoppingCancelWake ,
+		WdfDevStatePwrPolStopped ,
+		WdfDevStatePwrPolCancelUsbSS ,
+		WdfDevStatePwrPolStarted ,
+		WdfDevStatePwrPolStartedCancelTimer ,
+		WdfDevStatePwrPolStartedWaitForIdleTimeout ,
+		WdfDevStatePwrPolStartedWakeCapableCancelTimerForSleep ,
+		WdfDevStatePwrPolStartedWakeCapableWaitForIdleTimeout ,
+		WdfDevStatePwrPolStartedWakeCapableSleepingUsbSS ,
+		WdfDevStatePwrPolStartedIdleCapableCancelTimerForSleep ,
+		WdfDevStatePwrPolStartedIdleCapableWaitForIdleTimeout ,
+		WdfDevStatePwrPolDeviceD0PowerRequestFailed ,
+		WdfDevStatePwrPolDevicePowerRequestFailed ,
+		WdfDevStatePwrPolGotoDx ,
+		WdfDevStatePwrPolGotoDxInDx ,
+		WdfDevStatePwrPolDx ,
+		WdfDevStatePwrPolGotoD0 ,
+		WdfDevStatePwrPolGotoD0InD0 ,
+		WdfDevStatePwrPolFinal ,
+		WdfDevStatePwrPolSleepingPowerDownNotProcessed ,
+		WdfDevStatePwrPolTimerExpiredWakeCapablePowerDownNotProcessed ,
+		WdfDevStatePwrPolTimerExpiredNoWakePowerDownNotProcessed ,
+		WdfDevStatePwrPolTimerExpiredNoWakePoweredDownDisableIdleTimer ,
+		WdfDevStatePwrPolStoppingWaitingForImplicitPowerDown ,
+		WdfDevStatePwrPolStoppingPoweringUp ,
+		WdfDevStatePwrPolStoppingPoweringDown ,
+//		WdfDevStatePwrPolNull ,
+	};
+	int arsize = ARRAYSIZE(ar_pps);
+	for(int i=0; i<arsize; i++)
+	{
+		NTSTATUS status = WdfDeviceInitRegisterPowerPolicyStateChangeCallback(DeviceInit,
+			ar_pps[i],
+			Evt_ChildPowerPolicyStateChange, 
+			StateNotificationPostProcessState);
+		if(status!=STATUS_SUCCESS)
+			break;
+	}
+}

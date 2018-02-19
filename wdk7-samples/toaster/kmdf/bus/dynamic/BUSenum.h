@@ -219,6 +219,10 @@ EVT_WDF_WMI_INSTANCE_SET_ITEM Bus_EvtStdDataSetItem;
 EVT_WDF_WMI_INSTANCE_SET_INSTANCE Bus_EvtStdDataSetInstance;
 EVT_WDF_WMI_INSTANCE_QUERY_INSTANCE Bus_EvtStdDataQueryInstance;
 
+
+EVT_WDF_DEVICE_POWER_POLICY_STATE_CHANGE_NOTIFICATION  Evt_ChildPowerPolicyStateChange; // Chj
+
+
 #ifdef __cplusplus
 } // extern"C"{
 #endif
