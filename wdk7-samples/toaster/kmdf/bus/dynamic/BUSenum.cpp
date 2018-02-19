@@ -14,6 +14,7 @@ Environment:
 --*/
 
 #include "busenum.h"
+#include "my_dbgprint.h"
 
 #ifdef ALLOC_PRAGMA
 //#pragma alloc_text (INIT, DriverEntry) // after commenting out, still LNK4078 warning
@@ -23,6 +24,8 @@ Environment:
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
 #endif
+
+int g_dbgseq = 0;
 
 NTSTATUS
 DriverEntry(

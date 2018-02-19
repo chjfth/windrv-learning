@@ -12,6 +12,7 @@ Environment:
 --*/
 
 #include "busenum.h"
+#include "my_dbgprint.h"
 
 ULONG BusEnumDebugLevel;
 

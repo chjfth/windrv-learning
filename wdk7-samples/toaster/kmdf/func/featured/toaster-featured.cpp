@@ -21,6 +21,7 @@ Environment:
 --*/
 
 #include "toaster.h"
+#include "my_dbgprint.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
@@ -34,6 +35,8 @@ Environment:
 #pragma alloc_text (PAGE, ToasterEvtIoRead)
 #pragma alloc_text (PAGE, ToasterEvtIoWrite)
 #endif
+
+int g_dbgseq = 0;
 
 ULONG DebugLevel = 3; //unused
 

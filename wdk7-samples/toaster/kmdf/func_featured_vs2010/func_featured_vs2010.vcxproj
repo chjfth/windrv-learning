@@ -232,6 +232,7 @@
     <ClCompile Include="..\func\featured\wMi.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\func\featured\my_dbgprint.h" />
     <ClInclude Include="..\func\shared\toaster.h" />
   </ItemGroup>
   <ItemGroup>

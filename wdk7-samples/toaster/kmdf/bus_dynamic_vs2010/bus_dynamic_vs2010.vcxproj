@@ -221,6 +221,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\bus\dynamic\BUSenum.h" />
+    <ClInclude Include="..\bus\dynamic\my_dbgprint.h" />
     <ClInclude Include="..\inc\driver.h" />
     <ClInclude Include="..\inc\public.h" />
   </ItemGroup>

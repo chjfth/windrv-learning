@@ -22,6 +22,8 @@ Environment:
 --*/
 
 #include "toaster.h"
+#include "my_dbgprint.h"
+
 #include <wmilib.h>
 #include <wmistr.h>
 #include <ToasterMof.h>

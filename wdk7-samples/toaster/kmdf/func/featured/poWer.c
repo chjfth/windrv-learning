@@ -23,6 +23,7 @@ Environment:
 --*/
 
 #include "toaster.h"
+#include "my_dbgprint.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, ToasterEvtDeviceD0Exit)
