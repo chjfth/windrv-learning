@@ -46,9 +46,10 @@ Enum [-p SerialNo] Plugs in a device. SerialNo must be greater than zero.\n\
      [-u SerialNo or 0] Unplugs device(s) - specify 0 to unplug all \n\
                         the devices enumerated so far.\n\
      [-e SerialNo or 0] Ejects device(s) - specify 0 to eject all \n\
-                        the devices enumerated so far.\n"
+                        the devices enumerated so far.\n\
+     [-w SerialNo]      Wake up a toaster device.\n"
 
-BOOLEAN     bPlugIn, bUnplug, bEject;
+BOOLEAN     bPlugIn, bUnplug, bEject, bWake;
 ULONG       SerialNo;
 
 INT __cdecl
@@ -64,7 +65,7 @@ main(
 	BUSENUM_PLUGIN_HARDWARE bh = {0};
 	bh.SerialNo = 8;
 
-    bPlugIn = bUnplug = bEject = FALSE;
+    bPlugIn = bUnplug = bEject = bWake = FALSE;
 
     if(argc <3) {
         goto usage;
@@ -86,6 +87,11 @@ main(
                 SerialNo = (ULONG)atol(argv[2]);
             bEject = TRUE;
         }
+		else if(tolower(argv[1][1]) == 'w') {
+			if(argv[2])
+				SerialNo = (ULONG)atol(argv[2]);
+			bWake = TRUE;
+		}
         else {
             goto usage;
         }
@@ -311,6 +317,30 @@ OpenBusInterface (
             goto End;
         }
     }
+
+	if(bWake) // Chj added
+	{
+		printf("Waking device with SerialNo=%d ...\n", SerialNo);
+
+		BUSENUM_PLUGIN_HARDWARE wakewho;
+		wakewho.Size = bytes = sizeof (wakewho);
+		wakewho.SerialNo = SerialNo;
+		if (!DeviceIoControl (file,
+			IOCTL_BUSENUM_WAKE_UP_CHILD,
+			&wakewho, bytes,
+			NULL, 0,
+			&bytes, NULL)) 
+		{
+			printf("Wake child failed: 0x%x\n", GetLastError());
+			bSuccess = FALSE;
+			goto End;
+		}
+		else
+		{
+			printf("IOCTL_BUSENUM_WAKE_UP_DEVICE success. 'ToasterEvtDeviceD0Entry <- WdfPowerDeviceD1/D2' should appear from kernel DbgPrint message.\n");
+		}
+
+	}
 
     printf("Success!!!\n");
     bSuccess = TRUE;

@@ -367,8 +367,19 @@ Return Value:
     // tell the framework that we cannot wake ourself if we sleep in S0. Only
     // way the device can be brought to D0 is if the device receives an I/O from
     // the system.
+	//
+	// [2018-02-19] Chj: 
+	// Change IdleCannotWakeFromS0 to IdleCanWakeFromS0, so that we can use
+	// `enum -w 1` to wake up a toaster child device, i.e. out-of-band waking.
+	// "Waking" here means: bring toaster power-state from D1 to D0.
+	// BTW:
+	// * Using IdleCannotWakeFromS0, the ToasterEvtDeviceArmWakeFromS0 will NOT be called.
+	// * Using IdleCanWakeFromS0, the ToasterEvtDeviceArmWakeFromS0 will be called.
     //
-    WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, IdleCannotWakeFromS0);
+    WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&idleSettings, 
+		// IdleCannotWakeFromS0
+		IdleCanWakeFromS0 // <= Chj use this
+		);
     idleSettings.IdleTimeout = 10000; // 10 seconds idle timeout
 	// idleSettings.UserControlOfIdleSettings = IdleDoNotAllowUserControl; // a test
     status = WdfDeviceAssignS0IdleSettings(device, &idleSettings);

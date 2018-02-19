@@ -68,7 +68,7 @@ Return Value:
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(RecentPowerState);
 
-    KdPrint(("ToasterEvtDeviceD0Entry - coming from %s\n",
+    KdPrint(("ToasterEvtDeviceD0Entry <= %s\n",
               DbgDevicePowerString(RecentPowerState)));
 
     return STATUS_SUCCESS;
@@ -104,7 +104,7 @@ Return Value:
 
     PAGED_CODE();
 
-    KdPrint(("ToasterEvtDeviceD0Exit %s\n",
+    KdPrint(("ToasterEvtDeviceD0Exit => %s\n",
               DbgDevicePowerString(PowerState)));
 
     return STATUS_SUCCESS;

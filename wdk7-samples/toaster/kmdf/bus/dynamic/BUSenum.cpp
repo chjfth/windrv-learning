@@ -253,6 +253,13 @@ Return Value:
         return status;
     }
 
+	// Chj: Create a dos symlink to facilitate `enum -w` child wakeup feature.
+	DECLARE_CONST_UNICODE_STRING(us_BusDynamic, L"\\GLOBAL??\\BusDynamic");
+	status = WdfDeviceCreateSymbolicLink(device, &us_BusDynamic);
+	if (!NT_SUCCESS(status)) {
+		return status;
+	}
+
     //
     // This value is used in responding to the IRP_MN_QUERY_BUS_INFORMATION
     // for the child devices. This is an optional information provided to
@@ -309,6 +316,7 @@ Arguments:
     PBUSENUM_PLUGIN_HARDWARE plugIn = NULL;
     PBUSENUM_UNPLUG_HARDWARE unPlug = NULL;
     PBUSENUM_EJECT_HARDWARE  eject  = NULL;
+	PBUSENUM_UNPLUG_HARDWARE wakewho = NULL; // Chj added
     UNREFERENCED_PARAMETER(OutputBufferLength);
     PAGED_CODE ();
 
@@ -364,9 +372,7 @@ Arguments:
 
         if (unPlug->Size == InputBufferLength)
         {
-
             status= Bus_UnPlugDevice(hDevice, unPlug->SerialNo );
-
         }
 
         break;
@@ -388,6 +394,46 @@ Arguments:
         }
 
         break;
+
+	case IOCTL_BUSENUM_WAKE_UP_CHILD: // Chj added
+		{
+			// Wake up the toaster child specified by ioctl input
+
+			status = WdfRequestRetrieveInputBuffer( Request,
+				sizeof(BUSENUM_PLUGIN_HARDWARE),
+				(void**)&wakewho,
+				&length );
+			if( !NT_SUCCESS(status) || wakewho->Size!=InputBufferLength ) {
+				KdPrint(("IOCTL_TOASTER_WAKE_UP_DEVICE input param error: 0x%x\n", status));
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			WDFCHILDLIST list = WdfFdoGetDefaultChildList(hDevice);
+			
+			PDO_IDENTIFICATION_DESCRIPTION childpdo_desc = {};
+			childpdo_desc.Header.IdentificationDescriptionSize = sizeof(childpdo_desc);
+			childpdo_desc.SerialNo = wakewho->SerialNo;
+
+			WDF_CHILD_RETRIEVE_INFO  RetrieveInfo;
+			WDF_CHILD_RETRIEVE_INFO_INIT(&RetrieveInfo, &childpdo_desc.Header);
+			RetrieveInfo.EvtChildListIdentificationDescriptionCompare = 
+				Bus_EvtChildListIdentificationDescriptionCompare;
+
+			WDFDEVICE hChildPdo = WdfChildListRetrievePdo(list, &RetrieveInfo);
+			if(hChildPdo)
+			{
+				status = WdfDeviceIndicateWakeStatus(hChildPdo, STATUS_SUCCESS);
+				KdPrint( ("Waking up child pdo(0x%X), status=0x%X\n", hChildPdo, status) );
+			}
+			else
+			{
+				status = STATUS_NO_SUCH_DEVICE;
+				KdPrint( ("Waking up child fail, not such child with sn=%d (WDF_CHILD_LIST_RETRIEVE_DEVICE_STATUS=%d)\n", 
+					wakewho->SerialNo, RetrieveInfo.Status) );
+			}
+		}
+		break;
 
     default:
         break; // default status is STATUS_INVALID_PARAMETER
