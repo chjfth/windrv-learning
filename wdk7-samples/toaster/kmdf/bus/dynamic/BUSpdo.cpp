@@ -226,10 +226,11 @@ Return Value:
 
 
 void myRegisterPowerPolicyStateChangeNotification(PWDFDEVICE_INIT DeviceInit);
+DEVICE_POWER_STATE Load_DeviceWakeValue(WDFDEVICE busdevice, DEVICE_POWER_STATE default_val);
 
 NTSTATUS
 Bus_CreatePdo(
-    __in WDFDEVICE       Device,
+    __in WDFDEVICE       busDevice,
     __in PWDFDEVICE_INIT DeviceInit,
     __in PWCHAR          HardwareIds,
     __in ULONG           SerialNo
@@ -257,7 +258,7 @@ Return Value:
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
     PAGED_CODE();
-    UNREFERENCED_PARAMETER(Device);
+//	UNREFERENCED_PARAMETER(busDevice);
 
     KdPrint(("Entered Bus_CreatePdo\n"));
 
@@ -364,11 +365,15 @@ Return Value:
     WDF_DEVICE_POWER_CAPABILITIES_INIT(&powerCaps);
 	//
     powerCaps.DeviceD1 = WdfTrue;
+	powerCaps.DeviceD2 = WdfTrue;
     powerCaps.WakeFromD1 = WdfTrue;
-    powerCaps.DeviceWake = PowerDeviceD1;
+	powerCaps.WakeFromD2 = WdfTrue;
 	//
-    powerCaps.DeviceState[PowerSystemWorking]   = PowerDeviceD1; // (?) BusStat was PowerDeviceD0 here.
-    powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
+	powerCaps.SystemWake = PowerSystemHibernate;
+    powerCaps.DeviceWake = Load_DeviceWakeValue(busDevice, PowerDeviceD1); // can be D1-D3
+	//
+    powerCaps.DeviceState[PowerSystemWorking]   = powerCaps.DeviceWake;
+    powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD2;
     powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD2; // new: D2
     powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD2; // new: D2
     powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
@@ -648,4 +653,47 @@ void myRegisterPowerPolicyStateChangeNotification(PWDFDEVICE_INIT DeviceInit)
 		if(status!=STATUS_SUCCESS)
 			break;
 	}
+}
+
+ULONG Busenum_ReadUlongParam(WDFDEVICE device, const WCHAR *regitem_name, ULONG default_val)
+{
+	WDFKEY regkey;
+	NTSTATUS status = WdfDeviceOpenRegistryKey(device,
+		PLUGPLAY_REGKEY_DEVICE,  // IN ULONG  DeviceInstanceKeyType,
+		GENERIC_READ, // IN ACCESS_MASK  DesiredAccess,
+		WDF_NO_OBJECT_ATTRIBUTES, // IN OPTIONAL PWDF_OBJECT_ATTRIBUTES  KeyAttributes,
+		&regkey);
+
+	if(!NT_SUCCESS(status))
+		return false;
+
+	ULONG value;
+	UNICODE_STRING us_itemname;
+	RtlInitUnicodeString(&us_itemname, regitem_name);
+	status = WdfRegistryQueryULong(regkey, &us_itemname, &value);
+	WdfRegistryClose(regkey);
+
+	if(NT_SUCCESS(status))
+		return value;
+	else
+		return default_val;
+}
+
+DEVICE_POWER_STATE Load_DeviceWakeValue(WDFDEVICE busdevice, DEVICE_POWER_STATE default_val)
+{
+	ULONG regval = Busenum_ReadUlongParam(busdevice, L"DeviceWakeDx", 1);
+	if(regval==0) {
+		// This is for experiment. PowerDeviceD0 will cause Toaster's 
+		// WdfDeviceAssignS0IdleSettings() return error status:
+		// STATUS_POWER_STATE_INVALID(0xC00002D3L)
+		return PowerDeviceD0;
+	}
+	else if(regval==1)
+		return PowerDeviceD1;
+	else if(regval==2)
+		return PowerDeviceD2;
+	else if(regval==3)
+		return PowerDeviceD3;
+	else
+		return default_val;
 }
