@@ -775,18 +775,21 @@ HRESULT CEnumerateSerial::UsingWMI(_Inout_ CPortsArray& ports, _Inout_ CNamesArr
 
   //Create the WBEM locator
   ATL::CComPtr<IWbemLocator> pLocator;
-  HRESULT hr = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<void**>(&pLocator));
+  HRESULT hr = CoCreateInstance(CLSID_WbemLocator, nullptr, 
+	  CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<void**>(&pLocator));
   if (FAILED(hr))
     return hr;
 
   ATL::CComPtr<IWbemServices> pServices;
-  hr = pLocator->ConnectServer(_bstr_t("\\\\.\\root\\cimv2"), nullptr, nullptr, nullptr, 0, nullptr, nullptr, &pServices);
+  hr = pLocator->ConnectServer(_bstr_t("\\\\.\\root\\cimv2"), nullptr, nullptr, nullptr, 
+	  0, nullptr, nullptr, &pServices);
   if (FAILED(hr))
     return hr;
 
   //Execute the query
   ATL::CComPtr<IEnumWbemClassObject> pClassObject;
-  hr = pServices->CreateInstanceEnum(_bstr_t("Win32_SerialPort"), WBEM_FLAG_RETURN_WBEM_COMPLETE, nullptr, &pClassObject);
+  hr = pServices->CreateInstanceEnum(_bstr_t("Win32_SerialPort"), 
+	  WBEM_FLAG_RETURN_WBEM_COMPLETE, nullptr, &pClassObject);
   if (FAILED(hr))
     return hr;
 
