@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ImportGroup Label="PropertySheets" />
+  
   <PropertyGroup Label="UserMacros">
     <stampinf_ARCH Condition="'$(Platform)'=='Win32'">x86</stampinf_ARCH>
     <stampinf_ARCH Condition="'$(Platform)'=='x64'">AMD64</stampinf_ARCH>
@@ -9,10 +10,12 @@
   <PropertyGroup>
     <TargetExt>.sys</TargetExt>
     <ExecutablePath>$(WDKPATH)\bin\x86;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt;</IncludePath>
   </PropertyGroup>
+  
   <ItemDefinitionGroup>
-    <!--  -->
     <PreBuildEvent>
+      <!-- Check for WDKPATH env-var in Pre-built Event. If empty, assert error. -->
       <Command>@echo off
 if "%WDKPATH%"=="" (
   echo.
@@ -22,9 +25,8 @@ if "%WDKPATH%"=="" (
 )
       </Command>
     </PreBuildEvent>
-
     <ClCompile>
-      <AdditionalIncludeDirectories>..\inc;$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories);;;$(IncludePath)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
