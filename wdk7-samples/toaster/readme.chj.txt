@@ -13,3 +13,4 @@ Visual C++ 2010 projects:
 	toast.exe
 	tostrco1.dll , the CoInstaller
 	tostrcls.dll , the ClassInstaller
+
