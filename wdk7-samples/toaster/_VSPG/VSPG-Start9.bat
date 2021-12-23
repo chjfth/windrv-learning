@@ -6,7 +6,7 @@ REM those crowded .vcxproj or .csproj .
 REM
 REM Just use(copy + a bit modify) the following sample:
 REM
-REM $(ProjectDir)_VSPG\VSPG-Start9.bat VSPG-PostBuild7.bat $(ProjectDir)Program.cs $(SolutionDir) $(ProjectDir) $(Configuration) $(PlatformName) $(TargetDir) $(TargetFileName) $(TargetName)
+REM $(ProjectDir)_VSPG\VSPG-Start9.bat VSPG-PostBuild7.bat $(ProjectDir)Program.cs $(SolutionDir) $(ProjectDir) $(Configuration) $(PlatformName) $(TargetDir) $(TargetFileName) $(TargetName) $(IntDir)
 REM
 REM Two things to tune according to your actual case:
 REM [1] 1st parameter, 
@@ -44,7 +44,7 @@ if not exist %FeedbackFile% (
 	exit /b 4
 )
 
-set ALL_PARAMS="%~1" "%~2" "%~3" "%~4" "%~5" "%~6" "%~7"
+set ALL_PARAMS="%~1" "%~2" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8"
 if exist %SubworkBat% (
   cmd /c %SubworkBat% %ALL_PARAMS%
 ) else (

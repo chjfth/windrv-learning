@@ -29,14 +29,19 @@ REM call :EchoVar TargetName
 
 REM ==== Prelude Above ====
 
-REM// Check that WDKPATH env-var in defined, otherwise, assert error.
-
-if "%WDKPATH%"=="" (
-  echo.
-  call :Echos [ERROR] Env-var WDKPATH is empty. It must be set to the directory containing WDK 7.1
-  echo.
-  exit /b 4
+if "%PlatformName%"=="x64" (
+	set stampinf_ARCH=AMD64
+) else (
+	set stampinf_ARCH=x86
 )
+
+call %SolutionDir%\_VSPG\ToasterStampInf.bat^
+  %ProjectDir%\..\inf-template\kmdf_toast_simple.inx^
+  %TargetDir%\kmdf_toast_simple__%TargetName%.inf^
+  toaster.^
+  %TargetName%.^
+  "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
+if errorlevel 1 exit /b 4
 
 
 goto :END

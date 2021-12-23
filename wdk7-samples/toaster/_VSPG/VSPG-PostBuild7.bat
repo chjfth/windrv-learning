@@ -1,6 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
-REM VSPG-PostBuild7.bat $(SolutionDir) $(ProjectDir) $(Configuration) $(PlatformName) $(TargetDir) $(TargetFileName) $(TargetName)
+REM Called as this:
+REM <this>.bat $(SolutionDir_) $(ProjectDir_) $(BuildConf) $(PlatformName) $(TargetDir_) $(TargetFileNam) $(TargetName) $(IntrmDir_)
 REM ==== boilerplate code >>>
 REM
 set batfilenam=%~n0%~x0
@@ -22,7 +23,8 @@ set TargetDir=%TargetDir:~0,-1%
 REM TargetFilenam is the EXE/DLL output name (varname chopping trailing 'e', means "no path prefix")
 set TargetFilenam=%~6
 set TargetName=%~7
-REM
+set IntrmDir=%~8
+set IntrmDir=%IntrmDir:~0,-1%
 REM ==== boilerplate code <<<<
 
 
@@ -32,6 +34,7 @@ call :EchoVar SolutionDir
 call :EchoVar ProjectDir
 call :EchoVar BuildConf
 call :EchoVar PlatformName
+call :EchoVar IntrmDir
 call :EchoVar TargetDir
 call :EchoVar TargetFilenam
 call :EchoVar TargetName
@@ -50,7 +53,7 @@ if errorlevel 1 exit /b 4
 
 REM ==== Call Team-Postbuild7.bat if exist. ====
 call :SearchAndExecSubbat Team-PostBuild7.bat^
-  "%SolutionDir% %ProjectDir% ""%BuildConf%"" %PlatformName% ""%TargetDir%"" ""%TargetFilenam%"" ""%TargetName%"""^
+  """%SolutionDir%"" ""%ProjectDir%"" ""%BuildConf%"" %PlatformName% ""%TargetDir%"" ""%TargetFilenam%"" ""%TargetName%"" ""%IntrmDir%"""^
   "%ProjectDir%\_VSPG"^
   "%SolutionDir%\_VSPG"^
   "%batdir%"
@@ -58,7 +61,7 @@ if errorlevel 1 exit /b 4
 
 REM ==== Call Personal-Postbuild7.bat if exist. ====
 call :SearchAndExecSubbat Personal-PostBuild7.bat^
-  "%SolutionDir% %ProjectDir% ""%BuildConf%"" %PlatformName% ""%TargetDir%"" ""%TargetFilenam%"" ""%TargetName%"""^
+  """%SolutionDir% ""%ProjectDir%"" ""%BuildConf%"" %PlatformName% ""%TargetDir%"" ""%TargetFilenam%"" ""%TargetName%"" ""%IntrmDir%"""^
   "%ProjectDir%\_VSPG"^
   "%SolutionDir%\_VSPG"^
   "%batdir%"
