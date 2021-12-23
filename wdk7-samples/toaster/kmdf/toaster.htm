@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
 <meta name=Generator content="Microsoft Word 12 (filtered)">
-<title>Toaster</title>
+<title>(KMDF) Toaster</title>
 <style>
 <!--
  /* Font Definitions */
@@ -168,14 +168,14 @@ ul
 
 <h1>Summary</h1>
 
-<p class=MsoNormal>The Toaster sample provides a starting point for Windows®
+<p class=MsoNormal style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The Toaster sample provides a starting point for Windows®
 driver development. It contains annotated code to illustrate the functionality
 of bus driver, function driver, filter drivers for a hypothetical Toaster bus
 and its devices. </p>
 
-<p class=MsoNormal>&nbsp;</p>
+<p class=MsoNormal style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>&nbsp;</p>
 
-<p class=MsoNormal>The samples in this directory are a rewrite of the WDM
+<p class=MsoNormal style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The samples in this directory are a rewrite of the WDM
 toaster driver (residing under src\general\toaster\wdm) using Kernelmode Driver
 Framework. These samples show how to use driver framework APIs to achieve the
 equivalent WDM functionality with much less code. Only the drivers (bus,
@@ -278,10 +278,14 @@ cable while the system is running.</span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Each time
 a bus driver identifies a child device, it must add the child device's
-description to a child list. Driver can either use framework provided device's
-default child list by calling <b><u>WdfFdoGetDefaultChildList</u></b>, or can
-create additional child lists, for grouping children, by calling <b><u>WdfChildListCreate</u></b>.
-This sample uses the default child list. A <i>child description</i> consists of
+description to a child list. Driver can either </span></p>
+<ul>
+<li style='font-size:9pt;font-family:"Verdana","sans-serif"'>
+use framework provided device's default child list by calling <b><u>WdfFdoGetDefaultChildList</u></b>, or </li>
+<li style='font-size:9pt;font-family:"Verdana","sans-serif"'>
+can create additional child lists, for grouping children, by calling <b><u>WdfChildListCreate</u></b>.</li>
+</ul>
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This sample uses the default child list. A <i>child description</i> consists of
 a required <i>identification description</i> and an optional <i>address
 description</i>.</span></p>
 
@@ -296,7 +300,7 @@ structure.</span></p>
 <p class=MsoNormal><i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Address
 Description</span></i><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>:
 An address description is a structure that contains information that the driver
-requires so that it can access the device on its bus, if the information can
+requires so that it can access the device on its bus, if the information(??) can
 change while the device is plugged in. The driver defines this structure, but
 its first member must be a <u>WDF_CHILD_ADDRESS_DESCRIPTION_HEADER</u> structure.
 Address descriptions are optional. This sample does not use address
@@ -306,7 +310,7 @@ descriptions.</span></p>
 children to a child list, the driver calls <b><u>WdfChildListAddOrUpdateChildDescriptionAsPresent</u></b>
 for each child device that it finds. This call informs the framework that a
 driver has discovered a child device that is connected to a parent device. When
-your driver calls WdfChildListAddOrUpdateChildDescriptionAsPresent, it
+your driver calls WdfChildListAddOrUpdateChildDescriptionAsPresent, it(=you)
 supplies an identification description and, optionally, an address description.</span></p>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>After the
@@ -337,13 +341,15 @@ install the driver (root-enumerations) using devcon.exe (%winddk%\tools\devcon)
 or bus enumerate the driver using the toaster bus driver. They all share one
 common header file present in the <i>shared</i> directory.</span></p>
 
+Root-enumeration guide: <a href="../wdm/func/readme.htm#rootenum">wdm/func/readme.htm</a>
+
 <h3>Simple</h3>
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This is a
 simple form of function driver for toaster device. The driver doesn't handle
 any PnP and Power events because the framework provides default behavior for
 those events. This driver has enough support to allow an user application
-(toast/notify.exe) to open the device&nbsp; interface registered by the driver
+(toast/notify.exe) to open the device interface registered by the driver
 and send read, write or ioctl requests.</span></p>
 
 
@@ -353,8 +359,8 @@ and send read, write or ioctl requests.</span></p>
 version shows how to register for PNP and Power events, handle create &amp;
 close file requests, handle WMI set and query events, fire WMI notification
 events. This driver is functionally equivalent to the feature2 version of
-toaster WDM driver present in the DDK<br>
-(src\general\toaster\wdm\func\featured2). By being a power policy owner, it also
+toaster WDM driver present in the DDK (src\general\toaster\wdm\func\featured2). 
+By being a power policy owner, it also
 registers for idle notification so it can put the device to low power state
 when there is no I/O activity.</span></p>
 
@@ -366,13 +372,17 @@ when there is no I/O activity.</span></p>
 
 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>This
-directory contains source code of a two filter drivers. The Generic sample is a
-simple passthru filter driver. The SideBand shows how to provide a sideband
+directory contains source code of a two filter drivers. </span></p>
+
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The 
+Generic sample is a simple passthru filter driver. </span></p>
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>The SideBand shows how to provide a sideband
 ioctl interface to an application by using control-device object. This private
 interface enables application to talk to the filter driver directly; bypassing
-the functional device stack that filter is attached to. The SideBand sample
+[the functional device stack that filter is attached to]. The SideBand sample
 also demonstrates how to implement a collection of device objects if the driver
-will handle requests for more than one device. You can install these filters on
+will handle requests for more than one device. </span></p>
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>You can install these filters on
 an existing toaster device by using the filter.inf.</span></p>
 
 </blockquote>
@@ -385,15 +395,18 @@ an existing toaster device by using the filter.inf.</span></p>
 purpose of this sample is to show how to open a device and perform I/O in
 kernel mode using <u>remote I/O target interfaces</u>. This sample registers interface
 notification with the PNP manager for toaster interface class by using
-IoRegisterPlugPlayNotification. When a toaster device is plugged in, PnP
+<u><i>IoRegisterPlugPlayNotification</i></u>. When a toaster device is plugged in, PnP
 manager notifies the driver by invoking the callback. In the callback, this
 sample creates a remote target and opens the device by using the symbolic link
 provided in the callback data. 
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
 This sample uses a passive timer to demonstrate
 how to perform asynchronous read and write to the target device. It also shows
-to respond to the device change notification by registering the
-EvtIoTargetQueryRemove/EvtIoTargetRemoveCanceled/EvtIoTargetRemoveComplete on
+to respond to the device change notification by registering the </span></p>
+
+<blockquote>EvtIoTargetQueryRemove/EvtIoTargetRemoveCanceled/EvtIoTargetRemoveComplete </blockquote>
+
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>on
 the I/O target object. The technique demonstrated in this sample is useful if
 you are writing a driver that talks to another device that your driver is not
 controlling. Even though this sample is based on the WDM toastmon, it has been
@@ -419,16 +432,17 @@ described above. </span></p>
 <p class=MsoListParagraphCxSpLast style='margin-left:.25in;text-indent:-.25in'><span
 style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Copy
-the KMDF coinstaller (wdfcoinstallerMMmmm.dll), .sys files and INFs to a floppy
+the KMDF coinstaller (wdfcoinstaller<i>MMmmm</i>.dll), .sys files and INFs to a floppy
 disk or a temporary directory on the target system. You should build the exe
 and other DLLs from the WDM toaster sample.</span></p>
 
 <h1>Installation</h1>
 
-<p>INFs files for each sample driver is provided in the same directory as the
+<p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
+INFs files for each sample driver is provided in the same directory as the
 source. The steps on how to install the bus driver, function driver, filter and
 toastmon is given in the readme file of the WDM toaster sample. Please follow
-that.</p>
+that.</span></p>
 
 <h1>Testing</h1>
 

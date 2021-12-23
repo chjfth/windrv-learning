@@ -190,11 +190,13 @@ On Win7 x64, we'll get:
 
     //
     // Register for TOASTER device interface change notification.
-    // We will get GUID_DEVICE_INTERFACE_ARRIVAL and                  // 定义于 inc\ddk\wdmguid.h
+    // We will get GUID_DEVICE_INTERFACE_ARRIVAL and               // 定义于 inc\ddk\wdmguid.h
     // GUID_DEVICE_INTERFACE_REMOVAL notification when the toaster
     // device is started and removed.
     // Framework doesn't provide a WDF interface to register for interface change notification. 
-    // --上头这句话好像强调的是: *只有* WDM 层面的函数(IoRegisterPlugPlayNotification)才提供 interface-change 通知功能, 因此只好用 WDM API 了.
+    // --上头这句话好像强调的是: *只有* WDM 层面的函数(IoRegisterPlugPlayNotification)
+	//   才提供 interface-change 通知功能, 因此只好用 WDM API 了.
+	//
 	// However if the target device is opened (later) by symbolic-link using
     // IoTarget, framework (自动进行) registers itself EventCategoryTargetDeviceChange
     // notification on the handle and responds to the PnP notifications.

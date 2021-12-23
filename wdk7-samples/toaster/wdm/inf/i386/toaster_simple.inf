@@ -34,7 +34,7 @@ DefaultDestDir = 12
 ; ================= Class section =====================
 
 [ClassInstall32]
-Addreg=ToasterClassReg     
+Addreg=ToasterClassReg
 
 [ToasterClassReg]
 HKR,,,0,%ClassName%
@@ -83,7 +83,7 @@ toaster.sys  = 1,,
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "MicrosoftDemo (wdm_simple1)"
+MSFT = "Microsoft WDK Demo (Toaster Simple inf)"
 StdMfg = "(Standard system devices)"
 ClassName = "Toaster"
 DiskId1 = "Toaster Device Installation Disk #1"
