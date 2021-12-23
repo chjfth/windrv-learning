@@ -8,7 +8,7 @@ Visual C++ 2010 projects:
 	KMDF filter drivers
 	toastmon
 
-.\exe\ToasterApp_vs2010.sln contains:
+.\exe-dll\ToasterApp_vs2010.sln contains:
 	enum.exe 
 	toast.exe
 	tostrco1.dll , the CoInstaller
