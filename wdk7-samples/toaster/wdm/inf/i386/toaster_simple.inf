@@ -51,8 +51,8 @@ HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system
 %StdMfg%=Standard
 
 [Standard]
-; DisplayName       		Section           DeviceId
-; -----------       		-------           --------
+; DisplayName       	   Section         HardwareId (conceptually not DeviceID)
+; -----------       	   -------         ----------
 %ToasterDevice.DeviceDesc%=Toaster_Device, {b85b7c50-6a01-11d2-b841-00c04fad5171}\MsToaster
 
 [Toaster_Device.NT]
