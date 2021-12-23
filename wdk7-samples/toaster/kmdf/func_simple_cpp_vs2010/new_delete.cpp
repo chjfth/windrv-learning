@@ -2,10 +2,13 @@
 
 #include <ntddk.h>
 
+#define TOASTER_DEVICE_POOL_TAG '++dT' // Poolmon will show "Td++"
+
+
 void * ufcom_new(size_t count) 
 {
 //	PAGED_CODE();
-	return ExAllocatePoolWithTag(PagedPool, count, '++ct');
+	return ExAllocatePoolWithTag(PagedPool, count, TOASTER_DEVICE_POOL_TAG);
 }
 
 void ufcom_delete(void *object) 
@@ -13,7 +16,7 @@ void ufcom_delete(void *object)
 //	PAGED_CODE();
 	if(!object)
 		return;
-	ExFreePoolWithTag(object, 'mcfu');
+	ExFreePoolWithTag(object, TOASTER_DEVICE_POOL_TAG);
 }
 
 
