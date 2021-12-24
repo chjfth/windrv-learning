@@ -2,6 +2,8 @@
 ;
 ;Copyright (c) Microsoft Corporation.  All rights reserved.
 ;
+;Some tuning by Jimm Chen to ease teaching and learning.
+;
 ;Module Name:
 ;
 ;    SIMPLE.INF (new template name: kmdf_toast_simple.inx)
@@ -92,4 +94,3 @@ ClassName = "ToasterClass"
 DiskId1 = "AAA Toaster Device Installation Disk #1"
 ToasterDevice.DeviceDesc = "AAA Toaster (No ClassInstaller)"
 toaster.SVCDESC = "AAA Toaster Device Driver Service"
-

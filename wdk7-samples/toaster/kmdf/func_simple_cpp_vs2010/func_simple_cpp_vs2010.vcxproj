@@ -221,6 +221,12 @@
   </ItemGroup>
   <ItemGroup>
     <!--    <ResourceCompile Include="..\bus\static\busenum.rc" /> -->
+    <CustomBuild Include="..\inf-template\kmdf_toast_simple.inx">
+      <FileType>Document</FileType>
+      <Command>echo.</Command>
+      <Message>Detected newer: %(FullPath)</Message>
+      <Outputs>$(TargetPath)</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <!--
     Introduce VSPG Framework code here.
