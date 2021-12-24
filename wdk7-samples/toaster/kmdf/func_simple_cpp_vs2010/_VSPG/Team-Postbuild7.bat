@@ -27,6 +27,8 @@ REM call :EchoVar TargetDir
 REM call :EchoVar PlatformName
 REM call :EchoVar TargetName
 
+call :Echos START
+
 REM ==== Prelude Above ====
 
 if "%PlatformName%"=="x64" (

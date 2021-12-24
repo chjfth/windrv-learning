@@ -27,6 +27,8 @@ REM call :EchoVar TargetDir
 REM call :EchoVar PlatformName
 REM call :EchoVar TargetName
 
+call :Echos START
+
 REM ==== Prelude Above ====
 
 REM// Check that WDKPATH env-var in defined, otherwise, assert error.
