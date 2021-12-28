@@ -227,6 +227,17 @@
   <ItemGroup>
     <!--    <ResourceCompile Include="..\bus\static\busenum.rc" /> -->
   </ItemGroup>
+
+  <!--
+    Introduce VSPG Framework code here.
+   -->
+  <PropertyGroup>
+    <VSPG_BootsDir_NoTBS>..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(VSPG_BootsDir_NoTBS)\_VSPG.props" />
+  </ImportGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
