@@ -31,6 +31,7 @@ if not exist "%OutputInf%" (
 REM Now %OutputInf% is still an inx, we have to call stampinf on it.
 
 set execmd=stampinf -f %OutputInf% %StampinfExParams%
+call :Echos %execmd%
 %execmd%
 if errorlevel 1 (
 	echo ERROR: Stampinf execution fail.
@@ -56,3 +57,7 @@ REM Param1~4 same meaning as the containing bat.
     echo !line!
     endlocal
   ))>"%newfile%"
+
+:Echos
+  echo [%~n0%~x0] %*
+exit /b

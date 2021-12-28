@@ -54,7 +54,6 @@
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
     <TargetName>kmdf_toast_simple</TargetName>
-    <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -66,7 +65,6 @@
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.sys</TargetExt>
     <TargetName>kmdf_toast_simple</TargetName>
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -92,7 +90,6 @@
       <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
-      <OutputFile>$(TargetPath)</OutputFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -165,7 +162,6 @@
       <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
-      <OutputFile>$(TargetPath)</OutputFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -227,7 +223,6 @@
   <ItemGroup>
     <!--    <ResourceCompile Include="..\bus\static\busenum.rc" /> -->
   </ItemGroup>
-
   <!--
     Introduce VSPG Framework code here.
    -->
@@ -237,7 +232,6 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(VSPG_BootsDir_NoTBS)\_VSPG.props" />
   </ImportGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
