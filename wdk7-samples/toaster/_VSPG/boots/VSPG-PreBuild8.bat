@@ -70,15 +70,13 @@ REM =============================
 REM ====== Functions Below ======
 REM =============================
 
-:SetErrorlevel
-exit /b %1
-
+REM %~n0%~x0 is batfilenam
 :Echos
-  echo [%batfilenam%] %*
+  echo [%~n0%~x0] %*
 exit /b
 
 :EchoExec
-  echo [%batfilenam%] EXEC: %*
+  echo [%~n0%~x0] EXEC: %*
 exit /b
 
 :EchoVar
