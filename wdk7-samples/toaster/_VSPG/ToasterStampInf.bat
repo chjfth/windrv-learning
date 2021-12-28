@@ -31,7 +31,7 @@ if not exist "%OutputInf%" (
 REM Now %OutputInf% is still an inx, we have to call stampinf on it.
 
 set execmd=stampinf -f %OutputInf% %StampinfExParams%
-call :Echos %execmd%
+call :EchoExec %execmd%
 %execmd%
 if errorlevel 1 (
 	echo ERROR: Stampinf execution fail.
@@ -39,6 +39,20 @@ if errorlevel 1 (
 )
 
 exit /b 0
+
+REM =============================
+REM ====== Functions Below ======
+REM =============================
+
+REM %~n0%~x0 is batfilenam
+:Echos
+  echo [%~n0%~x0] %*
+exit /b
+
+:EchoExec
+  echo [%~n0%~x0] EXEC: %*
+exit /b
+
 
 :ReplaceInFile
 REM Thanks to:
