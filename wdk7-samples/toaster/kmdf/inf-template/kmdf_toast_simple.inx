@@ -2,8 +2,6 @@
 ;
 ;Copyright (c) Microsoft Corporation.  All rights reserved.
 ;
-;Some tuning by Jimm Chen to ease teaching and learning.
-;
 ;Module Name:
 ;
 ;    SIMPLE.INF (new template name: kmdf_toast_simple.inx)
@@ -17,8 +15,22 @@
 ;    If it is installed, you must remove the existing Toaster class key 
 ;    (HKLM\System\CurrentControlSet\Control\Class\{22222222-6A01-11d2-B841-00C04FAD5171}) 
 ;    from the registry. Otherwise the setup ignores the entire 
-;    [ClassInstall32] section if it finds the toaster class guid 
+;    [ClassInstall32] section if it finds the toaster class GUID
 ;    in the registy.
+;
+; [2021.12.28] Jimm Chen:
+;	I have done some tuning to the original WDK7 sample inf to ease teaching and learning 
+;	of this driver project.
+;
+;	If you see this file in an .inf extension name, then it is not what you should edit
+;	manually, instead, it is generated from a template .inx file. The benefit of generating
+;	from .inx is: We can maintain a single .inx and generate consistent x86 and AMD64
+;	.inf files.
+;
+;	If the resulting file name is <sysname>--<inftemplate>.inf, then we know it is 
+;	generated from <inftemplate>.inx and referring to <sysname>.sys. For example:
+;
+;	(example pending...)
 ;
 ;--*/
 
