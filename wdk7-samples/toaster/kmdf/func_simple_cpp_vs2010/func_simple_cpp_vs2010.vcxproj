@@ -233,7 +233,7 @@
     Introduce VSPG Framework code here.
    -->
   <PropertyGroup>
-    <VSPG_BootsDir_NoTBS>..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
+    <VSPG_BootsDir_NoTBS>..\..\..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
     <VSPG_FeedbackFile>$(ProjectDir)new_delete.cpp</VSPG_FeedbackFile>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
