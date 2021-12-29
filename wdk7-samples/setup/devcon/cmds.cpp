@@ -43,22 +43,17 @@ struct SetHwidContext {
 
 int cmdHelp(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     HELP command
     allow HELP or HELP <command>
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine (ignored)
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     DWORD helptext = 0;
@@ -1115,21 +1110,17 @@ Return Value:
 
 int cmdUpdate(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-    UPDATE
+    UPDATE // call UpdateDriverForPlugAndPlayDevices()
     update driver for existing device(s)
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     HMODULE newdevMod = NULL;
@@ -1209,7 +1200,6 @@ Return Value:
     failcode = reboot ? EXIT_REBOOT : EXIT_OK;
 
 final:
-
     if(newdevMod) {
         FreeLibrary(newdevMod);
     }
@@ -1219,22 +1209,17 @@ final:
 
 int cmdInstall(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     CREATE
     Creates a root enumerated devnode and installs drivers on it
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     HDEVINFO DeviceInfoSet = INVALID_HANDLE_VALUE;

@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\devcon\devcon.h" />
+    <ClInclude Include="..\devcon\msg.h" />
     <ClInclude Include="..\devcon\rc_ids.h" />
   </ItemGroup>
   <ItemGroup>
@@ -110,10 +111,10 @@
     </Link>
   </ItemDefinitionGroup>
   <!-- All BuildConf end -->
-  
   <!-- import VSPG start -->
   <PropertyGroup>
     <VSPG_BootsDir_NoTBS>..\..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
+    <TargetName>devcon</TargetName>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(VSPG_BootsDir_NoTBS)\_VSPG.props" />

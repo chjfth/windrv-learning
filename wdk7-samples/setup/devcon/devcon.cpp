@@ -789,14 +789,11 @@ Return Value:
 
 bool SplitCommandLine(__inout int & argc, __inout LPTSTR * & argv, __out int & argc_right, __out LPTSTR * & argv_right)
 /*++
-
 Routine Description:
-
     Splits a command line into left and right of :=
     this is used for some of the more complex commands
 
 Arguments:
-
     argc/argv - in/out
                 - in, specifies the existing argc/argv
                 - out, specifies the argc/argv to left of :=
@@ -804,9 +801,7 @@ Arguments:
                 - specifies the argc/argv to right of :=
 
 Return Value:
-
     true - ":=" appears in line, false otherwise
-
 --*/
 {
     int i;
@@ -825,9 +820,7 @@ Return Value:
 
 int EnumerateDevices(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in PZPWSTR argv, __in CallbackFunc Callback, __in LPVOID Context)
 /*++
-
 Routine Description:
-
     Generic enumerator for devices that will be passed the following arguments:
     <id> [<id>...]
     =<class> [<id>...]
@@ -835,7 +828,6 @@ Routine Description:
     <class> is a class name
 
 Arguments:
-
     BaseName - name of executable
     Machine  - name of machine to enumerate
     Flags    - extra enumeration flags (eg DIGCF_PRESENT)
@@ -844,9 +836,7 @@ Arguments:
     Context  - data to pass function for each hit
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     HDEVINFO devs = INVALID_HANDLE_VALUE;
@@ -1034,21 +1024,16 @@ int
 __cdecl
 _tmain(__in int argc, __in PZPWSTR argv)
 /*++
-
 Routine Description:
-
     Main entry point
     interpret -m:<machine>
     and hand off execution to command
 
 Arguments:
-
     argc/argv - parameters passed to executable
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     LPCTSTR cmd;
@@ -1127,11 +1112,19 @@ Return Value:
         //
         cmd = CharNext(cmd);
     }
+
     firstArg++;
-    for(dispIndex = 0;DispatchTable[dispIndex].cmd;dispIndex++) {
-        if(_tcsicmp(cmd,DispatchTable[dispIndex].cmd)==0) {
-            retval = DispatchTable[dispIndex].func(baseName,machine,flags,argc-firstArg,argv+firstArg);
-            switch(retval) {
+    for(dispIndex=0; DispatchTable[dispIndex].cmd; dispIndex++) 
+	{
+        if(_tcsicmp(cmd, DispatchTable[dispIndex].cmd)==0) {
+            retval = DispatchTable[dispIndex].func(
+				baseName,
+				machine,
+				flags,
+				argc-firstArg,
+				argv+firstArg);
+            
+			switch(retval) {
                 case EXIT_USAGE:
                     CommandUsage(baseName,DispatchTable[dispIndex].cmd);
                     break;
