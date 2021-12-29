@@ -37,18 +37,20 @@ if "%PlatformName%"=="x64" (
 	set stampinf_ARCH=x86
 )
 
-set inf_template=kmdf_toast_simple
+if "" == "%VSPG_inf_template_name%" goto :DONE_STAMPINF
 
 call :Echos calling ToasterStampInf.bat ...
 set subcmd=call %SolutionDir%\_VSPG\ToasterStampInf.bat^
-  %ProjectDir%\..\inf-template\%inf_template%.inx^
-  %TargetDir%\%TargetName%--%inf_template%.inf^
+  %ProjectDir%\..\inf-template\%VSPG_inf_template_name%.inx^
+  %TargetDir%\%TargetName%--%VSPG_inf_template_name%.inf^
   toaster.^
   %TargetName%.^
   "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
 REM call :Echos %subcmd%
 %subcmd%
 if errorlevel 1 exit /b 4
+
+:DONE_STAMPINF
 
 
 goto :END
