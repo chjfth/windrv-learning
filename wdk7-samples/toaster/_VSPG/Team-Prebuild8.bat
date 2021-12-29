@@ -27,7 +27,7 @@ REM call :EchoVar TargetDir
 REM call :EchoVar PlatformName
 REM call :EchoVar TargetName
 
-call :Echos START
+call :Echos START from %batdir%
 
 REM ==== Prelude Above ====
 
@@ -40,6 +40,7 @@ if "%WDKPATH%"=="" (
   exit /b 4
 )
 
+call :Echos WDKPATH=%WDKPATH%
 
 goto :END
 

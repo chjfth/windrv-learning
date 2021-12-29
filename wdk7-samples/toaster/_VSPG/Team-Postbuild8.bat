@@ -27,7 +27,7 @@ REM call :EchoVar TargetDir
 REM call :EchoVar PlatformName
 REM call :EchoVar TargetName
 
-call :Echos START
+call :Echos START from %batdir%
 
 REM ==== Prelude Above ====
 
@@ -37,12 +37,12 @@ if "%PlatformName%"=="x64" (
 	set stampinf_ARCH=x86
 )
 
-if "" == "%VSPG_inf_template_name%" goto :DONE_STAMPINF
+if "" == "%vspg_InfTemplateName%" goto :DONE_STAMPINF
 
 call :Echos calling ToasterStampInf.bat ...
 set subcmd=call %SolutionDir%\_VSPG\ToasterStampInf.bat^
-  %ProjectDir%\..\inf-template\%VSPG_inf_template_name%.inx^
-  %TargetDir%\%TargetName%--%VSPG_inf_template_name%.inf^
+  %ProjectDir%\..\inf-template\%vspg_InfTemplateName%.inx^
+  %TargetDir%\%TargetName%--%vspg_InfTemplateName%.inf^
   toaster.^
   %TargetName%.^
   "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
