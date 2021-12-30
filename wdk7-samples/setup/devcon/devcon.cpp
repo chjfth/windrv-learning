@@ -23,22 +23,14 @@ struct IdEntry {
 
 void FormatToStream(__in FILE * stream, __in DWORD fmt,...)
 /*++
-
 Routine Description:
-
     Format text to stream using a particular msg-id fmt
     Used for displaying localizable messages
 
 Arguments:
-
     stream              - file stream to output to, stdout or stderr
     fmt                 - message id
     ...                 - parameters %1...
-
-Return Value:
-
-    none
-
 --*/
 {
     va_list arglist;
@@ -71,7 +63,7 @@ Return Value:
                 locbuffer[count] = TEXT('\0');
             }
             //
-            // now write to apropriate stream
+            // now write to appropriate stream
             //
             _fputts(locbuffer,stream);
         }
@@ -81,23 +73,14 @@ Return Value:
 
 void Padding(__in int pad)
 /*++
-
 Routine Description:
-
     Insert padding into line before text
 
 Arguments:
-
     pad - number of padding tabs to insert
-
-Return Value:
-
-    none
-
 --*/
 {
     int c;
-
     for(c=0;c<pad;c++) {
         fputs("    ",stdout);
     }
@@ -106,19 +89,11 @@ Return Value:
 
 void Usage(__in LPCTSTR BaseName)
 /*++
-
 Routine Description:
-
     Display simple usage text
 
 Arguments:
-
     BaseName            - name of executable
-
-Return Value:
-
-    none
-
 --*/
 {
     FormatToStream(stderr,MSG_USAGE,BaseName);
@@ -126,20 +101,12 @@ Return Value:
 
 void CommandUsage(__in LPCTSTR BaseName, __in LPCTSTR Cmd)
 /*++
-
 Routine Description:
-
     Invalid command usage
     Display how to get help on command
 
 Arguments:
-
     BaseName            - name of executable
-
-Return Value:
-
-    none
-
 --*/
 {
     FormatToStream(stderr,MSG_COMMAND_USAGE,BaseName,Cmd);
@@ -147,19 +114,11 @@ Return Value:
 
 void Failure(__in LPCTSTR BaseName, __in LPCTSTR Cmd)
 /*++
-
 Routine Description:
-
     Display simple error text for general failure
 
 Arguments:
-
     BaseName            - name of executable
-
-Return Value:
-
-    none
-
 --*/
 {
     FormatToStream(stderr,MSG_FAILURE,BaseName,Cmd);
@@ -167,19 +126,14 @@ Return Value:
 
 BOOL Reboot()
 /*++
-
 Routine Description:
-
     Attempt to reboot computer
 
 Arguments:
-
     none
 
 Return Value:
-
-    TRUE if API suceeded
-
+    TRUE if API succeeded
 --*/
 {
     HANDLE Token;
@@ -219,7 +173,7 @@ final:
     //
     // attempt reboot - inform system that this is planned hardware install
     //
-    // warning 28159 is a warning to rearchitect to avoid rebooting.  However,
+    // warning 28159 is a warning to re-architect to avoid rebooting.  However,
     // sometimes during device installation, a reboot is needed, so this warning
     // is being suppressed for the call to InitiateSystemShutdownEx.
     //
@@ -881,7 +835,7 @@ Return Value:
     }
     if(argc>skip && argv[skip][0]==WILD_CHAR && !argv[skip][1]) {
         //
-        // catch convinient case of specifying a single argument '*'
+        // catch convenient case of specifying a single argument '*'
         //
         all = TRUE;
         skip++;

@@ -106,23 +106,18 @@ Return Value:
 
 int cmdClasses(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     CLASSES command
     lists classes on (optionally) specified machine
     format as <name>: <destination>
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine
     argc/argv - remaining parameters - ignored
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     DWORD reqGuids = 128;
@@ -182,9 +177,7 @@ final:
 
 int cmdListClass(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     LISTCLASS <name>....
     lists all devices for each specified class
     there can be more than one physical class for a class name (shouldn't be
@@ -192,15 +185,12 @@ Routine Description:
     if machine given, list devices for that machine
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine
     argc/argv - remaining parameters - list of class names
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     DWORD reqGuids = 16;
