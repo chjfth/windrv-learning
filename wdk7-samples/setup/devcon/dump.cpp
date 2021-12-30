@@ -1211,10 +1211,7 @@ BOOL DumpDriverPackageData(__in LPCTSTR InfName)
     SP_INF_SIGNER_INFO InfSignerInfo;
 #endif // _SETUPAPI_VER >= _WIN32_WINNT_WINXP
 
-    hInf = SetupOpenInfFile(InfName,
-                            NULL,
-                            INF_STYLE_WIN4,
-                            &ErrorLine);
+    hInf = SetupOpenInfFile(InfName, NULL, INF_STYLE_WIN4, &ErrorLine);
     if (hInf == INVALID_HANDLE_VALUE) {
         Err = GetLastError();
         goto failed;
@@ -1223,42 +1220,39 @@ BOOL DumpDriverPackageData(__in LPCTSTR InfName)
     //
     // Dump out the provider.
     //
-    if (SetupFindFirstLine(hInf,
-                           INFSTR_SECT_VERSION,
-                           INFSTR_KEY_PROVIDER,
-                           &Context) &&
-        (SetupGetStringField(&Context,
-                             1,
-                             InfData,
-                             ARRAYSIZE(InfData),
-                             NULL))) {
-        FormatToStream(stdout,MSG_DPENUM_DUMP_PROVIDER,InfData);
-    } else {
-        FormatToStream(stdout,MSG_DPENUM_DUMP_PROVIDER_UNKNOWN);
-    }
+    if (!SetupFindFirstLine(hInf, INFSTR_SECT_VERSION, INFSTR_KEY_PROVIDER, &Context))
+		goto FAIL1;
+	if (!SetupGetStringField(&Context, 1, InfData, ARRAYSIZE(InfData), NULL))
+		goto FAIL1;
+
+// chj reformat
+    FormatToStream(stdout,MSG_DPENUM_DUMP_PROVIDER,InfData);
+	goto NEXT1;
+FAIL1:
+	FormatToStream(stdout,MSG_DPENUM_DUMP_PROVIDER_UNKNOWN);
+NEXT1:
 
     //
     // Dump out the class
     //
     if (!SetupFindFirstLine(hInf, INFSTR_SECT_VERSION, INFSTR_KEY_HARDWARE_CLASSGUID, &Context))
-		goto FAIL1;
+		goto FAIL2;
 
     if (!SetupGetStringField(&Context, 1, InfData, ARRAYSIZE(InfData), NULL))
-		goto FAIL1;
+		goto FAIL2;
         
 	if (!SUCCEEDED(CLSIDFromString(InfData, &ClassGuid)))
-		goto FAIL1;
+		goto FAIL2;
 
 	if (!SetupDiGetClassDescriptionEx(&ClassGuid, InfData, ARRAYSIZE(InfData), NULL,NULL,NULL))
-		goto FAIL1;
+		goto FAIL2;
 
-SUCCESS1: // chj reformat
 	FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS,InfData);
-	goto NEXT1;
-FAIL1:
+	goto NEXT2;
+FAIL2:
 	FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS_UNKNOWN);
-	goto NEXT1;
-NEXT1:
+	goto NEXT2;
+NEXT2:
 
 #if _SETUPAPI_VER >= _WIN32_WINNT_WINXP
     //
