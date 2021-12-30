@@ -1240,21 +1240,25 @@ BOOL DumpDriverPackageData(__in LPCTSTR InfName)
     //
     // Dump out the class
     //
-    if (SetupFindFirstLine(hInf,
-                           INFSTR_SECT_VERSION,
-                           INFSTR_KEY_HARDWARE_CLASSGUID,
-                           &Context) &&
-        (SetupGetStringField(&Context,
-                             1,
-                             InfData,
-                             ARRAYSIZE(InfData),
-                             NULL)) &&
-        (SUCCEEDED(CLSIDFromString(InfData, &ClassGuid))) &&
-        SetupDiGetClassDescriptionEx(&ClassGuid,InfData,ARRAYSIZE(InfData),NULL,NULL,NULL)) {
-        FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS,InfData);
-    } else {
-        FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS_UNKNOWN);
-    }
+    if (!SetupFindFirstLine(hInf, INFSTR_SECT_VERSION, INFSTR_KEY_HARDWARE_CLASSGUID, &Context))
+		goto FAIL1;
+
+    if (!SetupGetStringField(&Context, 1, InfData, ARRAYSIZE(InfData), NULL))
+		goto FAIL1;
+        
+	if (!SUCCEEDED(CLSIDFromString(InfData, &ClassGuid)))
+		goto FAIL1;
+
+	if (!SetupDiGetClassDescriptionEx(&ClassGuid, InfData, ARRAYSIZE(InfData), NULL,NULL,NULL))
+		goto FAIL1;
+
+SUCCESS1: // chj reformat
+	FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS,InfData);
+	goto NEXT1;
+FAIL1:
+	FormatToStream(stdout,MSG_DPENUM_DUMP_CLASS_UNKNOWN);
+	goto NEXT1;
+NEXT1:
 
 #if _SETUPAPI_VER >= _WIN32_WINNT_WINXP
     //

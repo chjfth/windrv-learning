@@ -2285,21 +2285,17 @@ final:
 
 int cmdDPEnumLegacy(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
     dp_enumLegacy
     Enumerates installed Driver Packages on the machine pre Windows Longhorn
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
                                                        
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     int failcode = EXIT_FAIL;
