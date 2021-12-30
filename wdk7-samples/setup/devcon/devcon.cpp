@@ -999,6 +999,10 @@ Return Value:
     BOOL autoReboot = FALSE;
     DWORD flags = 0;
 
+	// Chj: Enable wprintf of Unicode characters, in premise that user has set in intl.cpl
+	// CRT=locale = System-locale = Windows UI language.
+	setlocale(LC_ALL, ""); 
+
     //
     // syntax:
     //

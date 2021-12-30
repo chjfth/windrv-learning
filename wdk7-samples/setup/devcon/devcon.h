@@ -25,6 +25,7 @@ Abstract:
 #include <newdev.h>
 #include <objbase.h>
 #include <strsafe.h>
+#include <locale.h> // Chj: to enable non-ASCII wprintf
 
 #include "msg.h"
 #include "rc_ids.h"
