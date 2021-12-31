@@ -1267,6 +1267,10 @@ Return Value:
     //
     if (!SetupDiGetINFClass(InfPath,&ClassGUID,ClassName,sizeof(ClassName)/sizeof(ClassName[0]),0))
     {
+		if(GetLastError()==ERROR_FILE_NOT_FOUND)
+		{
+			wprintf(L"ERROR: The inf file you supplied does not exist.\n");
+		}
         goto final;
     }
 

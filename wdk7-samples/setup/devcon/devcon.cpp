@@ -1103,5 +1103,3 @@ Return Value:
     Usage(baseName);
     return EXIT_USAGE;
 }
-
-
