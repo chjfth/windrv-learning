@@ -15,6 +15,8 @@ Abstract:
 
 #include "devcon.h"
 
+#define DEVCON_VERSION_STRING TEXT("20211231.1")
+
 struct IdEntry {
     LPCTSTR String;     // string looking for
     LPCTSTR Wild;       // first wild character if any
@@ -96,7 +98,7 @@ Arguments:
     BaseName            - name of executable
 --*/
 {
-    FormatToStream(stderr,MSG_USAGE,BaseName);
+    FormatToStream(stderr,MSG_USAGE,BaseName, DEVCON_VERSION_STRING);
 }
 
 void CommandUsage(__in LPCTSTR BaseName, __in LPCTSTR Cmd)

@@ -7,6 +7,7 @@
 ;//
 MessageId=60000 SymbolicName=MSG_USAGE
 Language=English
+devcon from Microsoft WDK -- updated by Jimm Chen, version %2
 %1 Usage: %1 [-r] [-m:\\<machine>] <command> [<arg>...]
 For more information, type: %1 help
 .
