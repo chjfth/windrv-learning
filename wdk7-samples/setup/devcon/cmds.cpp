@@ -1113,13 +1113,11 @@ Return Value:
     EXIT_xxxx
 --*/
 {
-    HMODULE newdevMod = NULL;
     int failcode = EXIT_FAIL;
-    UpdateDriverForPlugAndPlayDevicesProto UpdateFn;
     BOOL reboot = FALSE;
     LPCTSTR hwid = NULL;
     LPCTSTR inf = NULL;
-    DWORD flags = 0;
+    DWORD flags = INSTALLFLAG_FORCE;
     DWORD res;
     TCHAR InfPath[MAX_PATH];
 
@@ -1164,24 +1162,13 @@ Return Value:
         return EXIT_FAIL;
     }
     inf = InfPath;
-    flags |= INSTALLFLAG_FORCE;
 
     //
     // make use of UpdateDriverForPlugAndPlayDevices
     //
-    newdevMod = LoadLibrary(TEXT("newdev.dll"));
-    if(!newdevMod) {
-        goto final;
-    }
-    UpdateFn = (UpdateDriverForPlugAndPlayDevicesProto)GetProcAddress(newdevMod,UPDATEDRIVERFORPLUGANDPLAYDEVICES);
-    if(!UpdateFn)
-    {
-        goto final;
-    }
-
     FormatToStream(stdout,inf ? MSG_UPDATE_INF : MSG_UPDATE,hwid,inf);
 
-    if(!UpdateFn(NULL,hwid,inf,flags,&reboot)) {
+    if(!UpdateDriverForPlugAndPlayDevices(NULL, hwid, inf, flags, &reboot)) {
         goto final;
     }
 
@@ -1190,10 +1177,6 @@ Return Value:
     failcode = reboot ? EXIT_REBOOT : EXIT_OK;
 
 final:
-    if(newdevMod) {
-        FreeLibrary(newdevMod);
-    }
-
     return failcode;
 }
 
@@ -1302,8 +1285,7 @@ Return Value:
     //
     // Add the HardwareID to the Device's HardwareID property.
     //
-    if(!SetupDiSetDeviceRegistryProperty(DeviceInfoSet,
-        &DeviceInfoData,
+    if(!SetupDiSetDeviceRegistryProperty(DeviceInfoSet, &DeviceInfoData,
         SPDRP_HARDWAREID,
         (LPBYTE)hwIdList,
         (lstrlen(hwIdList)+1+1)*sizeof(TCHAR)))
@@ -1315,9 +1297,7 @@ Return Value:
     // Transform the registry element into an actual devnode
     // in the PnP HW tree.
     //
-    if (!SetupDiCallClassInstaller(DIF_REGISTERDEVICE,
-        DeviceInfoSet,
-        &DeviceInfoData))
+    if (!SetupDiCallClassInstaller(DIF_REGISTERDEVICE, DeviceInfoSet, &DeviceInfoData))
     {
         goto final;
     }
@@ -1334,26 +1314,22 @@ final:
         SetupDiDestroyDeviceInfoList(DeviceInfoSet);
     }
 
-    return failcode;
+    return failcode;   
 }
 
 int cmdUpdateNI(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
     UPDATE (non interactive version)
     update driver for existing device(s)
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     //
