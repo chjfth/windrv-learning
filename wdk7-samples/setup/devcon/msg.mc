@@ -640,8 +640,7 @@ This command will only work for local machine.
 Specify -r to reboot automatically if needed.
 <inf> is an INF to use to install the device.
 All devices that match <hwid> are updated.
-Unsigned installs will fail. No UI will be
-presented.
+Unsigned installs will fail. No UI will be presented.
 .
 MessageId=61105 SymbolicName=MSG_UPDATENI_SHORT
 Language=English
