@@ -113,12 +113,13 @@ typedef BOOL (WINAPI *SetupVerifyInfFileProto)(__in LPCTSTR InfName,
 #ifdef _UNICODE
 #define UPDATEDRIVERFORPLUGANDPLAYDEVICES "UpdateDriverForPlugAndPlayDevicesW"
 #define SETUPUNINSTALLOEMINF "SetupUninstallOEMInfW"
+#define SETUPVERIFYINFFILE "SetupVerifyInfFileW"
 #else
 #define UPDATEDRIVERFORPLUGANDPLAYDEVICES "UpdateDriverForPlugAndPlayDevicesA"
 #define SETUPUNINSTALLOEMINF "SetupUninstallOEMInfA"
+#define SETUPVERIFYINFFILE "SetupVerifyInfFileA"
 #endif
 #define SETUPSETNONINTERACTIVEMODE "SetupSetNonInteractiveMode"
-#define SETUPVERIFYINFFILE "SetupVerifyInfFile"
 
 //
 // exit codes
