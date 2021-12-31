@@ -1336,7 +1336,7 @@ Return Value:
     // turn off interactive mode while doing the update
     //
     HMODULE setupapiMod = NULL;
-    SetupSetNonInteractiveModeProto SetNIFn;
+    SetupSetNonInteractiveModeProto SetNIFn; // SetupSetNonInteractiveMode() since WinXP
     int res;
     BOOL prev;
 
@@ -1508,32 +1508,26 @@ Return Value:
 
 int cmdRescan(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     RESCAN
     rescan for new devices
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
-
     //
     // reenumerate from the root of the devnode tree
     // totally CM based
     //
     int failcode = EXIT_FAIL;
     HMACHINE machineHandle = NULL;
-    DEVINST devRoot;
+    DEVINST devRoot = NULL;
 
     UNREFERENCED_PARAMETER(BaseName);
     UNREFERENCED_PARAMETER(Flags);

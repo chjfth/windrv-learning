@@ -1202,14 +1202,7 @@ BOOL DumpDriverPackageData(__in LPCTSTR InfName)
     INFCONTEXT Context;
     TCHAR InfData[MAX_INF_STRING_LENGTH];
     GUID ClassGuid;
-#if _SETUPAPI_VER >= _WIN32_WINNT_WINXP
-    SetupVerifyInfFileProto SVIFFn;
-#endif // _SETUPAPI_VER >= _WIN32_WINNT_WINXP
-    HMODULE setupapiMod = NULL;
-    
-#if _SETUPAPI_VER >= _WIN32_WINNT_WINXP
-    SP_INF_SIGNER_INFO InfSignerInfo;
-#endif // _SETUPAPI_VER >= _WIN32_WINNT_WINXP
+	SP_INF_SIGNER_INFO InfSignerInfo= {sizeof(InfSignerInfo)};
 
     hInf = SetupOpenInfFile(InfName, NULL, INF_STYLE_WIN4, &ErrorLine);
     if (hInf == INVALID_HANDLE_VALUE) {
@@ -1258,18 +1251,8 @@ NEXT2:
     //
     // Dump out the digital signer
     //
-    setupapiMod = LoadLibrary(TEXT("setupapi.dll"));
-    if(!setupapiMod){
-        goto failed;
-    }
-    SVIFFn = (SetupVerifyInfFileProto)GetProcAddress(setupapiMod, SETUPVERIFYINFFILE);
-    if(!SVIFFn){
-        goto failed;
-    }
-    
-    ZeroMemory(&InfSignerInfo, sizeof(InfSignerInfo));
-    InfSignerInfo.cbSize = sizeof(InfSignerInfo);
-    if (SVIFFn(InfName, NULL, &InfSignerInfo) ||
+
+	if (SetupVerifyInfFile(InfName, NULL, &InfSignerInfo) ||
         (GetLastError() == ERROR_AUTHENTICODE_TRUSTED_PUBLISHER) ||
         (GetLastError() == ERROR_AUTHENTICODE_TRUST_NOT_ESTABLISHED)) {
         FormatToStream(stdout,MSG_DPENUM_DUMP_SIGNER,InfSignerInfo.DigitalSigner);
@@ -1281,10 +1264,8 @@ NEXT2:
     //
     // Dump out the version and date
     //
-    if (SetupFindFirstLine(hInf,
-                           INFSTR_SECT_VERSION,
-                           INFSTR_DRIVERVERSION_SECTION,
-                           &Context)) {
+    if (SetupFindFirstLine(hInf, INFSTR_SECT_VERSION, INFSTR_DRIVERVERSION_SECTION, &Context)) 
+	{
         if (SetupGetStringField(&Context,
                                 1,
                                 InfData,
@@ -1310,14 +1291,9 @@ NEXT2:
         FormatToStream(stdout,MSG_DPENUM_DUMP_VERSION_UNKNOWN);
     }
 
-
 failed:
     if (hInf != INVALID_HANDLE_VALUE) {
         SetupCloseInfFile(hInf);
-    }
-
-    if(setupapiMod){
-        FreeLibrary(setupapiMod);
     }
 
     return (Err == NO_ERROR);
