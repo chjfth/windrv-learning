@@ -179,10 +179,10 @@ int cmdListClass(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, 
 /*++
 Routine Description:
     LISTCLASS <name>....
-    lists all devices for each specified class
-    there can be more than one physical class for a class name (shouldn't be
-    though) in such cases, list each class
-    if machine given, list devices for that machine
+    Lists all devices for each specified setup-class.
+    There can be more than one physical class for a class name (shouldn't be
+    though) in such cases, list each class // ??
+    If machine given, list devices for that machine.
 
 Arguments:
     BaseName  - name of executable
