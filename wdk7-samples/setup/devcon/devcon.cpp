@@ -191,21 +191,14 @@ final:
 
 LPTSTR GetDeviceStringProperty(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Prop)
 /*++
-
 Routine Description:
-
     Return a string property for a device, otherwise NULL
 
 Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
     Prop     - string property to obtain
 
 Return Value:
-
-    string containing description
-
+    string containing description. (Caller should C++-delete it)
 --*/
 {
     LPTSTR buffer;
@@ -235,7 +228,7 @@ Return Value:
     }
     szChars = reqSize/sizeof(TCHAR);
     buffer[szChars] = TEXT('\0');
-    return buffer;
+    return buffer; // a new-ed buffer
 
 failed:
     if(buffer) {
@@ -246,21 +239,12 @@ failed:
 
 LPTSTR GetDeviceDescription(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Return a string containing a description of the device, otherwise NULL
     Always try friendly name first
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
-    string containing description
-
+    string containing description. Caller must C++-delete it.
 --*/
 {
     LPTSTR desc;
@@ -855,7 +839,7 @@ Return Value:
     // we'll mark it as not doSearch
     // but will go ahead and add them all
     //
-    for(argIndex=skip;argIndex<argc;argIndex++) {
+    for(argIndex=skip; argIndex<argc; argIndex++) {
         templ[argIndex] = GetIdType(argv[argIndex]);
         if(templ[argIndex].Wild || !templ[argIndex].InstanceId) {
             //
@@ -876,7 +860,6 @@ Return Value:
                                      NULL,
                                      Machine,
                                      NULL);
-
     } else {
         //
         // blank list, we'll add instance id's by hand
@@ -889,7 +872,7 @@ Return Value:
     if(devs == INVALID_HANDLE_VALUE) {
         goto final;
     }
-    for(argIndex=skip;argIndex<argc;argIndex++) {
+    for(argIndex=skip; argIndex<argc; argIndex++) {
         //
         // add explicit instances to list (even if enumerated all,
         // this gets around DIGCF_PRESENT)
@@ -914,7 +897,7 @@ Return Value:
     }
 
     devInfo.cbSize = sizeof(devInfo);
-    for(devIndex=0;SetupDiEnumDeviceInfo(devs,devIndex,&devInfo);devIndex++) {
+    for(devIndex=0; SetupDiEnumDeviceInfo(devs,devIndex,&devInfo); devIndex++) {
 
         if(doSearch) {
             for(argIndex=skip,match=FALSE;(argIndex<argc) && !match;argIndex++) {

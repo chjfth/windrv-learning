@@ -270,10 +270,15 @@ Return Value:
             // how many devices?
             //
             if (!devCount) {
-                FormatToStream(stdout,Machine?MSG_LISTCLASS_HEADER_NONE:MSG_LISTCLASS_HEADER_NONE_LOCAL,className,classDesc,Machine);
+                FormatToStream(stdout,
+					Machine?MSG_LISTCLASS_HEADER_NONE:MSG_LISTCLASS_HEADER_NONE_LOCAL,
+					className, classDesc, Machine);
             } else {
-                FormatToStream(stdout,Machine?MSG_LISTCLASS_HEADER:MSG_LISTCLASS_HEADER_LOCAL,devCount,className,classDesc,Machine);
-                for(devIndex=0;SetupDiEnumDeviceInfo(devs,devIndex,&devInfo);devIndex++) {
+                FormatToStream(stdout,
+					Machine?MSG_LISTCLASS_HEADER:MSG_LISTCLASS_HEADER_LOCAL,
+					devCount, className, classDesc,Machine);
+                
+				for(devIndex=0; SetupDiEnumDeviceInfo(devs,devIndex,&devInfo); devIndex++) {
                     DumpDevice(devs,&devInfo);
                 }
             }
@@ -301,23 +306,17 @@ final:
 
 int FindCallback(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Index, __in LPVOID Context)
 /*++
-
 Routine Description:
-
     Callback for use by Find/FindAll
     just simply display the device
 
 Arguments:
-
     Devs    )_ uniquely identify the device
     DevInfo )
     Index    - index of device
     Context  - GenericContext
-
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     GenericContext *pFindContext = (GenericContext*)Context;
@@ -548,29 +547,22 @@ Return Value:
 
 int cmdDriverFiles(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     STATUS <id> ...
     use EnumerateDevices to do hardwareID matching
     for each match, dump driver files to stdout
     note that we only enumerate present devices
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
-    GenericContext context;
-    int failcode;
-
+    int failcode = 0;
     UNREFERENCED_PARAMETER(Flags);
  
     if(!argc) {
@@ -583,6 +575,7 @@ Return Value:
         return EXIT_USAGE;
     }
 
+	GenericContext context = {0};
     context.count = 0;
     context.control = FIND_DEVICE | FIND_DRIVERFILES;
     failcode = EnumerateDevices(BaseName,Machine,DIGCF_PRESENT,argc,argv,FindCallback,&context);
@@ -590,9 +583,12 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
-            FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
+            FormatToStream(stdout, Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,
+				Machine);
         } else {
-            FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
+            FormatToStream(stdout, Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,
+				context.count,
+				Machine);
         }
     }
     return failcode;

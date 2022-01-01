@@ -83,20 +83,11 @@ Return Value:
 
 BOOL DumpDeviceDescr(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
-    Write device description to stdout
-
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
+    Write device description to stdout. // Device's friendly name.
 
 Return Value:
-
     TRUE if success
-
 --*/
 {
     LPTSTR desc;
@@ -113,20 +104,11 @@ Return Value:
 
 BOOL DumpDeviceClass(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Write device class information to stdout
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
     TRUE if success
-
 --*/
 {
     LPTSTR cls;
@@ -159,20 +141,11 @@ Return Value:
 
 BOOL DumpDeviceStatus(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Write device status to stdout
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
     none
-
 --*/
 {
     SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
@@ -444,27 +417,18 @@ Return Value:
     return NO_ERROR;
 }
 
-BOOL FindCurrentDriver(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in PSP_DRVINFO_DATA DriverInfoData)
+BOOL FindCurrentDriver(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in PSP_DRVINFO_DATA driverInfoData)
 /*++
-
 Routine Description:
-
     Find the driver that is associated with the current device
     We can do this either the quick way (available in WinXP)
     or the long way that works in Win2k.
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
     TRUE if we managed to determine and select current driver
-
 --*/
 {
-    SP_DEVINSTALL_PARAMS deviceInstallParams;
+	SP_DEVINSTALL_PARAMS deviceInstallParams = {sizeof(SP_DEVINSTALL_PARAMS)};
     WCHAR SectionName[LINE_LEN];
     WCHAR DrvDescription[LINE_LEN];
     WCHAR MfgName[LINE_LEN];
@@ -472,12 +436,8 @@ Return Value:
     HKEY hKey = NULL;
     DWORD RegDataLength;
     DWORD RegDataType;
-    DWORD c;
     BOOL match = FALSE;
     long regerr;
-
-    ZeroMemory(&deviceInstallParams, sizeof(deviceInstallParams));
-    deviceInstallParams.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
 
     if(!SetupDiGetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams)) {
         return FALSE;
@@ -487,7 +447,7 @@ Return Value:
     //
     // Set the flags that tell SetupDiBuildDriverInfoList to just put the
     // currently installed driver node in the list, and that it should allow
-    // excluded drivers. This flag introduced in WinXP.
+    // excluded drivers. This flag is introduced in WinXP.
     //
     deviceInstallParams.FlagsEx |= (DI_FLAGSEX_INSTALLEDDRIVER | DI_FLAGSEX_ALLOWEXCLUDEDDRVS);
 
@@ -500,7 +460,7 @@ Return Value:
             return FALSE;
         }
         if (!SetupDiEnumDriverInfo(Devs, DevInfo, SPDIT_CLASSDRIVER,
-                                   0, DriverInfoData)) {
+                                   0, driverInfoData)) {
             return FALSE;
         }
         //
@@ -510,7 +470,8 @@ Return Value:
     }
     deviceInstallParams.FlagsEx &= ~(DI_FLAGSEX_INSTALLEDDRIVER | DI_FLAGSEX_ALLOWEXCLUDEDDRVS);
 #endif
-    //
+
+	//
     // The following method works in Win2k, but it's slow and painful.
     //
     // First, get driver key - if it doesn't exist, no driver
@@ -633,7 +594,6 @@ Return Value:
     //
     // now search for drivers listed in the INF
     //
-    //
     deviceInstallParams.Flags |= DI_ENUMSINGLEINF;
     deviceInstallParams.FlagsEx |= DI_FLAGSEX_ALLOWEXCLUDEDDRVS;
 
@@ -648,16 +608,19 @@ Return Value:
     // find the entry in the INF that was used to install the driver for
     // this device
     //
-    for(c=0;SetupDiEnumDriverInfo(Devs,DevInfo,SPDIT_CLASSDRIVER,c,DriverInfoData);c++) {
-        if((_tcscmp(DriverInfoData->MfgName,MfgName)==0)
-            &&(_tcscmp(DriverInfoData->ProviderName,ProviderName)==0)) {
+    for(int idx=0; 
+		SetupDiEnumDriverInfo(Devs,DevInfo,SPDIT_CLASSDRIVER, idx, driverInfoData); 
+		idx++) 
+	{
+        if((_tcscmp(driverInfoData->MfgName,MfgName)==0)
+            &&(_tcscmp(driverInfoData->ProviderName,ProviderName)==0)) {
             //
             // these two fields match, try more detailed info
             // to ensure we have the exact driver entry used
             //
             SP_DRVINFO_DETAIL_DATA detail;
             detail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA);
-            if(!SetupDiGetDriverInfoDetail(Devs,DevInfo,DriverInfoData,&detail,sizeof(detail),NULL)
+            if(!SetupDiGetDriverInfoDetail(Devs,DevInfo, driverInfoData, &detail,sizeof(detail), NULL)
                     && (GetLastError() != ERROR_INSUFFICIENT_BUFFER)) {
                 continue;
             }
@@ -676,51 +639,39 @@ Return Value:
 
 BOOL DumpDeviceDriverFiles(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Dump information about what files were installed for driver package
     <tab>Installed using OEM123.INF section [abc.NT]
     <tab><tab>file...
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
     none
-
 --*/
 {
     //
     // do this by 'searching' for the current driver
-    // mimmicing a copy-only install to our own file queue
+    // mimicking a copy-only install to our own file queue
     // and then parsing that file queue
     //
-    SP_DEVINSTALL_PARAMS deviceInstallParams;
-    SP_DRVINFO_DATA driverInfoData;
-    SP_DRVINFO_DETAIL_DATA driverInfoDetail;
+	SP_DEVINSTALL_PARAMS deviceInstallParams = {sizeof(SP_DEVINSTALL_PARAMS)};
+	SP_DRVINFO_DATA driverInfoData = {sizeof(SP_DRVINFO_DATA)};
+	SP_DRVINFO_DETAIL_DATA driverInfoDetail = {sizeof(SP_DRVINFO_DETAIL_DATA)};
+	DWORD reqsize = 0;
     HSPFILEQ queueHandle = INVALID_HANDLE_VALUE;
     DWORD count;
     DWORD scanResult;
     BOOL success = FALSE;
 
-    ZeroMemory(&driverInfoData,sizeof(driverInfoData));
-    driverInfoData.cbSize = sizeof(driverInfoData);
-
-    if(!FindCurrentDriver(Devs,DevInfo,&driverInfoData)) {
+    if(!FindCurrentDriver(Devs,DevInfo, &driverInfoData)) {
         Padding(1);
         FormatToStream(stdout, MSG_DUMP_NO_DRIVER);
         return FALSE;
     }
 
-    //
-    // get useful driver information
-    //
-    driverInfoDetail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA);
-    if(!SetupDiGetDriverInfoDetail(Devs,DevInfo,&driverInfoData,&driverInfoDetail,sizeof(SP_DRVINFO_DETAIL_DATA),NULL) &&
+    if(!SetupDiGetDriverInfoDetail(Devs,DevInfo,
+			&driverInfoData, 
+			&driverInfoDetail, sizeof(SP_DRVINFO_DETAIL_DATA),
+			&reqsize) &&
        GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
         //
         // no information about driver or section
@@ -752,8 +703,6 @@ Return Value:
     //
     // modify flags to indicate we're providing our own queue
     //
-    ZeroMemory(&deviceInstallParams, sizeof(deviceInstallParams));
-    deviceInstallParams.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
     if ( !SetupDiGetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams) ) {
         goto final;
     }
