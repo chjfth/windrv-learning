@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	(void)argc; (void)argv;
 
 	setlocale(LC_ALL, "");
-	_tprintf(_T("Program compile date: %s %s\n"), __DATE__, __TIME__);
+	printf("Program compile date: %s %s\n", __DATE__, __TIME__); // This must be 'char'
 	
 	// Registered device interfaces have persistent registry keys below
 	// HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceClasses.
@@ -76,7 +76,15 @@ int main(int argc, char* argv[])
 		SP_DEVICE_INTERFACE_DATA interfacedata = {sizeof(SP_DEVICE_INTERFACE_DATA)};
 		for(devindex=0;; ++devindex) // for each device
 		{
-			BOOL b = SetupDiEnumDeviceInterfaces(infoset, NULL, &interfaceguid, devindex, &interfacedata); 
+			BOOL b = SetupDiEnumDeviceInterfaces(infoset, 
+				NULL, // IN, we what interface-data for EVERY device in infoset 
+				&interfaceguid, // IN,
+				devindex, // IN
+				&interfacedata // OUT: 
+					// .ifcguid(=input interfaceguid, silly)
+					// .Flags (don't care here)
+					// .Reserved. Chj: This is a CRITICAL internal ptr that determines what we can fetch from SetupDiGetDeviceInterfaceDetail().
+				); 
 				// Note: using NULL in third param(&interfaceguid) will fail with @err=87(ERROR_INVALID_PARAMETER)
 			if(!b)
 				break; // enum end
@@ -89,9 +97,13 @@ int main(int argc, char* argv[])
 			DWORD reqout = 0;
 			SP_DEVICE_INTERFACE_DETAIL_DATA *pDevIfcDetail = (SP_DEVICE_INTERFACE_DETAIL_DATA*)dev__Openpath;
 			pDevIfcDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-			b = SetupDiGetDeviceInterfaceDetail(infoset, &interfacedata, 
-				pDevIfcDetail, ARRAYSIZE(dev__Openpath), &reqout, 
-				&devicedata); // memo: ERROR_INSUFFICIENT_BUFFER if dev__Openpath not enough
+			b = SetupDiGetDeviceInterfaceDetail(infoset,
+				&interfacedata, // IN
+				pDevIfcDetail, // OUT
+				ARRAYSIZE(dev__Openpath), 
+				&reqout, 
+				&devicedata // OUT: extra Did
+				); // memo: ERROR_INSUFFICIENT_BUFFER if dev__Openpath not enough
 			if(!b) {
 				DWORD winerr = GetLastError();
 				_tprintf(_T("    Unexpected: SetupDiGetDeviceInterfaceDetail() fails, winerr=%d!\n"), winerr);
