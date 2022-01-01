@@ -54,10 +54,14 @@ int main(int argc, char* argv[])
 		
 		HDEVINFO infoset = SetupDiGetClassDevs(&IfcguidToQuery, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
 		if (infoset == INVALID_HANDLE_VALUE)
-		{					// no devices
-			_tprintf(_T("    (No devices)\n"));
+		{
+			// Chj Win7 memo: With an arbitrary IfcguidToQuery value, infoset will always be valid,
+			// except that later SetupDiEnumDeviceInterfaces() will report nothing.
+			// So not likely to get here.
+
+			_tprintf(_T("    (Unexpected error from SetupDiGetClassDevs(), WinErr=%d)\n"), GetLastError());
 			continue;
-		}					// no devices
+		}
 		
 		// Report information about these devices
 		
@@ -86,7 +90,8 @@ int main(int argc, char* argv[])
 
 			_tprintf(_T("    <%d>devobj:\n"), devindex);
 
-			// Obtain information about the device. 
+			// Obtain MORE information about the device. (calling it "detail" is again silly)
+			//
 			SP_DEVINFO_DATA Did = {sizeof(SP_DEVINFO_DATA)};
 			TCHAR dev__Openpath[4000];
 			DWORD reqout = 0;
@@ -105,7 +110,7 @@ int main(int argc, char* argv[])
 				continue;		// unexpected result
 			}
 			
-			// Chj: The above SetupDiGetDeviceInterfaceDetail()'s purpose is to have Did
+			// Chj: The above SetupDiGetDeviceInterfaceDetail()'s main purpose is to have Did
 			// filled with a piece of opaque data which will act as an input-param to
 			// later SetupDiGetDeviceRegistryProperty() call.
 			// The Did is filled even if @err is ERROR_INSUFFICIENT_BUFFER - MSDN/run confirmed.
@@ -190,10 +195,11 @@ int main(int argc, char* argv[])
 		SetupDiDestroyDeviceInfoList(infoset);
 		
 		if (devindex == 0)
-		{					// no devices
+		{
+			// Chj: Registry has this Ifcguid, but SetupDiEnumDeviceInterfaces() reports none, sth weird.
 			_tprintf(_T("    (No devices)\n"));
 			continue;
-		}					// no devices
+		}
 	}						// for each registered interface
 	
 	RegCloseKey(hkey);
