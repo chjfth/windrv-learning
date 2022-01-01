@@ -752,7 +752,7 @@ final:
 
     SetupDiDestroyDriverInfoList(Devs,DevInfo,SPDIT_CLASSDRIVER);
 
-    SetupDiDestroyDeviceInfoList(Devs);
+//	SetupDiDestroyDeviceInfoList(Devs); // Chj fix: Devs should be kept, still used by caller.
 
     if ( queueHandle != (HSPFILEQ)INVALID_HANDLE_VALUE ) {
         SetupCloseFileQueue(queueHandle);
