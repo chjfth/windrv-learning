@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	(void)argc; (void)argv;
 
 	setlocale(LC_ALL, "");
-	printf("Program compile date: %s %s\n", __DATE__, __TIME__); // This must be 'char'
+	printf("Program compile date: %s (version 2.0)\n", __DATE__); // This must be 'char'
 	
 	// Registered device interfaces have persistent registry keys below
 	// HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceClasses.
