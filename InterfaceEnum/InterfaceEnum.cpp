@@ -85,12 +85,12 @@ int main(int argc, char* argv[])
 
 			// Obtain information about the device. 
 			SP_DEVINFO_DATA devicedata = {sizeof(SP_DEVINFO_DATA)};
-			char dev__Openpath[4000];
+			TCHAR dev__Openpath[4000];
 			DWORD reqout = 0;
 			SP_DEVICE_INTERFACE_DETAIL_DATA *pDevIfcDetail = (SP_DEVICE_INTERFACE_DETAIL_DATA*)dev__Openpath;
 			pDevIfcDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 			b = SetupDiGetDeviceInterfaceDetail(infoset, &interfacedata, 
-				pDevIfcDetail, sizeof(dev__Openpath), &reqout, 
+				pDevIfcDetail, ARRAYSIZE(dev__Openpath), &reqout, 
 				&devicedata); // memo: ERROR_INSUFFICIENT_BUFFER if dev__Openpath not enough
 			if(!b) {
 				DWORD winerr = GetLastError();
@@ -110,10 +110,10 @@ int main(int argc, char* argv[])
 			_tprintf(_T("      DevOpenPath: \"%s\"\n"), pDevIfcDetail->DevicePath);
 
 			// Print "device instance path"
-			TCHAR szDevInstanceId[512];
-			b = SetupDiGetDeviceInstanceId(infoset, &devicedata, szDevInstanceId, sizeof(szDevInstanceId), NULL);
+			TCHAR szDevinstpath[512];
+			b = SetupDiGetDeviceInstanceId(infoset, &devicedata, szDevinstpath, ARRAYSIZE(szDevinstpath), NULL);
 			if(b) {
-				_tprintf(_T("      Device instance path: %s\n"), szDevInstanceId);
+				_tprintf(_T("      Device-instance-path: %s\n"), szDevinstpath);
 			}
 
 			// Determine the friendly name parameter (if any) for the interface instance. This is useful
@@ -121,10 +121,9 @@ int main(int argc, char* argv[])
 	
 			TCHAR szSetupClassGuid[80];
 			_tcscpy_s(szSetupClassGuid, format_guid(devicedata.ClassGuid));
-			_tprintf(_T("      SP_DEVINFO_DATA.ClassGuid(setup class)=%s\n"), szSetupClassGuid);
+			_tprintf(_T("      SP_DEVINFO_DATA.ClassGuid(setup-class)=%s\n"), szSetupClassGuid);
 
-			BYTE interfacename[512];
-			interfacename[0] = 0;
+			TCHAR interfacename[512] = {0};
 			HKEY interfacekey = SetupDiOpenDeviceInterfaceRegKey(infoset, &interfacedata, 0, KEY_READ);
 				// Chj: Using Process Explorer, I can know the opened regkey path is sth like:
 				//	HKLM\SYSTEM\ControlSet001\Control\DeviceClasses\{07dad660-22f1-11d1-a9f4-00c04fbbde8f}\##?#Root#SYSTEM#0000#{07dad660-22f1-11d1-a9f4-00c04fbbde8f}\#{07dad662-22f1-11d1-a9f4-00c04fbbde8f}&GLOBAL\Device Parameters
@@ -135,7 +134,7 @@ int main(int argc, char* argv[])
 			if(interfacekey!=INVALID_HANDLE_VALUE)
 			{	// look for friendly name of the interface
 				DWORD size = sizeof(interfacename);
-				RegQueryValueEx(interfacekey, _T("FriendlyName"), 0, NULL, interfacename, &size);
+				RegQueryValueEx(interfacekey, _T("FriendlyName"), 0, NULL, (BYTE*)interfacename, &size);
 				if (interfacename[0])
 					_tprintf(_T("\"%s\"\n"), interfacename);
 				else
@@ -151,9 +150,9 @@ int main(int argc, char* argv[])
 			}
 
 			// Determine and print the friendly name or description of this "device instance".
-			BYTE szFriendly[512]={0}, szDevdesc[512]={0};
-			BOOL b1 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_FRIENDLYNAME, NULL, szFriendly, sizeof(szFriendly), NULL);
-			BOOL b2 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_DEVICEDESC, NULL, szDevdesc, sizeof(szDevdesc), NULL);
+			TCHAR szFriendly[512]={0}, szDevdesc[512]={0};
+			BOOL b1 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_FRIENDLYNAME, NULL, (BYTE*)szFriendly, sizeof(szFriendly), NULL);
+			BOOL b2 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_DEVICEDESC, NULL, (BYTE*)szDevdesc, sizeof(szDevdesc), NULL);
 			if(b1) {
 				_tprintf(_T("      SPDRP_FRIENDLYNAME: %s\n"), szFriendly);
 			}
@@ -162,14 +161,14 @@ int main(int argc, char* argv[])
 			}
 
 			// Print more registry properties of this "device instance".
-			BYTE szValue[512] = {0};
+			TCHAR szValue[512] = {0};
 
-			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_SERVICE, NULL, szValue, sizeof(szValue), NULL);
+			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_SERVICE, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
 			if(b) {
 				_tprintf(_T("      SPDRP_SERVICE: %s\n"), szValue);
 			}
 
-			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_CLASSGUID, NULL, szValue, sizeof(szValue), NULL);
+			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_CLASSGUID, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
 			if(b) {
 				//printf("      SPDRP_CLASSGUID(setup class): %s\n", szValue);
 				int diff = _stricmp((char*)szValue, (char*)szSetupClassGuid);
