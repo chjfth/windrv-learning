@@ -7,26 +7,13 @@
 #include "stdafx.h"
 
 BOOL GuidFromString(GUID* guid, LPCTSTR string);
+const TCHAR * StringFromGuid(const GUID &guid);
 BOOL htol(LPCTSTR& string, PDWORD presult);
 BOOL htos(LPCTSTR& string, PWORD presult);
 BOOL htob(LPCTSTR& string, PBYTE presult);
 LPCTSTR InterfaceGuidName(GUID* guid);
 
-#define arraysize(p) (sizeof(p)/sizeof((p)[0]))
-
 ///////////////////////////////////////////////////////////////////////////////
-
-const TCHAR * format_guid(const GUID &guid) 
-{
-	static TCHAR buf[100] = {0};
-	_sntprintf_s(buf, ARRAYSIZE(buf),
-		_T("{%08lx-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}"), 
-		guid.Data1, guid.Data2, guid.Data3, 
-		guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-		guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-	return buf;
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -140,7 +127,7 @@ int main(int argc, char* argv[])
 			// when displaying kernel-streaming interface information
 	
 			TCHAR szSetupClassGuid[80];
-			_tcscpy_s(szSetupClassGuid, format_guid(Did.ClassGuid));
+			_tcscpy_s(szSetupClassGuid, StringFromGuid(Did.ClassGuid));
 			_tprintf(_T("      SP_DEVINFO_DATA.ClassGuid(setup-class)=%s\n"), szSetupClassGuid);
 
 			TCHAR interfacename[512] = {0};
@@ -239,6 +226,18 @@ BOOL GuidFromString(GUID* guid, LPCTSTR string)
 		&& *string++ == _T('}')
 		&& *string == 0;
 }							// GuidFromString
+
+const TCHAR * StringFromGuid(const GUID &guid) 
+{
+	static TCHAR buf[100] = {0};
+	_sntprintf_s(buf, ARRAYSIZE(buf),
+		_T("{%08lx-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}"), 
+		guid.Data1, guid.Data2, guid.Data3, 
+		guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+		guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+	return buf;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Hexadecimal conversion routines for use by GuidFromString
@@ -340,7 +339,7 @@ LPCTSTR InterfaceGuidName(GUID* guid)
 #include "StandardInterfaces.h"
 	};
 	
-	for (int i = 0; i < arraysize(guidname); ++i)
+	for (int i = 0; i < ARRAYSIZE(guidname); ++i)
 		if (*guidname[i].guid == *guid)
 			return guidname[i].name;
 		
