@@ -1,6 +1,8 @@
 // InterfaceEnum.cpp: Registered interface enumeration sample
 // Copyright (C) 2000 by Walter Oney
 // All rights reserved
+//
+// Update quite a lot by Jimm Chen, 2016, 2022.
 
 #include "stdafx.h"
 
@@ -44,26 +46,26 @@ int main(int argc, char* argv[])
 		return code;
 	
 	TCHAR keyname[256];
-	for (DWORD keyindex = 0; RegEnumKey(hkey, keyindex, keyname, 256) == 0; ++keyindex)
-	{						// for each registered interface
+	for (DWORD keyindex = 0; 
+		RegEnumKey(hkey, keyindex, keyname, ARRAYSIZE(keyname)) == NO_ERROR; 
+		++keyindex)
+	{
+		// for each registered interface ...
 		
 		// Convert the key name to a GUID. Seems like there ought to be an SDK
 		// function that would do this without needing a UNICODE string first...
 		
-		GUID interfaceguid;
-		if (!GuidFromString(&interfaceguid, keyname))
+		GUID IfcguidToQuery; // Interface GUID to query for matching devnodes
+		if (!GuidFromString(&IfcguidToQuery, keyname))
 			continue;			// can't convert key to GUID
 
-//if(strcmp(keyname, "{378de44c-56ef-11d1-bc8c-00a0c91405dd}")!=0)	// test (GUID_DEVINTERFACE_MOUSE)
-//	continue;
-
-		// Print the header for a section of interface reports
+		// Print the header for a section of interface-GUID reports
 		
-		_tprintf(_T("\nIFC<%d>%s (%s):\n"), keyindex, keyname, InterfaceGuidName(&interfaceguid));
+		_tprintf(_T("\nIFC<%d>%s (%s):\n"), keyindex, keyname, InterfaceGuidName(&IfcguidToQuery));
 		
-		// Open a device information set to enumerate instances of this interface
+		// Acquire a device information set to enumerate instances of this interface
 		
-		HDEVINFO infoset = SetupDiGetClassDevs(&interfaceguid, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
+		HDEVINFO infoset = SetupDiGetClassDevs(&IfcguidToQuery, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
 		if (infoset == INVALID_HANDLE_VALUE)
 		{					// no devices
 			_tprintf(_T("    (No devices)\n"));
@@ -73,36 +75,42 @@ int main(int argc, char* argv[])
 		// Report information about these devices
 		
 		DWORD devindex = 0;
-		SP_DEVICE_INTERFACE_DATA interfacedata = {sizeof(SP_DEVICE_INTERFACE_DATA)};
+		SP_DEVICE_INTERFACE_DATA Difd = {sizeof(SP_DEVICE_INTERFACE_DATA)};
 		for(devindex=0;; ++devindex) // for each device
 		{
+			// Note: using NULL in third param(&IfcguidToQuery) will fail with @err=87(ERROR_INVALID_PARAMETER)
+			//
 			BOOL b = SetupDiEnumDeviceInterfaces(infoset, 
 				NULL, // IN, we what interface-data for EVERY device in infoset 
-				&interfaceguid, // IN,
+				&IfcguidToQuery, // IN,
 				devindex, // IN
-				&interfacedata // OUT: 
-					// .ifcguid(=input interfaceguid, silly)
+				&Difd // OUT: 
+					// .InterfaceClassGuid(=input IfcguidToQuery, silly API)
 					// .Flags (don't care here)
 					// .Reserved. Chj: This is a CRITICAL internal ptr that determines what we can fetch from SetupDiGetDeviceInterfaceDetail().
-				); 
-				// Note: using NULL in third param(&interfaceguid) will fail with @err=87(ERROR_INVALID_PARAMETER)
+				);
+			if(b)
+			{
+				assert(memcmp(&IfcguidToQuery, &Difd.InterfaceClassGuid, sizeof(GUID))==0);
+			}
+
 			if(!b)
 				break; // enum end
 
 			_tprintf(_T("    <%d>devobj:\n"), devindex);
 
 			// Obtain information about the device. 
-			SP_DEVINFO_DATA devicedata = {sizeof(SP_DEVINFO_DATA)};
+			SP_DEVINFO_DATA Did = {sizeof(SP_DEVINFO_DATA)};
 			TCHAR dev__Openpath[4000];
 			DWORD reqout = 0;
 			SP_DEVICE_INTERFACE_DETAIL_DATA *pDevIfcDetail = (SP_DEVICE_INTERFACE_DETAIL_DATA*)dev__Openpath;
 			pDevIfcDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 			b = SetupDiGetDeviceInterfaceDetail(infoset,
-				&interfacedata, // IN
+				&Difd, // IN
 				pDevIfcDetail, // OUT
 				ARRAYSIZE(dev__Openpath), 
 				&reqout, 
-				&devicedata // OUT: extra Did
+				&Did // OUT: We need this Did as later API input.
 				); // memo: ERROR_INSUFFICIENT_BUFFER if dev__Openpath not enough
 			if(!b) {
 				DWORD winerr = GetLastError();
@@ -110,10 +118,10 @@ int main(int argc, char* argv[])
 				continue;		// unexpected result
 			}
 			
-			// Chj: The above SetupDiGetDeviceInterfaceDetail()'s purpose is to have devicedata
+			// Chj: The above SetupDiGetDeviceInterfaceDetail()'s purpose is to have Did
 			// filled with a piece of opaque data which will act as an input-param to
 			// later SetupDiGetDeviceRegistryProperty() call.
-			// The devicedata is filled even if @err is ERROR_INSUFFICIENT_BUFFER - MSDN/run confirmed.
+			// The Did is filled even if @err is ERROR_INSUFFICIENT_BUFFER - MSDN/run confirmed.
 			//
 			// Almost every scene of using HDEVINFO requires an accompanied SP_DEVINFO_DATA, 
 			// very sluggish API design!
@@ -123,7 +131,7 @@ int main(int argc, char* argv[])
 
 			// Print "device instance path"
 			TCHAR szDevinstpath[512];
-			b = SetupDiGetDeviceInstanceId(infoset, &devicedata, szDevinstpath, ARRAYSIZE(szDevinstpath), NULL);
+			b = SetupDiGetDeviceInstanceId(infoset, &Did, szDevinstpath, ARRAYSIZE(szDevinstpath), NULL);
 			if(b) {
 				_tprintf(_T("      Device-instance-path: %s\n"), szDevinstpath);
 			}
@@ -132,11 +140,11 @@ int main(int argc, char* argv[])
 			// when displaying kernel-streaming interface information
 	
 			TCHAR szSetupClassGuid[80];
-			_tcscpy_s(szSetupClassGuid, format_guid(devicedata.ClassGuid));
+			_tcscpy_s(szSetupClassGuid, format_guid(Did.ClassGuid));
 			_tprintf(_T("      SP_DEVINFO_DATA.ClassGuid(setup-class)=%s\n"), szSetupClassGuid);
 
 			TCHAR interfacename[512] = {0};
-			HKEY interfacekey = SetupDiOpenDeviceInterfaceRegKey(infoset, &interfacedata, 0, KEY_READ);
+			HKEY interfacekey = SetupDiOpenDeviceInterfaceRegKey(infoset, &Difd, 0, KEY_READ);
 				// Chj: Using Process Explorer, I can know the opened regkey path is sth like:
 				//	HKLM\SYSTEM\ControlSet001\Control\DeviceClasses\{07dad660-22f1-11d1-a9f4-00c04fbbde8f}\##?#Root#SYSTEM#0000#{07dad660-22f1-11d1-a9f4-00c04fbbde8f}\#{07dad662-22f1-11d1-a9f4-00c04fbbde8f}&GLOBAL\Device Parameters
 
@@ -163,8 +171,8 @@ int main(int argc, char* argv[])
 
 			// Determine and print the friendly name or description of this "device instance".
 			TCHAR szFriendly[512]={0}, szDevdesc[512]={0};
-			BOOL b1 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_FRIENDLYNAME, NULL, (BYTE*)szFriendly, sizeof(szFriendly), NULL);
-			BOOL b2 = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_DEVICEDESC, NULL, (BYTE*)szDevdesc, sizeof(szDevdesc), NULL);
+			BOOL b1 = SetupDiGetDeviceRegistryProperty(infoset, &Did, SPDRP_FRIENDLYNAME, NULL, (BYTE*)szFriendly, sizeof(szFriendly), NULL);
+			BOOL b2 = SetupDiGetDeviceRegistryProperty(infoset, &Did, SPDRP_DEVICEDESC, NULL, (BYTE*)szDevdesc, sizeof(szDevdesc), NULL);
 			if(b1) {
 				_tprintf(_T("      SPDRP_FRIENDLYNAME: %s\n"), szFriendly);
 			}
@@ -175,12 +183,12 @@ int main(int argc, char* argv[])
 			// Print more registry properties of this "device instance".
 			TCHAR szValue[512] = {0};
 
-			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_SERVICE, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
+			b = SetupDiGetDeviceRegistryProperty(infoset, &Did, SPDRP_SERVICE, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
 			if(b) {
 				_tprintf(_T("      SPDRP_SERVICE: %s\n"), szValue);
 			}
 
-			b = SetupDiGetDeviceRegistryProperty(infoset, &devicedata, SPDRP_CLASSGUID, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
+			b = SetupDiGetDeviceRegistryProperty(infoset, &Did, SPDRP_CLASSGUID, NULL, (BYTE*)szValue, sizeof(szValue), NULL);
 			if(b) {
 				//printf("      SPDRP_CLASSGUID(setup class): %s\n", szValue);
 				int diff = _stricmp((char*)szValue, (char*)szSetupClassGuid);

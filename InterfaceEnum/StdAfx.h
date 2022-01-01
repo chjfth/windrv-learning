@@ -20,6 +20,7 @@
 #include <objbase.h>
 #include <tchar.h>
 #include <locale.h>
+#include <assert.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
