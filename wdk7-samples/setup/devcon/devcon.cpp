@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20211231.1")
+#define DEVCON_VERSION_STRING TEXT("20220101.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for
@@ -937,6 +937,7 @@ Return Value:
         } else {
             match = TRUE;
         }
+
         if(match) {
             retcode = Callback(devs,&devInfo,devIndex,Context);
             if(retcode) {

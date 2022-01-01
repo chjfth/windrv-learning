@@ -383,21 +383,14 @@ Return Value:
 
 UINT DumpDeviceDriversCallback(__in PVOID Context, __in UINT Notification, __in UINT_PTR Param1, __in UINT_PTR Param2)
 /*++
-
 Routine Description:
-
     if Context provided, Simply count
     otherwise dump files indented 2
 
 Arguments:
-
     Context      - DWORD Count
     Notification - SPFILENOTIFY_QUEUESCAN
     Param1       - scan
-
-Return Value:
-
-    none
 
 --*/
 {
@@ -417,6 +410,185 @@ Return Value:
     return NO_ERROR;
 }
 
+BOOL FindCurrentDriver_Win2k_old(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in PSP_DRVINFO_DATA driverInfoData)
+{
+	//
+	// The following method works in Win2k, but it's slow and painful.
+	//
+	// First, get driver key - if it doesn't exist, no driver
+	//
+
+	SP_DEVINSTALL_PARAMS deviceInstallParams = {sizeof(SP_DEVINSTALL_PARAMS)};
+	WCHAR SectionName[LINE_LEN];
+	WCHAR DrvDescription[LINE_LEN];
+	WCHAR MfgName[LINE_LEN];
+	WCHAR ProviderName[LINE_LEN];
+	DWORD RegDataLength;
+	DWORD RegDataType;
+	BOOL match = FALSE;
+	long regerr;
+
+	HKEY hKey = SetupDiOpenDevRegKey(Devs,
+		DevInfo,
+		DICS_FLAG_GLOBAL,
+		0,
+		DIREG_DRV,
+		KEY_READ
+		);
+
+	if(hKey == INVALID_HANDLE_VALUE) {
+		//
+		// no such value exists, so there can't be an associated driver
+		//
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	//
+	// obtain path of INF - we'll do a search on this specific INF
+	//
+	RegDataLength = sizeof(deviceInstallParams.DriverPath); // bytes!!!
+	regerr = RegQueryValueEx(hKey,
+		REGSTR_VAL_INFPATH,
+		NULL,
+		&RegDataType,
+		(PBYTE)deviceInstallParams.DriverPath,
+		&RegDataLength
+		);
+
+	if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
+		//
+		// no such value exists, so no associated driver
+		//
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	//
+	// obtain name of Provider to fill into DriverInfoData
+	//
+	RegDataLength = sizeof(ProviderName); // bytes!!!
+	regerr = RegQueryValueEx(hKey,
+		REGSTR_VAL_PROVIDER_NAME,
+		NULL,
+		&RegDataType,
+		(PBYTE)ProviderName,
+		&RegDataLength
+		);
+
+	if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
+		//
+		// no such value exists, so we don't have a valid associated driver
+		//
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	//
+	// obtain name of section - for final verification
+	//
+	RegDataLength = sizeof(SectionName); // bytes!!!
+	regerr = RegQueryValueEx(hKey,
+		REGSTR_VAL_INFSECTION,
+		NULL,
+		&RegDataType,
+		(PBYTE)SectionName,
+		&RegDataLength
+		);
+
+	if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
+		//
+		// no such value exists, so we don't have a valid associated driver
+		//
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	//
+	// driver description (need not be same as device description)
+	// - for final verification
+	//
+	RegDataLength = sizeof(DrvDescription); // bytes!!!
+	regerr = RegQueryValueEx(hKey,
+		REGSTR_VAL_DRVDESC,
+		NULL,
+		&RegDataType,
+		(PBYTE)DrvDescription,
+		&RegDataLength
+		);
+
+	RegCloseKey(hKey);
+
+	if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
+		//
+		// no such value exists, so we don't have a valid associated driver
+		//
+		return FALSE;
+	}
+
+	//
+	// Manufacturer (via SPDRP_MFG, don't access registry directly!)
+	//
+
+	if(!SetupDiGetDeviceRegistryProperty(Devs,
+		DevInfo,
+		SPDRP_MFG,
+		NULL,      // datatype is guaranteed to always be REG_SZ.
+		(PBYTE)MfgName,
+		sizeof(MfgName), // bytes!!!
+		NULL)) {
+			//
+			// no such value exists, so we don't have a valid associated driver
+			//
+			return FALSE;
+	}
+
+	//
+	// now search for drivers listed in the INF
+	//
+	deviceInstallParams.Flags |= DI_ENUMSINGLEINF;
+	deviceInstallParams.FlagsEx |= DI_FLAGSEX_ALLOWEXCLUDEDDRVS;
+
+	if(!SetupDiSetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams)) {
+		return FALSE;
+	}
+	if(!SetupDiBuildDriverInfoList(Devs, DevInfo, SPDIT_CLASSDRIVER)) {
+		return FALSE;
+	}
+
+	//
+	// find the entry in the INF that was used to install the driver for
+	// this device
+	//
+	for(int idx=0; 
+		SetupDiEnumDriverInfo(Devs,DevInfo,SPDIT_CLASSDRIVER, idx, driverInfoData); 
+		idx++) 
+	{
+		if((_tcscmp(driverInfoData->MfgName,MfgName)==0)
+			&&(_tcscmp(driverInfoData->ProviderName,ProviderName)==0)) {
+				//
+				// these two fields match, try more detailed info
+				// to ensure we have the exact driver entry used
+				//
+				SP_DRVINFO_DETAIL_DATA detail;
+				detail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA);
+				if(!SetupDiGetDriverInfoDetail(Devs,DevInfo, driverInfoData, &detail,sizeof(detail), NULL)
+					&& (GetLastError() != ERROR_INSUFFICIENT_BUFFER)) {
+						continue;
+				}
+				if((_tcscmp(detail.SectionName,SectionName)==0) &&
+					(_tcscmp(detail.DrvDescription,DrvDescription)==0)) {
+						match = TRUE;
+						break;
+				}
+		}
+	}
+	if(!match) {
+		SetupDiDestroyDriverInfoList(Devs,DevInfo,SPDIT_CLASSDRIVER);
+	}
+	return match;
+}
+
 BOOL FindCurrentDriver(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in PSP_DRVINFO_DATA driverInfoData)
 /*++
 Routine Description:
@@ -429,15 +601,6 @@ Return Value:
 --*/
 {
 	SP_DEVINSTALL_PARAMS deviceInstallParams = {sizeof(SP_DEVINSTALL_PARAMS)};
-    WCHAR SectionName[LINE_LEN];
-    WCHAR DrvDescription[LINE_LEN];
-    WCHAR MfgName[LINE_LEN];
-    WCHAR ProviderName[LINE_LEN];
-    HKEY hKey = NULL;
-    DWORD RegDataLength;
-    DWORD RegDataType;
-    BOOL match = FALSE;
-    long regerr;
 
     if(!SetupDiGetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams)) {
         return FALSE;
@@ -467,174 +630,18 @@ Return Value:
         // we've selected the current driver
         //
         return TRUE;
+
+		// [2022-01-01] Chj experiment memo:
+		// Without the DI_FLAGSEX_INSTALLEDDRIVER flag, 
+		// running `devcon driverfiles =Ports` on Win7 VM,  SetupDiEnumDriverInfo() above 
+		// will return sth like Description="Standard Serial over Bluetooth link".
+		// But actually, that Bluetooth stuff does not exist on the Win7 VirtualBox VM.
+		// With DI_FLAGSEX_INSTALLEDDRIVER, we see expected Description="Printer Port".
     }
     deviceInstallParams.FlagsEx &= ~(DI_FLAGSEX_INSTALLEDDRIVER | DI_FLAGSEX_ALLOWEXCLUDEDDRVS);
 #endif
 
-	//
-    // The following method works in Win2k, but it's slow and painful.
-    //
-    // First, get driver key - if it doesn't exist, no driver
-    //
-    hKey = SetupDiOpenDevRegKey(Devs,
-                                DevInfo,
-                                DICS_FLAG_GLOBAL,
-                                0,
-                                DIREG_DRV,
-                                KEY_READ
-                               );
-
-    if(hKey == INVALID_HANDLE_VALUE) {
-        //
-        // no such value exists, so there can't be an associated driver
-        //
-        RegCloseKey(hKey);
-        return FALSE;
-    }
-
-    //
-    // obtain path of INF - we'll do a search on this specific INF
-    //
-    RegDataLength = sizeof(deviceInstallParams.DriverPath); // bytes!!!
-    regerr = RegQueryValueEx(hKey,
-                             REGSTR_VAL_INFPATH,
-                             NULL,
-                             &RegDataType,
-                             (PBYTE)deviceInstallParams.DriverPath,
-                             &RegDataLength
-                             );
-
-    if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
-        //
-        // no such value exists, so no associated driver
-        //
-        RegCloseKey(hKey);
-        return FALSE;
-    }
-
-    //
-    // obtain name of Provider to fill into DriverInfoData
-    //
-    RegDataLength = sizeof(ProviderName); // bytes!!!
-    regerr = RegQueryValueEx(hKey,
-                             REGSTR_VAL_PROVIDER_NAME,
-                             NULL,
-                             &RegDataType,
-                             (PBYTE)ProviderName,
-                             &RegDataLength
-                             );
-
-    if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
-        //
-        // no such value exists, so we don't have a valid associated driver
-        //
-        RegCloseKey(hKey);
-        return FALSE;
-    }
-
-    //
-    // obtain name of section - for final verification
-    //
-    RegDataLength = sizeof(SectionName); // bytes!!!
-    regerr = RegQueryValueEx(hKey,
-                             REGSTR_VAL_INFSECTION,
-                             NULL,
-                             &RegDataType,
-                             (PBYTE)SectionName,
-                             &RegDataLength
-                             );
-
-    if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
-        //
-        // no such value exists, so we don't have a valid associated driver
-        //
-        RegCloseKey(hKey);
-        return FALSE;
-    }
-
-    //
-    // driver description (need not be same as device description)
-    // - for final verification
-    //
-    RegDataLength = sizeof(DrvDescription); // bytes!!!
-    regerr = RegQueryValueEx(hKey,
-                             REGSTR_VAL_DRVDESC,
-                             NULL,
-                             &RegDataType,
-                             (PBYTE)DrvDescription,
-                             &RegDataLength
-                             );
-
-    RegCloseKey(hKey);
-
-    if((regerr != ERROR_SUCCESS) || (RegDataType != REG_SZ)) {
-        //
-        // no such value exists, so we don't have a valid associated driver
-        //
-        return FALSE;
-    }
-
-    //
-    // Manufacturer (via SPDRP_MFG, don't access registry directly!)
-    //
-
-    if(!SetupDiGetDeviceRegistryProperty(Devs,
-                                        DevInfo,
-                                        SPDRP_MFG,
-                                        NULL,      // datatype is guaranteed to always be REG_SZ.
-                                        (PBYTE)MfgName,
-                                        sizeof(MfgName), // bytes!!!
-                                        NULL)) {
-        //
-        // no such value exists, so we don't have a valid associated driver
-        //
-        return FALSE;
-    }
-
-    //
-    // now search for drivers listed in the INF
-    //
-    deviceInstallParams.Flags |= DI_ENUMSINGLEINF;
-    deviceInstallParams.FlagsEx |= DI_FLAGSEX_ALLOWEXCLUDEDDRVS;
-
-    if(!SetupDiSetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams)) {
-        return FALSE;
-    }
-    if(!SetupDiBuildDriverInfoList(Devs, DevInfo, SPDIT_CLASSDRIVER)) {
-        return FALSE;
-    }
-
-    //
-    // find the entry in the INF that was used to install the driver for
-    // this device
-    //
-    for(int idx=0; 
-		SetupDiEnumDriverInfo(Devs,DevInfo,SPDIT_CLASSDRIVER, idx, driverInfoData); 
-		idx++) 
-	{
-        if((_tcscmp(driverInfoData->MfgName,MfgName)==0)
-            &&(_tcscmp(driverInfoData->ProviderName,ProviderName)==0)) {
-            //
-            // these two fields match, try more detailed info
-            // to ensure we have the exact driver entry used
-            //
-            SP_DRVINFO_DETAIL_DATA detail;
-            detail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA);
-            if(!SetupDiGetDriverInfoDetail(Devs,DevInfo, driverInfoData, &detail,sizeof(detail), NULL)
-                    && (GetLastError() != ERROR_INSUFFICIENT_BUFFER)) {
-                continue;
-            }
-            if((_tcscmp(detail.SectionName,SectionName)==0) &&
-                (_tcscmp(detail.DrvDescription,DrvDescription)==0)) {
-                match = TRUE;
-                break;
-            }
-        }
-    }
-    if(!match) {
-        SetupDiDestroyDriverInfoList(Devs,DevInfo,SPDIT_CLASSDRIVER);
-    }
-    return match;
+	return FindCurrentDriver_Win2k_old(Devs, DevInfo, driverInfoData);
 }
 
 BOOL DumpDeviceDriverFiles(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
@@ -738,13 +745,25 @@ Return Value:
     //
     // call once to count
     //
-    SetupScanFileQueue(queueHandle,SPQ_SCAN_USE_CALLBACK,NULL,DumpDeviceDriversCallback,&count,&scanResult);
+    SetupScanFileQueue(queueHandle,
+		SPQ_SCAN_USE_CALLBACK,
+		NULL,
+		DumpDeviceDriversCallback,
+		&count, // context=&count
+		&scanResult);
     Padding(1);
-    FormatToStream(stdout, count ? MSG_DUMP_DRIVER_FILES : MSG_DUMP_NO_DRIVER_FILES, count, driverInfoDetail.InfFileName, driverInfoDetail.SectionName);
+    FormatToStream(stdout, 
+		count ? MSG_DUMP_DRIVER_FILES : MSG_DUMP_NO_DRIVER_FILES, 
+		count, driverInfoDetail.InfFileName, driverInfoDetail.SectionName);
     //
     // call again to dump the files
     //
-    SetupScanFileQueue(queueHandle,SPQ_SCAN_USE_CALLBACK,NULL,DumpDeviceDriversCallback,NULL,&scanResult);
+    SetupScanFileQueue(queueHandle,
+		SPQ_SCAN_USE_CALLBACK, 
+		NULL,
+		DumpDeviceDriversCallback,
+		NULL, // context=NULL
+		&scanResult);
 
     success = TRUE;
 
@@ -906,7 +925,7 @@ Return Value:
     }
 
     //
-    // Enumerate all of the drivernodes.
+    // Enumerate all of the driver nodes.
     //
     index = 0;
     while(SetupDiEnumDriverInfo(Devs, DevInfo, SPDIT_COMPATDRIVER,
