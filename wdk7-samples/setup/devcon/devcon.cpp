@@ -303,20 +303,15 @@ Return Value:
 __drv_allocatesMem(object)
 LPTSTR * GetMultiSzIndexArray(__in __drv_aliasesMem LPTSTR MultiSz)
 /*++
-
 Routine Description:
-
     Get an index array pointing to the MultiSz passed in
 
 Arguments:
-
     MultiSz - well formed multi-sz string
 
 Return Value:
-
     array of strings. last entry+1 of array contains NULL
     returns NULL on failure
-
 --*/
 {
     LPTSTR scan;
@@ -345,20 +340,15 @@ Return Value:
 __drv_allocatesMem(object)
 LPTSTR * CopyMultiSz(__in_opt PZPWSTR Array)
 /*++
-
 Routine Description:
-
     Creates a new array from old
     old array need not have been allocated by GetMultiSzIndexArray
 
 Arguments:
-
     Array - array of strings, last entry is NULL
 
 Return Value:
-
     MultiSz array allocated by GetMultiSzIndexArray
-
 --*/
 {
     LPTSTR multiSz = NULL;
@@ -406,19 +396,11 @@ Return Value:
 
 void DelMultiSz(__in_opt __drv_freesMem(object) PZPWSTR Array)
 /*++
-
 Routine Description:
-
     Deletes the string array allocated by GetDevMultiSz/GetRegMultiSz/GetMultiSzIndexArray
 
 Arguments:
-
     Array - pointer returned by GetMultiSzIndexArray
-
-Return Value:
-
-    None
-
 --*/
 {
     if(Array) {
@@ -433,23 +415,18 @@ Return Value:
 __drv_allocatesMem(object)
 LPTSTR * GetDevMultiSz(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Prop)
 /*++
-
 Routine Description:
-
     Get a multi-sz device property
     and return as an array of strings
 
 Arguments:
-
     Devs    - HDEVINFO containing DevInfo
     DevInfo - Specific device
     Prop    - SPDRP_HARDWAREID or SPDRP_COMPATIBLEIDS
 
 Return Value:
-
     array of strings. last entry+1 of array contains NULL
     returns NULL on failure
-
 --*/
 {
     LPTSTR buffer;
@@ -787,7 +764,7 @@ Return Value:
     int argIndex;
     DWORD devIndex;
     SP_DEVINFO_DATA devInfo;
-    SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
+	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
     BOOL doSearch = FALSE;
     BOOL match;
     BOOL all = FALSE;
@@ -846,10 +823,11 @@ Return Value:
         templ[argIndex] = GetIdType(argv[argIndex]);
         if(templ[argIndex].Wild || !templ[argIndex].InstanceId) {
             //
-            // anything other than simple InstanceId's require a search
-			// for example, user input:
-			//	 @PCIIDE\IDECHANNEL\*
-            //
+            // Anything other than simple InstanceId's require a search.
+			// For example, user input:
+			//		devcon driverfiles @PCIIDE\IDECHANNEL\*
+			// or, a HardwareId-like string:
+            //		devcon  driverfiles =hdc "PCI\VEN_8086
             doSearch = TRUE;
         }
     }
@@ -896,15 +874,25 @@ Return Value:
 			// existing devinstpath. But no problem (PENDINGG)
 
             b = SetupDiOpenDeviceInfo(devs, devinstpath, NULL,0,NULL);
-			if(!b && GetLastError()==ERROR_CLASS_MISMATCH)
+			DWORD winerr = b ? 0 : GetLastError();
+			if(winerr==ERROR_CLASS_MISMATCH)
 			{
+				// We get this bcz the InstanceId does not belong to the DIS-associated setup-class,
+				// print an alert message.
 				FormatToStream(stdout, MSG_SETUPCLASS_MISMATCH, devinstpath);
 			}
+			else if(winerr==ERROR_NO_SUCH_DEVINST)
+			{
+				// Meet an invalid/not-exist InstanceId.
+				// print an alert message.
+				FormatToStream(stdout, MSG_DEVINSTPATH_NOT_EXIST, devinstpath);
+			}
+
         }
     }
 
-    devInfoListDetail.cbSize = sizeof(devInfoListDetail);
     if(!SetupDiGetDeviceInfoListDetail(devs,&devInfoListDetail)) {
+		// Chj: There is no reason this can fail.
         goto final;
     }
 

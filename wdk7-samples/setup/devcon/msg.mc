@@ -286,6 +286,12 @@ Language=English
 Alert: The input InstanceId "%1" does not match input setup-class.
 
 .
+MessageId=60421 SymbolicName=MSG_DEVINSTPATH_NOT_EXIST
+Language=English
+Alert: The input InstanceId "%1" does not exist on the system.
+
+
+.
 ;//
 ;// ENABLE
 ;//
