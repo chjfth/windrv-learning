@@ -50,8 +50,8 @@ extern DispatchEntry DispatchTable[];
 #define ARRAYSIZE(x) (sizeof(x)/sizeof(x[0]))
 #endif
 
-#define INSTANCEID_PREFIX_CHAR TEXT('@') // character used to prefix instance ID's
-#define CLASS_PREFIX_CHAR      TEXT('=') // character used to prefix class name
+#define INSTANCEID_PREFIX_CHAR TEXT('@') // character used to prefix instanceID
+#define CLASS_PREFIX_CHAR      TEXT('=') // character used to prefix setup-class name
 #define WILD_CHAR              TEXT('*') // wild character
 #define QUOTE_PREFIX_CHAR      TEXT('\'') // prefix character to ignore wild characters
 #define SPLIT_COMMAND_SEP      TEXT(":=") // whole word, indicates end of id's

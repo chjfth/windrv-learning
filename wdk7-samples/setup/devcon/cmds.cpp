@@ -237,7 +237,8 @@ Return Value:
             FormatToStream(stdout,Machine?MSG_LISTCLASS_NOCLASS:MSG_LISTCLASS_NOCLASS_LOCAL,argv[argIndex],Machine);
             continue;
         }
-        for(index = 0;index<numGuids;index++) {
+
+        for(index=0; index<numGuids; index++) {
             TCHAR className[MAX_CLASS_NAME_LEN];
             TCHAR classDesc[LINE_LEN];
             DWORD devCount = 0;
@@ -578,7 +579,9 @@ Return Value:
 	GenericContext context = {0};
     context.count = 0;
     context.control = FIND_DEVICE | FIND_DRIVERFILES;
-    failcode = EnumerateDevices(BaseName,Machine,DIGCF_PRESENT,argc,argv,FindCallback,&context);
+    failcode = EnumerateDevices(BaseName, Machine, 
+		DIGCF_PRESENT,
+		argc, argv, FindCallback, &context);
 
     if(failcode == EXIT_OK) {
 

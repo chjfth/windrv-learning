@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20220101.1")
+#define DEVCON_VERSION_STRING TEXT("20220102.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for
@@ -257,22 +257,16 @@ Return Value:
 
 IdEntry GetIdType(__in LPCTSTR Id)
 /*++
-
 Routine Description:
-
     Determine if this is instance id or hardware id and if there's any wildcards
-    instance ID is prefixed by '@'
-    wildcards are '*'
-
+    instance ID is prefixed by '@'.
+    Wildcards are '*'.
 
 Arguments:
-
     Id - ptr to string to check
 
 Return Value:
-
     IdEntry
-
 --*/
 {
     IdEntry Entry;
@@ -281,11 +275,18 @@ Return Value:
     Entry.Wild = NULL;
     Entry.String = Id;
 
-    if(Entry.String[0] == INSTANCEID_PREFIX_CHAR) {
+    if(Entry.String[0] == INSTANCEID_PREFIX_CHAR) { // @
+
+		// Chj: Most of the time, InstanceId is the same as DevinstPath reported by devmgmt.msc .
+		// For example, "Communications Port (COM1)" on a VMware Workstation VM, it is:
+		//		"ACPI\PNP0501\1"
+		// so user user input parameter should be:
+		//		"@ACPI\PNP0501\1"
+
         Entry.InstanceId = TRUE;
         Entry.String = CharNext(Entry.String);
     }
-    if(Entry.String[0] == QUOTE_PREFIX_CHAR) {
+    if(Entry.String[0] == QUOTE_PREFIX_CHAR) { // single-quote '
         //
         // prefix to treat rest of string literally
         //
@@ -294,7 +295,7 @@ Return Value:
         //
         // see if any wild characters exist
         //
-        Entry.Wild = _tcschr(Entry.String,WILD_CHAR);
+        Entry.Wild = _tcschr(Entry.String, WILD_CHAR); // *
     }
     return Entry;
 }
@@ -806,7 +807,7 @@ Return Value:
     }
 
     //
-    // determine if a class is specified
+    // determine if a setup-class is specified
     //
     if(argc>skip && argv[skip][0]==CLASS_PREFIX_CHAR && argv[skip][1]) {
         if(!SetupDiClassGuidsFromNameEx(argv[skip]+1,&cls,1,&numClass,Machine,NULL) &&
@@ -819,6 +820,7 @@ Return Value:
         }
         skip++;
     }
+
     if(argc>skip && argv[skip][0]==WILD_CHAR && !argv[skip][1]) {
         //
         // catch convenient case of specifying a single argument '*'
@@ -827,7 +829,7 @@ Return Value:
         skip++;
     } else if(argc<=skip) {
         //
-        // at least one parameter, but no <id>'s
+        // at least one parameter(the setup-class), but no <id>'s
         //
         all = TRUE;
     }
@@ -844,14 +846,17 @@ Return Value:
         if(templ[argIndex].Wild || !templ[argIndex].InstanceId) {
             //
             // anything other than simple InstanceId's require a search
+			// for example, user input:
+			//	 @PCIIDE\IDECHANNEL\*
             //
             doSearch = TRUE;
         }
     }
+
     if(doSearch || all) {
         //
-        // add all id's to list
-        // if there's a class, filter on specified class
+        // add all id's to list (??)
+        // If there's a setup-class(numClass>0), filter on specified class
         //
         devs = SetupDiGetClassDevsEx(numClass ? &cls : NULL,
                                      NULL,
@@ -862,16 +867,18 @@ Return Value:
                                      NULL);
     } else {
         //
-        // blank list, we'll add instance id's by hand
+        // (Start from a) blank list, we'll add InstanceId-s by hand
         //
         devs = SetupDiCreateDeviceInfoListEx(numClass ? &cls : NULL,
                                              NULL,
                                              Machine,
                                              NULL);
     }
+
     if(devs == INVALID_HANDLE_VALUE) {
         goto final;
     }
+
     for(argIndex=skip; argIndex<argc; argIndex++) {
         //
         // add explicit instances to list (even if enumerated all,
@@ -880,7 +887,16 @@ Return Value:
         // might actually be part of the instance ID of a non-present device
         //
         if(templ[argIndex].InstanceId) {
-            SetupDiOpenDeviceInfo(devs,templ[argIndex].String,NULL,0,NULL);
+
+			PCTSTR devinstpath = templ[argIndex].String;
+			// Chj memo: If devinstpath contains real wildcards, like
+			//		@PCIIDE\IDECHANNEL\*
+			// SetupDiOpenDeviceInfo() will fail with ... bcz it is NOT a real 
+			// existing devinstpath. But no problem (PENDINGG)
+
+            SetupDiOpenDeviceInfo(devs, devinstpath, NULL,0,NULL);
+
+			// CHJ TODO: Report ERROR_CLASS_MISMATCH error.
         }
     }
 

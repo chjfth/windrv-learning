@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "devcon_vs2010", "devcon_vs2010\devcon_vs2010.vcxproj", "{74414F3B-8115-4572-ACA0-1E1D4ED64423}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InterfaceEnum_vs2010", "..\..\InterfaceEnum\InterfaceEnum_vs2010\InterfaceEnum_vs2010.vcxproj", "{E89828B1-448C-4F32-A4A7-B93918533008}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,12 @@ Global
 		{74414F3B-8115-4572-ACA0-1E1D4ED64423}.Release|Win32.Build.0 = Release|Win32
 		{74414F3B-8115-4572-ACA0-1E1D4ED64423}.Release|x64.ActiveCfg = Release|x64
 		{74414F3B-8115-4572-ACA0-1E1D4ED64423}.Release|x64.Build.0 = Release|x64
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Debug|Win32.Build.0 = Debug|Win32
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Debug|x64.ActiveCfg = Debug|Win32
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Release|Win32.ActiveCfg = Release|Win32
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Release|Win32.Build.0 = Release|Win32
+		{E89828B1-448C-4F32-A4A7-B93918533008}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

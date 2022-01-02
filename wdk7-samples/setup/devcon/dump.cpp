@@ -1081,10 +1081,10 @@ Return Value:
     // class upper/lower filters are in class registry
     //
     hClassKey = SetupDiOpenClassRegKeyEx(&DevInfo->ClassGuid,
-                                         KEY_READ,
-                                         DIOCR_INSTALLER,
-                                         devInfoListDetail.RemoteMachineName[0] ? devInfoListDetail.RemoteMachineName : NULL,
-                                         NULL);
+        KEY_READ,
+        DIOCR_INSTALLER,
+        devInfoListDetail.RemoteMachineName[0] ? devInfoListDetail.RemoteMachineName : NULL,
+        NULL);
 
     if(hClassKey != INVALID_HANDLE_VALUE) {
         //
