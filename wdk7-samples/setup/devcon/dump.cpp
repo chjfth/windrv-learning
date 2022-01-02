@@ -17,20 +17,11 @@ Abstract:
 
 BOOL DumpDeviceWithInfo(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in_opt LPCTSTR Info)
 /*++
-
 Routine Description:
-
     Write device instance & info to stdout
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
-    none
-
+	TRUE if success
 --*/
 {
     TCHAR devID[MAX_DEVICE_ID_LEN];
@@ -54,20 +45,11 @@ Return Value:
 
 BOOL DumpDevice(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Write device instance & description to stdout
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
     TRUE if success
-
 --*/
 {
     LPTSTR desc;

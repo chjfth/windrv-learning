@@ -426,7 +426,7 @@ Arguments:
 
 Return Value:
     array of strings. last entry+1 of array contains NULL
-    returns NULL on failure
+    returns NULL on failure. // Output ptr must be free-d with DelMultiSz().
 --*/
 {
     LPTSTR buffer;
@@ -736,7 +736,8 @@ Return Value:
     return false;
 }
 
-int EnumerateDevices(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in PZPWSTR argv, __in CallbackFunc Callback, __in LPVOID Context)
+int EnumerateDevices(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in PZPWSTR argv,
+	__in CallbackFunc Callback, __in LPVOID Context)
 /*++
 Routine Description:
     Generic enumerator for devices that will be passed the following arguments:
@@ -765,7 +766,7 @@ Return Value:
     DWORD devIndex;
 	SP_DEVINFO_DATA devInfo = {sizeof(SP_DEVINFO_DATA)};
 	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
-    BOOL doSearch = FALSE;
+    BOOL doFilter = FALSE;
     BOOL match;
     BOOL all = FALSE;
     GUID cls;
@@ -828,14 +829,14 @@ Return Value:
 			//		devcon driverfiles @PCIIDE\IDECHANNEL\*
 			// or, a HardwareId-like string:
             //		devcon driverfiles =hdc "PCI\VEN_8086
-            doSearch = TRUE;
+            doFilter = TRUE;
         }
     }
 
-    if(doSearch || all) {
+    if(doFilter || all) {
         //
         // add all id's to list (??)
-        // If there's a setup-class(numClass>0), filter on specified class
+        // If there's a setup-class(numClass!=0), filter on specified class
         //
         devs = SetupDiGetClassDevsEx(numClass ? &cls : NULL,
                                      NULL,
@@ -900,12 +901,12 @@ Return Value:
     // now enumerate them
     //
     if(all) {
-        doSearch = FALSE;
+        doFilter = FALSE;
     }
 
     for(devIndex=0; SetupDiEnumDeviceInfo(devs,devIndex,&devInfo); devIndex++) {
 
-        if(doSearch) {
+        if(doFilter) {
 
             for(argIndex=skip, match=FALSE;
 				(argIndex<argc) && !match;
@@ -914,8 +915,10 @@ Return Value:
                 TCHAR devID[MAX_DEVICE_ID_LEN];
                 LPTSTR *hwIds = NULL;
                 LPTSTR *compatIds = NULL;
-                //
-                // determine instance ID
+                
+				//
+                // Acquire instanceID(Devinstpath) from the device-information-element(DIE),
+				// so that we can filter it against user input instanceID.
                 //
                 if(CM_Get_Device_ID_Ex(devInfo.DevInst,
 					devID, MAX_DEVICE_ID_LEN,
@@ -953,6 +956,7 @@ Return Value:
         }
 
         if(match) {
+
             retcode = Callback(devs,&devInfo,devIndex,Context);
             if(retcode) {
                 failcode = retcode;

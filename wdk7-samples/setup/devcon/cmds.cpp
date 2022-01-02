@@ -312,11 +312,10 @@ Routine Description:
     just simply display the device
 
 Arguments:
-    Devs    )_ uniquely identify the device
-    DevInfo )
     Index    - index of device
     Context  - GenericContext
-Return Value:
+
+	Return Value:
     EXIT_xxxx
 --*/
 {
