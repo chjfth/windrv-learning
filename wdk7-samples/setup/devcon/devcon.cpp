@@ -763,7 +763,7 @@ Return Value:
     int retcode;
     int argIndex;
     DWORD devIndex;
-    SP_DEVINFO_DATA devInfo;
+	SP_DEVINFO_DATA devInfo = {sizeof(SP_DEVINFO_DATA)};
 	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
     BOOL doSearch = FALSE;
     BOOL match;
@@ -827,7 +827,7 @@ Return Value:
 			// For example, user input:
 			//		devcon driverfiles @PCIIDE\IDECHANNEL\*
 			// or, a HardwareId-like string:
-            //		devcon  driverfiles =hdc "PCI\VEN_8086
+            //		devcon driverfiles =hdc "PCI\VEN_8086
             doSearch = TRUE;
         }
     }
@@ -903,18 +903,25 @@ Return Value:
         doSearch = FALSE;
     }
 
-    devInfo.cbSize = sizeof(devInfo);
     for(devIndex=0; SetupDiEnumDeviceInfo(devs,devIndex,&devInfo); devIndex++) {
 
         if(doSearch) {
-            for(argIndex=skip,match=FALSE;(argIndex<argc) && !match;argIndex++) {
+
+            for(argIndex=skip, match=FALSE;
+				(argIndex<argc) && !match;
+				argIndex++) 
+			{
                 TCHAR devID[MAX_DEVICE_ID_LEN];
                 LPTSTR *hwIds = NULL;
                 LPTSTR *compatIds = NULL;
                 //
                 // determine instance ID
                 //
-                if(CM_Get_Device_ID_Ex(devInfo.DevInst,devID,MAX_DEVICE_ID_LEN,0,devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS) {
+                if(CM_Get_Device_ID_Ex(devInfo.DevInst,
+					devID, MAX_DEVICE_ID_LEN,
+					0, // flags, must be 0
+					devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS) 
+				{
                     devID[0] = TEXT('\0');
                 }
 
