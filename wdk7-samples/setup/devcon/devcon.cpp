@@ -794,6 +794,7 @@ Return Value:
     GUID cls;
     DWORD numClass = 0;
     int skip = 0;
+	BOOL b = FALSE;
 
     UNREFERENCED_PARAMETER(BaseName);
 
@@ -894,9 +895,11 @@ Return Value:
 			// SetupDiOpenDeviceInfo() will fail with ... bcz it is NOT a real 
 			// existing devinstpath. But no problem (PENDINGG)
 
-            SetupDiOpenDeviceInfo(devs, devinstpath, NULL,0,NULL);
-
-			// CHJ TODO: Report ERROR_CLASS_MISMATCH error.
+            b = SetupDiOpenDeviceInfo(devs, devinstpath, NULL,0,NULL);
+			if(!b && GetLastError()==ERROR_CLASS_MISMATCH)
+			{
+				FormatToStream(stdout, MSG_SETUPCLASS_MISMATCH, devinstpath);
+			}
         }
     }
 

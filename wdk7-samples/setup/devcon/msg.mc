@@ -279,6 +279,12 @@ Examples of <id>:
 MessageId=60417 SymbolicName=MSG_STACK_SHORT
 Language=English
 %1!-20s! List expected driver stack for devices.
+
+.
+MessageId=60420 SymbolicName=MSG_SETUPCLASS_MISMATCH
+Language=English
+Alert: The input InstanceId "%1" does not match input setup-class.
+
 .
 ;//
 ;// ENABLE

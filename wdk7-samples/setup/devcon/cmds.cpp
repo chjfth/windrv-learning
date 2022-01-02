@@ -604,7 +604,7 @@ Routine Description:
 
     STATUS <id> ...
     use EnumerateDevices to do hardwareID matching
-    for each match, dump drivernodes to stdout
+    for each match, dump driver nodes to stdout
     note that we only enumerate present devices
 
 Arguments:
