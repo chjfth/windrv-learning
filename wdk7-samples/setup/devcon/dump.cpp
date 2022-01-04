@@ -26,13 +26,16 @@ Return Value:
 {
     TCHAR devID[MAX_DEVICE_ID_LEN];
     BOOL b = TRUE;
-    SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
+	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(devInfoListDetail)};
 
-    devInfoListDetail.cbSize = sizeof(devInfoListDetail);
-    if((!SetupDiGetDeviceInfoListDetail(Devs,&devInfoListDetail)) ||
-            (CM_Get_Device_ID_Ex(DevInfo->DevInst,devID,MAX_DEVICE_ID_LEN,0,devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS)) {
+    b = SetupDiGetDeviceInfoListDetail(Devs, &devInfoListDetail);
+
+    b = b && CR_SUCCESS==CM_Get_Device_ID_Ex(DevInfo->DevInst, 
+			devID, MAX_DEVICE_ID_LEN, 
+			0, 
+			devInfoListDetail.RemoteMachineHandle);
+	if(!b) {
         StringCchCopy(devID, ARRAYSIZE(devID), TEXT("?"));
-        b = FALSE;
     }
 
     if(Info) {
