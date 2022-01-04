@@ -499,39 +499,39 @@ Driver node #%1!u!:
 .
 MessageId=60921 SymbolicName=MSG_DUMP_DRIVERNODE_INF
 Language=English
-Inf file is %1
+Inf file is: %1
 .
 MessageId=60922 SymbolicName=MSG_DUMP_DRIVERNODE_SECTION
 Language=English
-Inf section is %1
+Inf section is: [%1]
 .
 MessageId=60923 SymbolicName=MSG_DUMP_DRIVERNODE_DESCRIPTION
 Language=English
-Driver description is %1
+Driver description is: %1
 .
 MessageId=60924 SymbolicName=MSG_DUMP_DRIVERNODE_MFGNAME
 Language=English
-Manufacturer name is %1
+Manufacturer name is: %1
 .
 MessageId=60925 SymbolicName=MSG_DUMP_DRIVERNODE_PROVIDERNAME
 Language=English
-Provider name is %1
+Provider name is: %1
 .
 MessageId=60926 SymbolicName=MSG_DUMP_DRIVERNODE_DRIVERDATE
 Language=English
-Driver date is %1
+Driver date is: %1
 .
 MessageId=60927 SymbolicName=MSG_DUMP_DRIVERNODE_DRIVERVERSION
 Language=English
-Driver version is %1!u!.%2!u!.%3!u!.%4!u!
+Driver version is: %1!u!.%2!u!.%3!u!.%4!u!
 .
 MessageId=60928 SymbolicName=MSG_DUMP_DRIVERNODE_RANK
 Language=English
-Driver node rank is %1!u!
+Driver node rank is: %1!u!
 .
 MessageId=60929 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS
 Language=English
-Driver node flags are %1!08X!
+Driver node flags are: %1!08X!
 .
 MessageId=60930 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS_OLD_INET_DRIVER
 Language=English
@@ -596,6 +596,14 @@ Device is not present.
 MessageId=60945 SymbolicName=MSG_DUMP_STATUS_ERROR
 Language=English
 Error retrieving the device's status.
+.
+MessageId=60950 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS_INF_AUTHENTICODE_SIGNED
+Language=English
+Inf is Authenticode-signed (degraded, not WHQL).
+.
+MessageId=60951 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS_CLASS_DRIVER
+Language=English
+Inf is a class driver.
 .
 
 ;//

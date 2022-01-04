@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20220102.1")
+#define DEVCON_VERSION_STRING TEXT("20220104.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for
@@ -539,13 +539,11 @@ failed:
 
 BOOL WildCardMatch(__in LPCTSTR Item, __in const IdEntry & MatchEntry)
 /*++
-
 Routine Description:
-
     Compare a single item against wildcard
     I'm sure there's better ways of implementing this
-    Other than a command-line management tools
-    it's a bad idea to use wildcards as it implies
+    Other than a command-line management tools.
+    It's a bad idea to use wildcards as it implies
     assumptions about the hardware/instance ID
     eg, it might be tempting to enumerate root\* to
     find all root devices, however there is a CfgMgr
@@ -554,14 +552,11 @@ Routine Description:
     details.
 
 Arguments:
-
     Item - item to find match for eg a\abcd\c
     MatchEntry - eg *\*bc*\*
 
 Return Value:
-
     TRUE if any match, otherwise FALSE
-
 --*/
 {
     LPCTSTR scanItem;
@@ -576,9 +571,11 @@ Return Value:
     if(!MatchEntry.Wild) {
         return _tcsicmp(Item,MatchEntry.String) ? FALSE : TRUE;
     }
-    if(_tcsnicmp(Item,MatchEntry.String,MatchEntry.Wild-MatchEntry.String) != 0) {
+
+    if(_tcsnicmp(Item, MatchEntry.String, MatchEntry.Wild-MatchEntry.String) != 0) {
         return FALSE;
     }
+
     wildMark = MatchEntry.Wild;
     scanItem = Item + (MatchEntry.Wild-MatchEntry.String);
 
@@ -596,7 +593,7 @@ Return Value:
         //
         // find next wild-card
         //
-        nextWild = _tcschr(wildMark,WILD_CHAR);
+        nextWild = _tcschr(wildMark, WILD_CHAR);
         if(nextWild) {
             //
             // substring
@@ -611,7 +608,7 @@ Return Value:
             if(scanlen < matchlen) {
                 return FALSE;
             }
-            return _tcsicmp(scanItem+scanlen-matchlen,wildMark) ? FALSE : TRUE;
+            return _tcsicmp(scanItem+scanlen-matchlen, wildMark) ? FALSE : TRUE;
         }
         if(_istalpha(wildMark[0])) {
             //
@@ -648,7 +645,7 @@ Return Value:
             //
             // scan for first character (no case)
             //
-            scanItem = _tcschr(scanItem,wildMark[0]);
+            scanItem = _tcschr(scanItem, wildMark[0]);
             if(!scanItem) {
                 //
                 // ran out of string
@@ -659,7 +656,7 @@ Return Value:
         //
         // try and match the sub-string at wildMark against scanItem
         //
-        if(_tcsnicmp(scanItem,wildMark,matchlen)!=0) {
+        if(_tcsnicmp(scanItem, wildMark, matchlen)!=0) {
             //
             // nope, try again
             //
@@ -677,21 +674,16 @@ Return Value:
 
 BOOL WildCompareHwIds(__in PZPWSTR Array, __in const IdEntry & MatchEntry)
 /*++
-
 Routine Description:
-
     Compares all strings in Array against Id
     Use WildCardMatch to do real compare
 
 Arguments:
-
     Array - pointer returned by GetDevMultiSz
     MatchEntry - string to compare against
 
 Return Value:
-
     TRUE if any match, otherwise FALSE
-
 --*/
 {
     if(Array) {

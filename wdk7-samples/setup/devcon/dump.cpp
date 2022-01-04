@@ -852,46 +852,31 @@ Return Value:
 
 BOOL DumpDeviceDriverNodes(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
     Write device instance & description to stdout
     <tab>Installed using OEM123.INF section [abc.NT]
     <tab><tab>file...
 
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
-
 Return Value:
-
-    none
-
+	TRUE if success
 --*/
 {
     BOOL success = FALSE;
-    SP_DEVINSTALL_PARAMS deviceInstallParams;
-    SP_DRVINFO_DATA driverInfoData;
-    SP_DRVINFO_DETAIL_DATA driverInfoDetail;
-    SP_DRVINSTALL_PARAMS driverInstallParams;
+	SP_DEVINSTALL_PARAMS deviceInstallParams = {sizeof(SP_DEVINSTALL_PARAMS)};
+	SP_DRVINFO_DATA driverInfoData = {sizeof(SP_DRVINFO_DATA)};
+	SP_DRVINFO_DETAIL_DATA driverInfoDetail = {sizeof(SP_DRVINFO_DETAIL_DATA)};
+	SP_DRVINSTALL_PARAMS driverInstallParams = {sizeof(SP_DRVINSTALL_PARAMS)};
     DWORD index;
     SYSTEMTIME SystemTime;
     ULARGE_INTEGER Version;
     TCHAR Buffer[MAX_PATH];
-
-    ZeroMemory(&deviceInstallParams, sizeof(deviceInstallParams));
-    ZeroMemory(&driverInfoData, sizeof(driverInfoData));
-
-    driverInfoData.cbSize = sizeof(SP_DRVINFO_DATA);
-    deviceInstallParams.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
 
     if(!SetupDiGetDeviceInstallParams(Devs, DevInfo, &deviceInstallParams)) {
         return FALSE;
     }
 
     //
-    // Set the flags that tell SetupDiBuildDriverInfoList to allow excluded drivers.
+    // Set the flags that tell SetupDiBuildDriverInfoList to allow inclusion of "excluded drivers".
     //
     deviceInstallParams.FlagsEx |= DI_FLAGSEX_ALLOWEXCLUDEDDRVS;
 
@@ -910,9 +895,8 @@ Return Value:
     // Enumerate all of the driver nodes.
     //
     index = 0;
-    while(SetupDiEnumDriverInfo(Devs, DevInfo, SPDIT_COMPATDRIVER,
-                                index, &driverInfoData)) {
-
+    while(SetupDiEnumDriverInfo(Devs, DevInfo, SPDIT_COMPATDRIVER, index, &driverInfoData)) 
+	{
         success = TRUE;
 
         FormatToStream(stdout,MSG_DUMP_DRIVERNODE_HEADER,index);
@@ -920,22 +904,22 @@ Return Value:
         //
         // get useful driver information
         //
-        driverInfoDetail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA);
-        if(SetupDiGetDriverInfoDetail(Devs,DevInfo,&driverInfoData,&driverInfoDetail,sizeof(SP_DRVINFO_DETAIL_DATA),NULL) ||
-           GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-
+        if(SetupDiGetDriverInfoDetail(Devs,DevInfo,
+			&driverInfoData, &driverInfoDetail,sizeof(SP_DRVINFO_DETAIL_DATA),NULL) ||
+           GetLastError() == ERROR_INSUFFICIENT_BUFFER) 
+		{
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_INF,driverInfoDetail.InfFileName);
+            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_INF, driverInfoDetail.InfFileName);
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_SECTION,driverInfoDetail.SectionName);
+            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_SECTION, driverInfoDetail.SectionName);
         }
 
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_DESCRIPTION,driverInfoData.Description);
+        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_DESCRIPTION, driverInfoData.Description);
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_MFGNAME,driverInfoData.MfgName);
+        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_MFGNAME, driverInfoData.MfgName);
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_PROVIDERNAME,driverInfoData.ProviderName);
+        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_PROVIDERNAME, driverInfoData.ProviderName);
 
         if (FileTimeToSystemTime(&driverInfoData.DriverDate, &SystemTime)) {
             if (GetDateFormat(LOCALE_USER_DEFAULT,
@@ -946,7 +930,7 @@ Return Value:
                               sizeof(Buffer)/sizeof(TCHAR)
                               ) != 0) {
                 Padding(1);
-                FormatToStream(stdout,MSG_DUMP_DRIVERNODE_DRIVERDATE,Buffer);
+                FormatToStream(stdout, MSG_DUMP_DRIVERNODE_DRIVERDATE, Buffer);
             }
         }
 
@@ -959,32 +943,42 @@ Return Value:
                        LOWORD(Version.LowPart)
                        );
 
-        driverInstallParams.cbSize = sizeof(SP_DRVINSTALL_PARAMS);
-        if(SetupDiGetDriverInstallParams(Devs,DevInfo,&driverInfoData,&driverInstallParams)) {
+        if(SetupDiGetDriverInstallParams(Devs,DevInfo, &driverInfoData, &driverInstallParams)) {
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_RANK,driverInstallParams.Rank);
+            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_RANK, driverInstallParams.Rank);
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS,driverInstallParams.Flags);
+            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS, driverInstallParams.Flags);
 
             //
             // Interesting flags to dump
             //
             if (driverInstallParams.Flags & DNF_OLD_INET_DRIVER) {
                 Padding(2);
-                FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS_OLD_INET_DRIVER);
+                FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_OLD_INET_DRIVER);
             }
             if (driverInstallParams.Flags & DNF_BAD_DRIVER) {
                 Padding(2);
-                FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS_BAD_DRIVER);
+                FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_BAD_DRIVER);
             }
+			if (driverInstallParams.Flags & DNF_CLASS_DRIVER) {
+				Padding(2);
+				FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_CLASS_DRIVER);
+			}
 #if defined(DNF_INF_IS_SIGNED)
             //
             // DNF_INF_IS_SIGNED is only available since WinXP
             //
             if (driverInstallParams.Flags & DNF_INF_IS_SIGNED) {
                 Padding(2);
-                FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS_INF_IS_SIGNED);
+                FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_INF_IS_SIGNED);
             }
+#endif
+#if defined(DNF_AUTHENTICODE_SIGNED)
+			if(driverInstallParams.Flags & DNF_AUTHENTICODE_SIGNED)
+			{
+				Padding(2);
+				FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_INF_AUTHENTICODE_SIGNED);
+			}
 #endif
 #if defined(DNF_OEM_F6_INF)
             //
@@ -992,7 +986,7 @@ Return Value:
             //
             if (driverInstallParams.Flags & DNF_OEM_F6_INF) {
                 Padding(2);
-                FormatToStream(stdout,MSG_DUMP_DRIVERNODE_FLAGS_OEM_F6_INF);
+                FormatToStream(stdout, MSG_DUMP_DRIVERNODE_FLAGS_OEM_F6_INF);
             }
 #endif
 #if defined(DNF_BASIC_DRIVER)

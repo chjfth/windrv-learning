@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 	// Enumerate those keys to learn which device interfaces have been
 	// registered by any device.
 	
+	BOOL b = FALSE;
 	HKEY hkey;
 	DWORD code = RegOpenKey(HKEY_LOCAL_MACHINE, REGSTR_PATH_DEVICE_CLASSES, &hkey);
 	if (code)
@@ -71,7 +72,7 @@ int main(int argc, char* argv[])
 		{
 			// Note: using NULL in third param(&IfcguidToQuery) will fail with @err=87(ERROR_INVALID_PARAMETER)
 			//
-			BOOL b = SetupDiEnumDeviceInterfaces(infoset, 
+			b = SetupDiEnumDeviceInterfaces(infoset, 
 				NULL, // IN, we what interface-data for EVERY device in infoset 
 				&IfcguidToQuery, // IN,
 				devindex, // IN
