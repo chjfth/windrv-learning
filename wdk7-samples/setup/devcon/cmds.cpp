@@ -323,6 +323,8 @@ Arguments:
 
     UNREFERENCED_PARAMETER(Index);
 
+	_tprintf(TEXT("\n")); // chj: just a blank line to separate different devnodes.
+
     if(!pFindContext->control) {
         DumpDevice(Devs,DevInfo);
         pFindContext->count++;

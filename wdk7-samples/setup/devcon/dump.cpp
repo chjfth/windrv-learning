@@ -899,7 +899,7 @@ Return Value:
 	{
         success = TRUE;
 
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_HEADER,index);
+        FormatToStream(stdout, MSG_DUMP_DRIVERNODE_HEADER, index);
 
         //
         // get useful driver information
@@ -909,17 +909,17 @@ Return Value:
            GetLastError() == ERROR_INSUFFICIENT_BUFFER) 
 		{
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_INF, driverInfoDetail.InfFileName);
+            FormatToStream(stdout, MSG_DUMP_DRIVERNODE_INF, driverInfoDetail.InfFileName);
             Padding(1);
-            FormatToStream(stdout,MSG_DUMP_DRIVERNODE_SECTION, driverInfoDetail.SectionName);
+            FormatToStream(stdout, MSG_DUMP_DRIVERNODE_SECTION, driverInfoDetail.SectionName);
         }
 
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_DESCRIPTION, driverInfoData.Description);
+        FormatToStream(stdout, MSG_DUMP_DRIVERNODE_DESCRIPTION, driverInfoData.Description);
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_MFGNAME, driverInfoData.MfgName);
+        FormatToStream(stdout, MSG_DUMP_DRIVERNODE_MFGNAME, driverInfoData.MfgName);
         Padding(1);
-        FormatToStream(stdout,MSG_DUMP_DRIVERNODE_PROVIDERNAME, driverInfoData.ProviderName);
+        FormatToStream(stdout, MSG_DUMP_DRIVERNODE_PROVIDERNAME, driverInfoData.ProviderName);
 
         if (FileTimeToSystemTime(&driverInfoData.DriverDate, &SystemTime)) {
             if (GetDateFormat(LOCALE_USER_DEFAULT,
