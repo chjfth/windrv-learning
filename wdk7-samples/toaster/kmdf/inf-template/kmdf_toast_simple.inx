@@ -80,7 +80,7 @@ toaster.sys
 ;-------------- Service installation
 
 [Toaster_Device.NT.Services]
-AddService = toaster, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
+AddService = AToastSvc, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
 
 [toaster_Service_Inst]
 DisplayName    = %toaster.SVCDESC%
