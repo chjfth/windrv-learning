@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 			// Note: using NULL in third param(&IfcguidToQuery) will fail with @err=87(ERROR_INVALID_PARAMETER)
 			//
 			b = SetupDiEnumDeviceInterfaces(infoset, 
-				NULL, // IN, we what interface-data for EVERY device in infoset 
+				NULL, // IN, NULL means we want interface-data for EVERY device in infoset 
 				&IfcguidToQuery, // IN,
 				devindex, // IN
 				&Difd // OUT: 

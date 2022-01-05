@@ -248,7 +248,7 @@ Return Value:
             devs = SetupDiGetClassDevsEx(&guids[index],NULL,NULL,DIGCF_PRESENT,NULL,Machine,NULL);
             if(devs != INVALID_HANDLE_VALUE) {
                 //
-                // count number of devices
+                // (merely) count number of devices, we need  to print the count first
                 //
                 devInfo.cbSize = sizeof(devInfo);
                 while(SetupDiEnumDeviceInfo(devs,devCount,&devInfo)) {
