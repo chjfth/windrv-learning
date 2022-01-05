@@ -75,6 +75,11 @@ void CChild2::work()
 	DbgPrint("CChild2::work()\n");
 }
 
+void Toaster_EvtDriverUnload(__in WDFDRIVER Driver)
+{
+	KdPrint(("Toaster_EvtDriverUnload - Toaster Function Driver Sample.\n"));
+}
+
 
 NTSTATUS
 DriverEntry(
@@ -106,7 +111,7 @@ Return Value:
     NTSTATUS            status = STATUS_SUCCESS;
     WDF_DRIVER_CONFIG   config;
 
-    KdPrint(("\n\nToaster Function Driver Sample - KMDF Edition(C++ test).\n"));
+    KdPrint(("\n\nDriverEntry - Toaster Function Driver Sample - KMDF Edition(C++ test).\n"));
     KdPrint(("Built %s %s\n", __DATE__, __TIME__));
 
 	// C++ TEST >>>
@@ -133,6 +138,8 @@ Return Value:
         &config,
         ToasterEvtDeviceAdd
         );
+
+	config.EvtDriverUnload = Toaster_EvtDriverUnload;
 
     // Create a framework driver object to represent our driver.
     //
