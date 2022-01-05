@@ -101,8 +101,8 @@ int main(int argc, char* argv[])
 			b = SetupDiGetDeviceInterfaceDetail(infoset,
 				&Difd, // IN
 				pDevIfcDetail, // OUT
-				ARRAYSIZE(dev__Openpath), 
-				&reqout, 
+				sizeof(dev__Openpath), // unit: byte, not TCHAR
+				&reqout,               // unit: byte, not TCHAR
 				&Did // OUT: We need this Did as later API input.
 				); // memo: ERROR_INSUFFICIENT_BUFFER if dev__Openpath not enough
 			if(!b) {
