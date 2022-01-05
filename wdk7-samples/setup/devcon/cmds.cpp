@@ -242,7 +242,7 @@ Return Value:
             TCHAR className[MAX_CLASS_NAME_LEN];
             TCHAR classDesc[LINE_LEN];
             DWORD devCount = 0;
-            SP_DEVINFO_DATA devInfo;
+			SP_DEVINFO_DATA devInfo = {sizeof(devInfo)};
             DWORD devIndex;
 
             devs = SetupDiGetClassDevsEx(&guids[index],NULL,NULL,DIGCF_PRESENT,NULL,Machine,NULL);
@@ -250,7 +250,6 @@ Return Value:
                 //
                 // (merely) count number of devices, we need  to print the count first
                 //
-                devInfo.cbSize = sizeof(devInfo);
                 while(SetupDiEnumDeviceInfo(devs,devCount,&devInfo)) {
                     devCount++;
                 }
@@ -283,6 +282,7 @@ Return Value:
                     DumpDevice(devs,&devInfo);
                 }
             }
+
             if(devs != INVALID_HANDLE_VALUE) {
                 SetupDiDestroyDeviceInfoList(devs);
                 devs = INVALID_HANDLE_VALUE;
@@ -742,44 +742,42 @@ Return Value:
 
 int ControlCallback(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Index, __in LPVOID Context)
 /*++
-
 Routine Description:
-
-    Callback for use by Enable/Disable/Restart
-    Invokes DIF_PROPERTYCHANGE with correct parameters
-    uses SetupDiCallClassInstaller so cannot be done for remote devices
+    Callback for use by Enable/Disable/Restart.
+    Invokes DIF_PROPERTYCHANGE with correct parameters.
+    Uses SetupDiCallClassInstaller so cannot be done for remote devices.
     Don't use CM_xxx API's, they bypass class/co-installers and this is bad.
 
     In Enable case, we try global first, and if still disabled, enable local
 
 Arguments:
-
-    Devs    )_ uniquely identify the device
-    DevInfo )
-    Index    - index of device
+    Index    - no use here.
     Context  - GenericContext
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
-    SP_PROPCHANGE_PARAMS pcp;
+	SP_PROPCHANGE_PARAMS pcp = {{sizeof(SP_CLASSINSTALL_HEADER)}};
     GenericContext *pControlContext = (GenericContext*)Context;
-    SP_DEVINSTALL_PARAMS devParams;
+	SP_DEVINSTALL_PARAMS devParams = {sizeof(SP_DEVINSTALL_PARAMS)};
 
     UNREFERENCED_PARAMETER(Index);
+
+#if 0
+	// [2022-01-05] Chj: I don't know 
+	// * why the orig-code treats DICS_ENABLE special.
+	// * why he does DICS_FLAG_GLOBAL and (DICS_FLAGCONFIGSPECIFIC & HwProfile==0) both.
+	//   According to MSDN DICS_FLAG_GLOBAL and (DICS_FLAGCONFIGSPECIFIC & HwProfile==0) means the same.
 
     switch(pControlContext->control) {
         case DICS_ENABLE:
             //
-            // enable both on global and config-specific profile
-            // do global first and see if that succeeded in enabling the device
+            // Enable both on global profile and config-specific profile.
+            // Do global first and see if that succeeded in enabling the device.
             // (global enable doesn't mark reboot required if device is still
             // disabled on current config whereas vice-versa isn't true)
             //
-            pcp.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
             pcp.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
             pcp.StateChange = pControlContext->control;
             pcp.Scope = DICS_FLAG_GLOBAL;
@@ -793,7 +791,7 @@ Return Value:
             //
             // now enable on config-specific
             //
-            pcp.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
+            pcp.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER); // chj: not a must
             pcp.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
             pcp.StateChange = pControlContext->control;
             pcp.Scope = DICS_FLAG_CONFIGSPECIFIC;
@@ -810,9 +808,16 @@ Return Value:
             pcp.Scope = DICS_FLAG_CONFIGSPECIFIC;
             pcp.HwProfile = 0;
             break;
-
     }
+#else
+	
+	// [2022-01-05] Chj use this:
+	pcp.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
+	pcp.StateChange = pControlContext->control;
+	pcp.Scope = DICS_FLAG_CONFIGSPECIFIC;
+	pcp.HwProfile = 0;
 
+#endif
     if(!SetupDiSetClassInstallParams(Devs,DevInfo,&pcp.ClassInstallHeader,sizeof(pcp)) ||
        !SetupDiCallClassInstaller(DIF_PROPERTYCHANGE,Devs,DevInfo)) {
         //
@@ -823,7 +828,6 @@ Return Value:
         //
         // see if device needs reboot
         //
-        devParams.cbSize = sizeof(devParams);
         if(SetupDiGetDeviceInstallParams(Devs,DevInfo,&devParams) && (devParams.Flags & (DI_NEEDRESTART|DI_NEEDREBOOT))) {
                 DumpDeviceWithInfo(Devs,DevInfo,pControlContext->strReboot);
                 pControlContext->reboot = TRUE;
@@ -840,23 +844,18 @@ Return Value:
 
 int cmdEnable(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     ENABLE <id> ...
-    use EnumerateDevices to do hardwareID matching
-    for each match, attempt to enable global, and if needed, config specific
+    Use EnumerateDevices to do hardwareID matching.
+    For each match, attempt to enable global, and if needed, config specific.
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - must be NULL (local machine only)
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx (EXIT_REBOOT if reboot is required)
-
 --*/
 {
     GenericContext context;
@@ -913,23 +912,18 @@ Return Value:
 
 int cmdDisable(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     DISABLE <id> ...
-    use EnumerateDevices to do hardwareID matching
-    for each match, attempt to disable global
+    Use EnumerateDevices to do hardwareID matching.
+    For each match, attempt to disable global.
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - must be NULL (local machine only)
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx (EXIT_REBOOT if reboot is required)
-
 --*/
 {
     GenericContext context;
@@ -986,23 +980,18 @@ Return Value:
 
 int cmdRestart(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     RESTART <id> ...
-    use EnumerateDevices to do hardwareID matching
-    for each match, attempt to restart by issueing a PROPCHANGE
+    Use EnumerateDevices to do hardwareID matching.
+    For each match, attempt to restart by issuing a PROPCHANGE.
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - must be NULL (local machine only)
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx (EXIT_REBOOT if reboot is required)
-
 --*/
 {
     GenericContext context;
