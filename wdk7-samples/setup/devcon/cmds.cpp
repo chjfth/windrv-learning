@@ -863,15 +863,26 @@ Return Value:
     TCHAR strReboot[80];
     TCHAR strFail[80];
     int failcode = EXIT_FAIL;
+	bool useStartStop = false;
 
     UNREFERENCED_PARAMETER(Flags);
 
+AGAIN:
     if(!argc) {
         //
         // arguments required
         //
         return EXIT_USAGE;
     }
+
+	if(_tcscmp(argv[0], TEXT("-4"))==0)
+	{
+		useStartStop = true;
+		argc--;
+		argv++;
+		goto AGAIN;
+	}
+
     if(Machine) {
         //
         // must be local machine as we need to involve class/co installers
@@ -888,7 +899,7 @@ Return Value:
         return EXIT_FAIL;
     }
 
-    context.control = DICS_ENABLE; // DICS_PROPCHANGE DICS_ENABLE DICS_DISABLE
+    context.control = useStartStop ? DICS_START : DICS_ENABLE; // DICS_PROPCHANGE DICS_ENABLE DICS_DISABLE
     context.reboot = FALSE;
     context.count = 0;
     context.strReboot = strReboot;
@@ -901,7 +912,9 @@ Return Value:
         if(!context.count) {
             FormatToStream(stdout,MSG_FIND_TAIL_NONE_LOCAL);
         } else if(!context.reboot) {
-            FormatToStream(stdout,MSG_ENABLE_TAIL,context.count);
+            FormatToStream(stdout,MSG_ENABLE_TAIL, context.count,
+				useStartStop ? TEXT("DICS_START") : TEXT("DICS_ENABLE")
+				);
         } else {
             FormatToStream(stdout,MSG_ENABLE_TAIL_REBOOT,context.count);
             failcode = EXIT_REBOOT;
@@ -931,16 +944,27 @@ Return Value:
     TCHAR strReboot[80];
     TCHAR strFail[80];
     int failcode = EXIT_FAIL;
+	bool useStartStop = false;
 
     UNREFERENCED_PARAMETER(Flags);
 
+AGAIN:
     if(!argc) {
         //
         // arguments required
         //
         return EXIT_USAGE;
     }
-    if(Machine) {
+
+	if(_tcscmp(argv[0], TEXT("-4"))==0)
+	{
+		useStartStop = true;
+		argc--;
+		argv++;
+		goto AGAIN;
+	}
+	
+	if(Machine) {
         //
         // must be local machine as we need to involve class/co installers
         //
@@ -956,7 +980,7 @@ Return Value:
         return EXIT_FAIL;
     }
 
-    context.control = DICS_DISABLE; // DICS_PROPCHANGE DICS_ENABLE DICS_DISABLE
+    context.control = useStartStop ? DICS_STOP : DICS_DISABLE; // DICS_PROPCHANGE DICS_ENABLE DICS_DISABLE
     context.reboot = FALSE;
     context.count = 0;
     context.strReboot = strReboot;
@@ -969,7 +993,9 @@ Return Value:
         if(!context.count) {
             FormatToStream(stdout,MSG_FIND_TAIL_NONE_LOCAL);
         } else if(!context.reboot) {
-            FormatToStream(stdout,MSG_DISABLE_TAIL,context.count);
+            FormatToStream(stdout,MSG_DISABLE_TAIL, context.count, 
+				useStartStop ? TEXT("DICS_STOP") : TEXT("DICS_DISABLE")
+				);
         } else {
             FormatToStream(stdout,MSG_DISABLE_TAIL_REBOOT,context.count);
             failcode = EXIT_REBOOT;

@@ -300,9 +300,10 @@ Language=English
 Devcon Enable Command
 Enables devices with the specified hardware or instance ID. Valid only on
 the local computer. (To reboot when necessary, include -r.)
-%1 [-r] %2 <id> [<id>...]
-%1 [-r] %2 =<class> [<id>...]
+%1 [-r] %2 [-4] <id> [<id>...]
+%1 [-r] %2 [-4] =<class> [<id>...]
 -r           Reboots the system only when a restart or reboot is required.
+-4           Use DICS_START instead of normal DICS_ENABLE (chj).
 <class>      Specifies a device setup class.
 Examples of <id>:
  *              - All devices
@@ -311,6 +312,7 @@ Examples of <id>:
  @ISAPNP\*\*    - Instance ID with wildcards  (@ prefixes instance ID)
  '*PNP0501      - Hardware ID with apostrophe (' prefixes literal match - matches exactly as typed,
                                                including the asterisk.)
+Chj: 
 .
 MessageId=60501 SymbolicName=MSG_ENABLE_SHORT
 Language=English
@@ -328,7 +330,7 @@ reboot the system .
 .
 MessageId=60504 SymbolicName=MSG_ENABLE_TAIL
 Language=English
-%1!u! device(s) are enabled.
+%1!u! device(s) are enabled. (%2)
 .
 
 ;//
@@ -339,9 +341,11 @@ Language=English
 Devcon Disable Command
 Disables devices with the specified hardware or instance ID.
 Valid only on the local computer. (To reboot when necesary, Include -r .)
-%1 [-r] %2 <id> [<id>...]
-%1 [-r] %2 =<class> [<id>...]
+%1 [-r] %2 [-4] <id> [<id>...]
+%1 [-r] %2 [-4] =<class> [<id>...]
 -r           Reboots the system only when a restart or reboot is required.
+-4           Use DICS_STOP instead of normal DICS_DISABLE (chj).
+             If you use -4 to disable it, you must use -4 to enable it accordingly.
 <class>      Specifies a device setup class.
 Examples of <id>:
  *              - All devices
@@ -367,7 +371,7 @@ devices or reboot the system .
 .
 MessageId=60604 SymbolicName=MSG_DISABLE_TAIL
 Language=English
-%1!u! device(s) disabled.
+%1!u! device(s) disabled. (%2)
 .
 
 
