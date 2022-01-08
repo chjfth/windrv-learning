@@ -22,6 +22,8 @@ struct GenericContext {
     LPCTSTR strSuccess;
     LPCTSTR strReboot;
     LPCTSTR strFail;
+
+	DWORD control2; // Chj added
 };
 
 #define FIND_DEVICE         0x00000001 // display device
@@ -738,7 +740,7 @@ Return Value:
 }
 
 
-
+#define OPERATE_HW_PROFILE true // Chj
 
 int ControlCallback(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Index, __in LPVOID Context)
 /*++
@@ -811,15 +813,17 @@ Return Value:
     }
 #else
 	
-	// [2022-01-05] Chj use this:
+	// [2022-01-08] Chj use this:
 	pcp.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
-	pcp.StateChange = pControlContext->control;
-	pcp.Scope = DICS_FLAG_CONFIGSPECIFIC;
+	pcp.StateChange = pControlContext->control; // DICS_ENABLE,DICS_DISABLE or DICS_START,DICS_STOP
+	pcp.Scope = pControlContext->control2==(DWORD)OPERATE_HW_PROFILE ? DICS_FLAG_CONFIGSPECIFIC : DICS_FLAG_GLOBAL;
 	pcp.HwProfile = 0;
 
 #endif
+
     if(!SetupDiSetClassInstallParams(Devs,DevInfo,&pcp.ClassInstallHeader,sizeof(pcp)) ||
-       !SetupDiCallClassInstaller(DIF_PROPERTYCHANGE,Devs,DevInfo)) {
+       !SetupDiCallClassInstaller(DIF_PROPERTYCHANGE,Devs,DevInfo)
+	   ) {
         //
         // failed to invoke DIF_PROPERTYCHANGE
         //
@@ -858,7 +862,7 @@ Return Value:
     EXIT_xxxx (EXIT_REBOOT if reboot is required)
 --*/
 {
-    GenericContext context;
+	GenericContext context = {};
     TCHAR strEnable[80];
     TCHAR strReboot[80];
     TCHAR strFail[80];
@@ -875,9 +879,17 @@ AGAIN:
         return EXIT_USAGE;
     }
 
+	if(_tcscmp(argv[0], TEXT("-1"))==0)
+	{
+		context.control2 = OPERATE_HW_PROFILE ;
+		argc--;
+		argv++;
+		goto AGAIN;
+	}
 	if(_tcscmp(argv[0], TEXT("-4"))==0)
 	{
 		useStartStop = true;
+		context.control2 = OPERATE_HW_PROFILE ;
 		argc--;
 		argv++;
 		goto AGAIN;
@@ -939,7 +951,7 @@ Return Value:
     EXIT_xxxx (EXIT_REBOOT if reboot is required)
 --*/
 {
-    GenericContext context;
+	GenericContext context = {};
     TCHAR strDisable[80];
     TCHAR strReboot[80];
     TCHAR strFail[80];
@@ -956,13 +968,22 @@ AGAIN:
         return EXIT_USAGE;
     }
 
-	if(_tcscmp(argv[0], TEXT("-4"))==0)
+	if(_tcscmp(argv[0], TEXT("-1"))==0)
 	{
-		useStartStop = true;
+		context.control2 = OPERATE_HW_PROFILE ;
 		argc--;
 		argv++;
 		goto AGAIN;
 	}
+	if(_tcscmp(argv[0], TEXT("-4"))==0)
+	{
+		useStartStop = true;
+		context.control2 = OPERATE_HW_PROFILE ;
+		argc--;
+		argv++;
+		goto AGAIN;
+	}
+
 	
 	if(Machine) {
         //

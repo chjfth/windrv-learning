@@ -300,11 +300,12 @@ Language=English
 Devcon Enable Command
 Enables devices with the specified hardware or instance ID. Valid only on
 the local computer. (To reboot when necessary, include -r.)
-%1 [-r] %2 [-4] <id> [<id>...]
-%1 [-r] %2 [-4] =<class> [<id>...]
--r           Reboots the system only when a restart or reboot is required.
--4           Use DICS_START instead of normal DICS_ENABLE (chj).
-<class>      Specifies a device setup class.
+%1 [-r] %2 [-1|-4] <id> [<id>...]
+%1 [-r] %2 [-1|-4] =<class> [<id>...]
+-r        Reboots the system only when a restart or reboot is required.
+-1        Apply DICS_ENABLE on current Hardware-Profile, instead of on the Enum-basetree.
+-4        Use DICS_START instead of normal DICS_ENABLE, apply to current Hardware-Profile.
+<class>   Specifies a device setup class.
 Examples of <id>:
  *              - All devices
  ISAPNP\PNP0501 - Hardware ID
@@ -312,7 +313,6 @@ Examples of <id>:
  @ISAPNP\*\*    - Instance ID with wildcards  (@ prefixes instance ID)
  '*PNP0501      - Hardware ID with apostrophe (' prefixes literal match - matches exactly as typed,
                                                including the asterisk.)
-Chj: 
 .
 MessageId=60501 SymbolicName=MSG_ENABLE_SHORT
 Language=English
@@ -341,12 +341,14 @@ Language=English
 Devcon Disable Command
 Disables devices with the specified hardware or instance ID.
 Valid only on the local computer. (To reboot when necesary, Include -r .)
-%1 [-r] %2 [-4] <id> [<id>...]
-%1 [-r] %2 [-4] =<class> [<id>...]
--r           Reboots the system only when a restart or reboot is required.
--4           Use DICS_STOP instead of normal DICS_DISABLE (chj).
-             If you use -4 to disable it, you must use -4 to enable it accordingly.
-<class>      Specifies a device setup class.
+%1 [-r] %2 [-1|-4] <id> [<id>...]
+%1 [-r] %2 [-1|-4] =<class> [<id>...]
+-r        Reboots the system only when a restart or reboot is required.
+-1        Apply DICS_DISABLE on current Hardware-Profile, instead of on the Enum-basetree.
+          If you use -1 to disable it, you must use -1 to enable it accordingly.
+-4        Use DICS_STOP instead of normal DICS_DISABLE, apply to current Hardware-Profile.
+          If you use -4 to disable it, you must use -4 to enable it accordingly.
+<class>   Specifies a device setup class.
 Examples of <id>:
  *              - All devices
  ISAPNP\PNP0501 - Hardware ID
