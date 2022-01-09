@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 	(void)argc; (void)argv;
 
 	setlocale(LC_ALL, "");
-	printf("Program compile date: %s (version 2.0)\n", __DATE__); // This must be 'char'
+	printf("Program compile date: %s (version 2.1)\n", __DATE__); // This must be 'char'
 	
 	// Registered device interfaces have persistent registry keys below
 	// HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\DeviceClasses.
@@ -28,11 +28,19 @@ int main(int argc, char* argv[])
 	// registered by any device.
 	
 	BOOL b = FALSE;
-	HKEY hkey;
-	DWORD code = RegOpenKey(HKEY_LOCAL_MACHINE, REGSTR_PATH_DEVICE_CLASSES, &hkey);
-	if (code)
-		return code;
-	
+	HKEY hkey = NULL;
+#if 1 // new code, Win2000+
+	hkey = SetupDiOpenClassRegKeyEx(NULL, KEY_READ, 
+		DIOCR_INTERFACE, // this tells to open the root of interface-class keys
+		NULL, 0);
+	if(hkey==INVALID_HANDLE_VALUE)
+		return GetLastError();
+#else // old code, Win98+
+	//DWORD code = RegOpenKey(HKEY_LOCAL_MACHINE, REGSTR_PATH_DEVICE_CLASSES, &hkey);
+	//if (code)
+	//	return code;
+#endif
+
 	TCHAR keyname[256];
 	for (DWORD keyindex = 0; 
 		RegEnumKey(hkey, keyindex, keyname, ARRAYSIZE(keyname)) == NO_ERROR; 
