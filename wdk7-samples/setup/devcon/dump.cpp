@@ -130,17 +130,16 @@ Routine Description:
     Write device status to stdout
 
 Return Value:
-    none
+	TRUE if success
 --*/
 {
-    SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
+	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
     ULONG status = 0;
     ULONG problem = 0;
     BOOL hasInfo = FALSE;
     BOOL isPhantom = FALSE;
     CONFIGRET cr = CR_SUCCESS;
 
-    devInfoListDetail.cbSize = sizeof(devInfoListDetail);
     if((!SetupDiGetDeviceInfoListDetail(Devs,&devInfoListDetail)) ||
             ((cr = CM_Get_DevNode_Status_Ex(&status,&problem,DevInfo->DevInst,0,devInfoListDetail.RemoteMachineHandle))!=CR_SUCCESS)) {
         if ((cr == CR_NO_SUCH_DEVINST) || (cr == CR_NO_SUCH_VALUE)) {
@@ -152,7 +151,7 @@ Return Value:
         }
     }
     //
-    // handle off the status/problem codes
+    // handle the status/problem codes
     //
     if (isPhantom) {
         Padding(1);
@@ -175,6 +174,10 @@ Return Value:
         Padding(1);
         FormatToStream(stdout,MSG_DUMP_PRIVATE_PROBLEM);
     }
+	if(!(status & DN_DRIVER_LOADED)) {
+		Padding(1);
+		FormatToStream(stdout,MSG_DUMP_NO_DRIVER_LOADED);
+	}
     if(status & DN_STARTED) {
         Padding(1);
         FormatToStream(stdout,MSG_DUMP_STARTED);

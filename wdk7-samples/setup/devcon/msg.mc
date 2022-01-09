@@ -611,6 +611,10 @@ MessageId=60951 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS_CLASS_DRIVER
 Language=English
 Inf is a class driver.
 .
+MessageId=60952 SymbolicName=MSG_DUMP_NO_DRIVER_LOADED
+Language=English
+Driver is not loaded for this device.
+.
 
 ;//
 ;// INSTALL
