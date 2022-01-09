@@ -329,9 +329,9 @@ Return Value:
         // but is useful info to show)
         //
         if (CM_Get_First_Log_Conf_Ex(&config,
-                                     DevInfo->DevInst,
-                                     FORCED_LOG_CONF,
-                                     devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
+                DevInfo->DevInst,
+                FORCED_LOG_CONF,
+                devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
             haveConfig = TRUE;
         }
     }
@@ -346,9 +346,9 @@ Return Value:
             // Does it have a BOOT log config?
             //
             if (CM_Get_First_Log_Conf_Ex(&config,
-                                         DevInfo->DevInst,
-                                         BOOT_LOG_CONF,
-                                         devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
+                    DevInfo->DevInst,
+                    BOOT_LOG_CONF,
+                    devInfoListDetail.RemoteMachineHandle) == CR_SUCCESS) {
                 haveConfig = TRUE;
             }
         }
@@ -356,7 +356,7 @@ Return Value:
 
     if(!haveConfig) {
         //
-        // if we don't have any configuration, display an apropriate message
+        // if we don't have any configuration, display an appropriate message
         //
         Padding(1);
         FormatToStream(stdout,(status & DN_STARTED) ? MSG_DUMP_NO_RESOURCES : MSG_DUMP_NO_RESERVED_RESOURCES );
@@ -1034,43 +1034,32 @@ final2:
 
 BOOL DumpDeviceStack(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo)
 /*++
-
 Routine Description:
-
-    Write expected stack information to stdout
-
-Arguments:
-
-    Devs    )_ uniquely identify device
-    DevInfo )
+    Write expected (driver-)stack information to stdout
 
 Return Value:
-
     TRUE if success
-
 --*/
 {
     LPTSTR * filters;
     LPTSTR service;
     HKEY hClassKey = (HKEY)INVALID_HANDLE_VALUE;
-    SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
+	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
 
     //
     // we need machine information
     //
-    devInfoListDetail.cbSize = sizeof(devInfoListDetail);
     if(!SetupDiGetDeviceInfoListDetail(Devs,&devInfoListDetail)) {
         return FALSE;
     }
 
     //
-    // we need device setup class, we can use the GUID in DevInfo
-    // note that this GUID is a snapshot, but works fine
-    // if DevInfo isn't old
+    // We need device setup-class, we can use the GUID in DevInfo
+    // Note that this GUID is a *snapshot*, but works fine if DevInfo isn't old.
     //
 
     //
-    // class upper/lower filters are in class registry
+    // class upper/lower filters are in setup-class registry
     //
     hClassKey = SetupDiOpenClassRegKeyEx(&DevInfo->ClassGuid,
         KEY_READ,
@@ -1092,6 +1081,9 @@ Return Value:
             DelMultiSz(filters);
         }
     }
+
+	// Get device-specific upper-filters 
+
     filters = GetDevMultiSz(Devs,DevInfo,SPDRP_UPPERFILTERS);
     if(filters) {
         if(filters[0]) {
@@ -1123,6 +1115,9 @@ Return Value:
     if(service) {
         delete [] service;
     }
+
+	//////// Now lower filters ////////
+
     if(hClassKey != INVALID_HANDLE_VALUE) {
         filters = GetRegMultiSz(hClassKey,REGSTR_VAL_LOWERFILTERS);
         if(filters) {
@@ -1138,6 +1133,7 @@ Return Value:
         }
         RegCloseKey(hClassKey);
     }
+
     filters = GetDevMultiSz(Devs,DevInfo,SPDRP_LOWERFILTERS);
     if(filters) {
         if(filters[0]) {

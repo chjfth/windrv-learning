@@ -690,24 +690,19 @@ Return Value:
 
 int cmdStack(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     STACK <id> ...
-    use EnumerateDevices to do hardwareID matching
-    for each match, dump device class and stack to stdout
-    note that we only enumerate present devices
+    Use EnumerateDevices to do hardwareID matching.
+    For each match, dump device class and stack to stdout.
+    Note that we only enumerate present devices.
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     GenericContext context;
