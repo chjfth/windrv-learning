@@ -150,6 +150,12 @@ Return Value:
             return FALSE;
         }
     }
+
+	// Chj: Print actual return/status values to user.
+	Padding(1);
+	_tprintf(TEXT("CM_Get_DevNode_Status: CONFIGRET(CR_xxx)=0x%X, Status(DN_xxx)=0x%X, ProblemCode(CM_xxx)=0x%X\n"),
+		cr, status, problem);
+
     //
     // handle the status/problem codes
     //
