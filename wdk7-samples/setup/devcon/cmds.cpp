@@ -1390,40 +1390,33 @@ Return Value:
 
 int RemoveCallback(__in HDEVINFO Devs, __in PSP_DEVINFO_DATA DevInfo, __in DWORD Index, __in LPVOID Context)
 /*++
-
 Routine Description:
-
     Callback for use by Remove
     Invokes DIF_REMOVE
     uses SetupDiCallClassInstaller so cannot be done for remote devices
     Don't use CM_xxx API's, they bypass class/co-installers and this is bad.
 
 Arguments:
-
-    Devs    )_ uniquely identify the device
-    DevInfo )
-    Index    - index of device
     Context  - GenericContext
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
-    SP_REMOVEDEVICE_PARAMS rmdParams;
+	UNREFERENCED_PARAMETER(Index);
+
+	SP_REMOVEDEVICE_PARAMS rmdParams = {{sizeof(SP_CLASSINSTALL_HEADER)}};
     GenericContext *pControlContext = (GenericContext*)Context;
-    SP_DEVINSTALL_PARAMS devParams;
+	SP_DEVINSTALL_PARAMS devParams = {sizeof(SP_DEVINSTALL_PARAMS)};
     LPCTSTR action = NULL;
-    //
-    // need hardware ID before trying to remove, as we wont have it after
+
+	//
+    // Need device instance ID(Devinstpath) before trying to remove,
+	// bcz we want to display it after the devnode is removed.
     //
     TCHAR devID[MAX_DEVICE_ID_LEN];
-    SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail;
+	SP_DEVINFO_LIST_DETAIL_DATA devInfoListDetail = {sizeof(SP_DEVINFO_LIST_DETAIL_DATA)};
 
-    UNREFERENCED_PARAMETER(Index);
-
-    devInfoListDetail.cbSize = sizeof(devInfoListDetail);
     if((!SetupDiGetDeviceInfoListDetail(Devs,&devInfoListDetail)) ||
             (CM_Get_Device_ID_Ex(DevInfo->DevInst,devID,MAX_DEVICE_ID_LEN,0,devInfoListDetail.RemoteMachineHandle)!=CR_SUCCESS)) {
         //
@@ -1432,8 +1425,7 @@ Return Value:
         return EXIT_OK;
     }
 
-    rmdParams.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
-    rmdParams.ClassInstallHeader.InstallFunction = DIF_REMOVE;
+    rmdParams.ClassInstallHeader.InstallFunction = DIF_REMOVE; // key DIF code here
     rmdParams.Scope = DI_REMOVEDEVICE_GLOBAL;
     rmdParams.HwProfile = 0;
     if(!SetupDiSetClassInstallParams(Devs,DevInfo,&rmdParams.ClassInstallHeader,sizeof(rmdParams)) ||
@@ -1446,7 +1438,6 @@ Return Value:
         //
         // see if device needs reboot
         //
-        devParams.cbSize = sizeof(devParams);
         if(SetupDiGetDeviceInstallParams(Devs,DevInfo,&devParams) && (devParams.Flags & (DI_NEEDRESTART|DI_NEEDREBOOT))) {
             //
             // reboot required
@@ -1461,29 +1452,24 @@ Return Value:
         }
         pControlContext->count++;
     }
-    _tprintf(TEXT("%-60s: %s\n"),devID,action);
+    _tprintf(TEXT("%-60s: %s\n"), devID, action);
 
     return EXIT_OK;
 }
 
 int cmdRemove(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
-
     REMOVE
     remove devices
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - machine name, must be NULL
     argc/argv - remaining parameters
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     GenericContext context;
