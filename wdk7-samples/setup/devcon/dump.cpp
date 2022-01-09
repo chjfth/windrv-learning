@@ -153,7 +153,7 @@ Return Value:
 
 	// Chj: Print actual return/status values to user.
 	Padding(1);
-	_tprintf(TEXT("CM_Get_DevNode_Status: CONFIGRET(CR_xxx)=0x%X, Status(DN_xxx)=0x%X, ProblemCode(CM_xxx)=0x%X\n"),
+	_tprintf(TEXT("CM_Get_DevNode_Status: CONFIGRET(CR_xxx)=0x%X, Status(DN_xxx)=0x%X, ProblemCode(CM_PROB_xxx)=0x%X\n"),
 		cr, status, problem);
 
     //
@@ -181,8 +181,12 @@ Return Value:
         FormatToStream(stdout,MSG_DUMP_PRIVATE_PROBLEM);
     }
 	if(!(status & DN_DRIVER_LOADED)) {
+		// 2021-01-09 Chj:
 		Padding(1);
-		FormatToStream(stdout,MSG_DUMP_NO_DRIVER_LOADED);
+		if(problem==NO_ERROR)
+			FormatToStream(stdout, MSG_DUMP_NO_DRIVER_FOUND);
+		else
+			FormatToStream(stdout, MSG_DUMP_DRIVER_FOUND_LOAD_FAIL);
 	}
     if(status & DN_STARTED) {
         Padding(1);
