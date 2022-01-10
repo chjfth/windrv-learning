@@ -46,25 +46,25 @@ DEFINE_GUID (GUID_DEVCLASS_TOASTER,
 		//{22222222-6A01-11d2-B841-00C04FAD5171}
 
 //
-// Define a WMI GUID to get busenum info.
+// Define a WMI GUID to get busenum info. (note: this should match those in .mof)
 //
 DEFINE_GUID (TOASTER_BUS_WMI_STD_DATA_GUID, 
 		0x1111bb01, 0x8F12, 0x11d2, 0xB8, 0x54, 0x00, 0xC0, 0x4F, 0xAD, 0x51, 0x71);
 		//{1111bb01-8F12-11d2-B854-00C04FAD5171}
 
 //
-// Define a WMI GUID to get toaster device info.
+// Define a WMI GUID to get toaster device info. (note: this should match those in .mof)
 //
 DEFINE_GUID (TOASTER_WMI_STD_DATA_GUID, 
 		0x11110001, 0x6DD3, 0x11d2, 0xB8, 0x44, 0x00, 0xC0, 0x4F, 0xAD, 0x51, 0x71);
+		//{11110001-6DD3-11d2-B844-00C04FAD5171}
 
 //
-// Define a WMI GUID to represent device arrival notification WMIEvent class.
+// Define a WMI GUID to represent device arrival notification WMIEvent class. (note: this should match those in .mof)
 //
-
 DEFINE_GUID (TOASTER_NOTIFY_DEVICE_ARRIVAL_EVENT, 
         0x1cdaff1, 0xc901, 0x45b4, 0xb3, 0x59, 0xb5, 0x54, 0x27, 0x25, 0xe2, 0x9c);
-		// {01CDAFF1-C901-45b4-B359-B5542725E29C}
+		//{01CDAFF1-C901-45b4-B359-B5542725E29C}
 
 
 //

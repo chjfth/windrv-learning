@@ -1,7 +1,7 @@
 [Dynamic, Provider("WMIProv"),
  WMI,
  Description("Toaster driver information"),
- guid("{BBA21300-6DD3-11d2-B844-00C04FAD5171}"),
+ guid("{11110001-6DD3-11d2-B844-00C04FAD5171}"),
  locale("MS\\0x409")]
 class ToasterDeviceInformation
 {
