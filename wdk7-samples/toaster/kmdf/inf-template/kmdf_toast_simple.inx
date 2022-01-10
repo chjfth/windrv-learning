@@ -66,8 +66,8 @@ HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system
 %StdMfg%=ModelsList,NT$ARCH$
 
 [ModelsList.NT$ARCH$]
-; DisplayName       	   Section         HardwareId (conceptually not DeviceID)
-; -----------       	   -------         ----------
+; DisplayName       	   SectionName     HardwareId (conceptually not DeviceID)
+; -----------       	   -----------     ----------
 %ToasterDevice.DeviceDesc%=Toaster_Device, {11111111-6a01-11d2-b841-00c04fad5171}\MsToaster
 ;                                   -- was {b85b7c50-6a01-11d2-b841-00c04fad5171}\MsToaster
 
@@ -80,7 +80,7 @@ toaster.sys
 ;-------------- Service installation
 
 [Toaster_Device.NT.Services]
-AddService = AAAToasterSvc, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
+AddService = A_ToasterSvc, %SPSVCINST_ASSOCSERVICE%, toaster_Service_Inst
 
 [toaster_Service_Inst]
 DisplayName    = %toaster.SVCDESC%
