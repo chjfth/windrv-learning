@@ -247,11 +247,18 @@ to add the child device to the child list.</span></p>
 <p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>Because
 drivers should only use static child lists for device configurations that are
 predetermined and permanent, there is little need for a driver to modify a static
-child list after creating it. If the driver determines that a child device has
-become inaccessible, the driver can call <b><u>WdfPdoMarkMissing</u></b>. (If a
+child list after creating it. </span></p>
+
+<ul>
+<li><p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>
+If the driver determines that a child device has
+become inaccessible, the driver can call <b><u>WdfPdoMarkMissing</u></b>.</span></p>
+
+<li><p><span style='font-size:10.0pt;font-family:"Verdana","sans-serif"'>If a
 child device remains accessible but becomes unresponsive and unusable, the
 driver should set the <b>Failed</b> member of the WDF_DEVICE_STATE structure to
-<b>WdfTrue</b> and then call <b>WdfDeviceSetDeviceState</b>.)</span></p>
+<b>WdfTrue</b> and then call <b><u>WdfDeviceSetDeviceState</u></b>.</span></p>
+</ul>
 
 <h3>dynamic</h3>
 
@@ -349,7 +356,7 @@ Root-enumeration guide: <a href="../wdm/func/readme.htm#rootenum">wdm/func/readm
 simple form of function driver for toaster device. The driver doesn't handle
 any PnP and Power events because the framework provides default behavior for
 those events. This driver has enough support to allow an user application
-(toast/notify.exe) to open the device interface registered by the driver
+(toast.exe/notify.exe) to open the device interface registered by the driver
 and send read, write or ioctl requests.</span></p>
 
 

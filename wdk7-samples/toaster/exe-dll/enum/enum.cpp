@@ -6,7 +6,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
     PURPOSE.
 
 Module Name:
-    Enum.c (Chj rename it ot enum.cpp)
+    Enum.c (Chj rename it to enum.cpp)
 
 Abstract:
         This application simulates the plugin, unplug or ejection

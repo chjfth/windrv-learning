@@ -8,6 +8,8 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 Module Name:
     toaster-simple.c
 
+	(new name by Chj: toaster-simple.cpp)
+
 Abstract:
     This is a simple form of function driver for toaster device. The driver
     doesn't handle any PnP and Power events because the framework provides
@@ -33,10 +35,8 @@ Environment:
 class CParent
 {
 public:
-	 virtual
-	~CParent() {}
-	 virtual
-	void work();
+	 virtual ~CParent() {}
+	 virtual void work();
 };
 void CParent::work()
 {
@@ -47,8 +47,8 @@ class CChild1 : public CParent
 {
 public:
 	int m_c1;
-	~CChild1();
-	void work();	
+	virtual ~CChild1();
+	virtual void work();	
 };
 CChild1::~CChild1()
 {
@@ -63,8 +63,8 @@ class CChild2 : public CParent
 {
 public:
 	int m_c2;
-	~CChild2();
-	void work();	
+	virtual ~CChild2();
+	virtual void work();	
 };
 CChild2::~CChild2()
 {
@@ -77,7 +77,7 @@ void CChild2::work()
 
 void Toaster_EvtDriverUnload(__in WDFDRIVER Driver)
 {
-	KdPrint(("Toaster_EvtDriverUnload - Toaster Function Driver Sample.\n"));
+	KdPrint(("DriverUnload - Toaster Function Driver Sample.\n"));
 }
 
 
@@ -125,7 +125,6 @@ Return Value:
 	//parent
 	// C++ TEST <<<
 
-
     // Initialize driver config to control the attributes that
     // are global to the driver. Note that framework by default
     // provides a driver unload routine. If DriverEntry creates any resources
@@ -138,7 +137,6 @@ Return Value:
         &config,
         ToasterEvtDeviceAdd
         );
-
 	config.EvtDriverUnload = Toaster_EvtDriverUnload;
 
     // Create a framework driver object to represent our driver.
