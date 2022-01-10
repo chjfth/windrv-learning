@@ -1,0 +1,14 @@
+@echo off
+setlocal EnableDelayedExpansion
+set batfilenam=%~n0%~x0
+set batdir=%~dp0
+set batdir=%batdir:~0,-1%
+call :Echos START from %batdir%
+
+call %batdir%\..\_VSPG\%batfilenam% %*
+
+exit /b
+
+:Echos
+  echo [%batfilenam%] %*
+exit /b
