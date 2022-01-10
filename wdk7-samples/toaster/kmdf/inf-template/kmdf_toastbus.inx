@@ -1,0 +1,115 @@
+;/*++
+;
+;Copyright (c) 1990-1999 Microsoft Corporation All rights Reserved
+;2022.01 Jimm Chen: 
+;	Update it to be reusable across kmdf_toastbus_static and kmdf_toastbus_dynamic projects.
+;
+;Module Name:
+;
+;   @kmdf_toastbus@--kmdf_toastbus.inf
+;
+;Abstract:
+;   INF file for installing toaster bus enumerator driver
+;
+;Installation Notes:
+;	Using Devcon: 
+;		devcon install  @kmdf_toastbus@--kmdf_toastbus.inf  HWid_@kmdf_toastbus@
+;
+;--*/
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%MSFT%
+DriverVer=06/17/1999, 1.0.0.1
+CatalogFile=KmdfSamples.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+@kmdf_toastbus@.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%StdMfg%=Standard,NT$ARCH$
+
+; For Win2K because it cannot parse decorated sections.
+[Standard]
+; These are the toaster bus PnP ids
+%ToasterBus.DeviceDesc%=ToasterBusDevice, HWid_@kmdf_toastbus@
+
+; For XP and later
+[Standard.NT$ARCH$]
+; DisplayName       	SectionName       HardwareId
+; -----------       	-----------       ----------
+%ToasterBus.DeviceDesc%=ToasterBusDevice, HWid_@kmdf_toastbus@
+
+[ToasterBusDevice.NT]
+CopyFiles=Drivers_Dir
+
+[ToasterBusDevice.NT.HW]
+AddReg=ToasterBusDevice.NT.AddReg
+
+[ToasterBusDevice.NT.AddReg]                            
+HKR,,DeviceCharacteristics,0x10001,0x0100         ; Use same security checks on relative opens
+HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"      ; Allow generic-all access to Built-in administrators and Local system 
+
+[Drivers_Dir]
+@kmdf_toastbus@.sys
+
+
+;-------------- Service installation
+[ToasterBusDevice.NT.Services]
+AddService = AAA_@kmdf_toastbus@_Svc,%SPSVCINST_ASSOCSERVICE%, Bus_Service_Inst
+
+; -------------- Service install sections
+[Bus_Service_Inst]
+DisplayName    = %ToastBus.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\@kmdf_toastbus@.sys
+LoadOrderGroup = Extended Base
+
+
+;
+;--- ToasterBusDevice WDF Coinstaller installation ------
+;
+[DestinationDirs]
+ToasterBusDevice_CoInstaller_CopyFiles = 11
+
+[ToasterBusDevice.NT.CoInstallers]
+AddReg=ToasterBusDevice_CoInstaller_AddReg
+CopyFiles=ToasterBusDevice_CoInstaller_CopyFiles
+
+[ToasterBusDevice_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ToasterBusDevice_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ToasterBusDevice.NT.Wdf]
+KmdfService = AAA_@kmdf_toastbus@_Svc, Bus_wdfsect
+[Bus_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+MSFT = "AAA Toaster Corp (toaster bus inf)"
+StdMfg = "(Standard system devices)"
+DiskId1 = "AAA Toaster Bus (@kmdf_toastbus@) Installation Disk #1"
+ToasterBus.DeviceDesc = "AAA Toaster Bus(@kmdf_toastbus@) Enumerator"
+ToastBus.SVCDESC = "AAA Toaster Bus (@kmdf_toastbus@) Service"
+

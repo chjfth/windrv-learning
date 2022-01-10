@@ -37,14 +37,33 @@ if "%PlatformName%"=="x64" (
 	set stampinf_ARCH=x86
 )
 
-if "" == "%vspg_InfTemplateName%" goto :DONE_STAMPINF
+if "" == "%vspg_InfTemplateName%" (
+  call :Echos Env-var vspg_InfTemplateName is empty, no stampinf action taken.
+  goto :DONE_STAMPINF
+)
+
+if "" == "%vspg_InfOldWord%" (
+  call :Echos [ERROR] Env-var vspg_InfOldWord is empty.
+  exit /b 4
+)
+if "" == "%vspg_InfNewWord%" (
+  call :Echos [ERROR] Env-var vspg_InfNewWord is empty.
+  exit /b 4
+)
+
+REM Now determine inf filename. 
+if "%TargetName%" == %vspg_InfTemplateName% (
+  set inf_filename=%TargetName%.inf
+) else (
+  set inf_filename=%TargetName%--%vspg_InfTemplateName%.inf
+)
 
 call :Echos calling ToasterStampInf.bat ...
 set subcmd=call %SolutionDir%\_VSPG\ToasterStampInf.bat^
   %ProjectDir%\..\inf-template\%vspg_InfTemplateName%.inx^
-  %TargetDir%\%TargetName%--%vspg_InfTemplateName%.inf^
-  toaster.^
-  %TargetName%.^
+  %TargetDir%\%inf_filename%^
+  %vspg_InfOldWord%^
+  %vspg_InfNewWord%^
   "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
 REM call :Echos %subcmd%
 %subcmd%

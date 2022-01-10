@@ -26,7 +26,7 @@ if "%StampinfExParams%"=="" (
 	exit /b 4
 )
 
-call :Echos For inf-file, will replace "%Oldword%" to "%Newword%".
+call :Echos For inf-file, will replace "%Oldword%" to "%Newword%" .
 
 call %bootsdir%\ReplaceInFile.bat %Oldword% %Newword% %InputInx% %OutputInf% 
 
