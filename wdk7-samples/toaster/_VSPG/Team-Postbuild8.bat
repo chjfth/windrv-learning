@@ -31,6 +31,8 @@ call :Echos START from %batdir%
 
 REM ==== Prelude Above ====
 
+REM ================ StampInf ================
+
 if "%PlatformName%"=="x64" (
 	set stampinf_ARCH=AMD64
 ) else (

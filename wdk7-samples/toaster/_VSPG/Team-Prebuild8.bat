@@ -42,6 +42,25 @@ if "%WDKPATH%"=="" (
 
 call :Echos WDKPATH=%WDKPATH%
 
+
+REM ================ MofComp ================
+
+if "" == "%vspg_mofcompInput%" (
+  call :Echos Env-var vspg_mofcompInput is empty, no mofcomp action taken.
+  goto :DONE_MOFCOMP
+)
+
+call :Echos calling ToasterMofComp.bat ...
+set subcmd=call %SolutionDir%\_VSPG\ToasterMofComp.bat^
+  %vspg_mofcompInput%^
+  %vspg_mofcompOutput%^
+  "%vspg_mofcompMoreParams%"
+%subcmd%
+if errorlevel 1 exit /b 4
+
+:DONE_MOFCOMP
+
+
 goto :END
 
 REM =============================

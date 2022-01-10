@@ -46,7 +46,6 @@
       <EntryPointSymbol>FxDriverEntry</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -61,7 +60,6 @@
     <Link>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClCompile Include="..\bus\static\busenum.c" />
     <ClCompile Include="..\bus\static\buspdo.c" />
@@ -78,7 +76,17 @@
       <Outputs>$(TargetPath)</Outputs>
     </CustomBuild>
   </ItemGroup>
-
+  <ItemGroup>
+    <CustomBuild Include="..\bus\static\busenum.mof">
+      <FileType>Document</FileType>
+      <Command>echo.</Command>
+      <Message>Detected newer: %(FullPath)</Message>
+      <Outputs>$(TargetPath)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\bus\static\busenum.rc" />
+  </ItemGroup>
   <!--
     Introduce VSPG Framework code here.
    -->
@@ -88,7 +96,6 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(VSPG_BootsDir_NoTBS)\_VSPG.props" />
   </ImportGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
