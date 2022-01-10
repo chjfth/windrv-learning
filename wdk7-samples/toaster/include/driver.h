@@ -87,17 +87,14 @@ typedef struct _TOASTER_INTERFACE_STANDARD {
     //
     // generic interface header
     //
-    USHORT Size;
-    USHORT Version;
-    PVOID Context;
-    PINTERFACE_REFERENCE InterfaceReference;
-    PINTERFACE_DEREFERENCE InterfaceDereference;
+    INTERFACE                        InterfaceHeader;
     //
     // standard bus interfaces
     //
     PTOASTER_GET_CRISPINESS_LEVEL    GetCrispinessLevel;
     PTOASTER_SET_CRISPINESS_LEVEL    SetCrispinessLevel;
-    PTOASTER_IS_CHILD_PROTECTED      IsSafetyLockEnabled; //):
+    PTOASTER_IS_CHILD_PROTECTED      IsSafetyLockEnabled;
+	
 } TOASTER_INTERFACE_STANDARD, *PTOASTER_INTERFACE_STANDARD;
 
 #ifndef  STATUS_CONTINUE_COMPLETION //required to build driver in Win2K and XP build environment

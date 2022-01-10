@@ -36,9 +36,17 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\visualddk.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\visualddk.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="..\..\..\visualddk.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="..\..\..\visualddk.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -223,12 +231,10 @@
 ..\..\..\wmimofck.exe -m -h.\toasterMof.h -w.\htm ..\featured2\toaster.bmf</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling the MOF file toaster.mof ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\featured2\toaster.bmf</Outputs>
-
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mofcomp -B:..\featured2\toaster.bmf ..\featured2\toaster.mof
 ..\..\..\wmimofck.exe -m -h.\toasterMof.h -w.\htm ..\featured2\toaster.bmf</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling the MOF file toaster.mof ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\featured2\toaster.bmf</Outputs>
-
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

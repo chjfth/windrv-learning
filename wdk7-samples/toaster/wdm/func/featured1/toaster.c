@@ -803,13 +803,13 @@ Updated Routine Description:
         UCHAR powerlevel;
 
         if (busInterface.GetCrispinessLevel != NULL) {
-            (*busInterface.GetCrispinessLevel)(busInterface.Context, &powerlevel);
+            (*busInterface.GetCrispinessLevel)(busInterface.InterfaceHeader.Context, &powerlevel);
         }
         if (busInterface.SetCrispinessLevel != NULL) {
-            (*busInterface.SetCrispinessLevel)(busInterface.Context, 8);
+            (*busInterface.SetCrispinessLevel)(busInterface.InterfaceHeader.Context, 8);
         }
         if (busInterface.IsSafetyLockEnabled != NULL) {
-            (*busInterface.IsSafetyLockEnabled)(busInterface.Context);
+            (*busInterface.IsSafetyLockEnabled)(busInterface.InterfaceHeader.Context);
         }
 
         //
@@ -827,12 +827,12 @@ Updated Routine Description:
         // If the device interface is from an unrelated device we must register a
         // PnP notification for device removal to dereference and stop using the interface.
         //
-        if (busInterface.InterfaceDereference != NULL) {
+        if (busInterface.InterfaceHeader.InterfaceDereference != NULL) {
 			// Chj: 此处代码仅是演示“获取与释放” toaster bus interface 的写法，
 			// busInterface 并不留给后头的代码使用，因此此处就将其释放了。
 			// 此接口返回前就已经被 bus driver 增加了一个 reference 了，增加 reference 的语句
 			// 不是在 Windows 框架中，而是明写在 Bus_PDO_QueryInterface() 中, 即 Bus_InterfaceReference(DeviceData); 。
-            (*busInterface.InterfaceDereference)((PVOID)busInterface.Context);
+            (*busInterface.InterfaceHeader.InterfaceDereference)((PVOID)busInterface.InterfaceHeader.Context);
         }
     }
 

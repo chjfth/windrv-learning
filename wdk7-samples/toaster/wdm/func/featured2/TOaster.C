@@ -729,17 +729,17 @@ Updated Routine Description:
         UCHAR powerlevel;
 
         if (busInterface.GetCrispinessLevel != NULL) {
-            (*busInterface.GetCrispinessLevel)(busInterface.Context, &powerlevel);
+            (*busInterface.GetCrispinessLevel)(busInterface.InterfaceHeader.Context, &powerlevel);
         }
         if (busInterface.SetCrispinessLevel != NULL) {
-            (*busInterface.SetCrispinessLevel)(busInterface.Context, 8);
+            (*busInterface.SetCrispinessLevel)(busInterface.InterfaceHeader.Context, 8);
         }
         if (busInterface.IsSafetyLockEnabled != NULL) {
-            (*busInterface.IsSafetyLockEnabled)(busInterface.Context);
+            (*busInterface.IsSafetyLockEnabled)(busInterface.InterfaceHeader.Context);
         }
 
-        if (busInterface.InterfaceDereference != NULL) {
-            (*busInterface.InterfaceDereference)((PVOID)busInterface.Context);
+        if (busInterface.InterfaceHeader.InterfaceDereference != NULL) {
+            (*busInterface.InterfaceHeader.InterfaceDereference)((PVOID)busInterface.InterfaceHeader.Context);
         }
     }
 

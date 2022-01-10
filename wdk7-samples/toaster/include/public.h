@@ -10,15 +10,9 @@ Abstract:
     This module contains the common declarations shared by driver
     and user applications.
 
-Author:
-Environment:
-
-    user and kernel
-Notes:
-
 
 Revision History:
-
+	2020.01 Jimm Chen: Use eye-catching GUIDS {1111...}, {2222....} 
 
 --*/
 
@@ -83,6 +77,7 @@ DEFINE_GUID (TOASTER_NOTIFY_DEVICE_ARRIVAL_EVENT,
 
 #define BUS_HARDWARE_IDS L"{11111111-6A01-11d2-B841-00C04FAD5171}\\MsToaster\0"
 #define BUS_HARDWARE_IDS_LENGTH sizeof (BUS_HARDWARE_IDS) // =100
+	// Chj: This naming is bad, it is actually toaster child-device's hardware Id.
 
 #define BUSENUM_COMPATIBLE_IDS L"{11111111-6A01-11d2-B841-00C04FAD5171}\\MsCompatibleToaster\0"
 #define BUSENUM_COMPATIBLE_IDS_LENGTH sizeof(BUSENUM_COMPATIBLE_IDS)

@@ -78,7 +78,6 @@ _tmain(
         }
     }
 
-
     //
     // Print a list of devices of Toaster Class
     //

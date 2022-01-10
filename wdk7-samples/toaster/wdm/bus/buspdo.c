@@ -1081,16 +1081,16 @@ Return Value:
       toasterInterfaceStandard = (PTOASTER_INTERFACE_STANDARD)
                                 irpStack->Parameters.QueryInterface.Interface;
 
-      toasterInterfaceStandard->Context = DeviceData;
+      toasterInterfaceStandard->InterfaceHeader.Context = DeviceData;
 
       // Fill in the exported functions
       //
-      toasterInterfaceStandard->InterfaceReference   =
+      toasterInterfaceStandard->InterfaceHeader.InterfaceReference   =
                         (PINTERFACE_REFERENCE) Bus_InterfaceReference;
-      toasterInterfaceStandard->InterfaceDereference =
+      toasterInterfaceStandard->InterfaceHeader.InterfaceDereference =
                         (PINTERFACE_DEREFERENCE) Bus_InterfaceDereference;
-      toasterInterfaceStandard->GetCrispinessLevel   = Bus_GetCrispinessLevel;
-      toasterInterfaceStandard->SetCrispinessLevel   = Bus_SetCrispinessLevel;
+      toasterInterfaceStandard->GetCrispinessLevel = Bus_GetCrispinessLevel;
+      toasterInterfaceStandard->SetCrispinessLevel = Bus_SetCrispinessLevel;
       toasterInterfaceStandard->IsSafetyLockEnabled = Bus_IsSafetyLockEnabled;
 
       // Must take a reference before returning

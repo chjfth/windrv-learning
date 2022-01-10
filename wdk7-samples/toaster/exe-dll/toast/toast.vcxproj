@@ -44,7 +44,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\wdm\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

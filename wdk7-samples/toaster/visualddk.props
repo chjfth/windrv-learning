@@ -14,7 +14,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\inc;%(AdditionalIncludeDirectories);;;$(IncludePath)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;..\..\..\include;%(AdditionalIncludeDirectories);;;$(IncludePath)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
