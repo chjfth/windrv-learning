@@ -1,4 +1,9 @@
-setlocal
+setlocal EnableDelayedExpansion
+set batfilenam=%~n0%~x0
+set batdir=%~dp0
+set batdir=%batdir:~0,-1%
+call :Echos START from %batdir%
+
 : This is a function.
 : Converts a .inx to .inf by calling stampinf, and at the same time, replace a word in the output inf.
 :
@@ -21,7 +26,9 @@ if "%StampinfExParams%"=="" (
 	exit /b 4
 )
 
-call :ReplaceInFile %Oldword% %Newword% %InputInx% %OutputInf% 
+call :Echos For inf-file, will replace "%Oldword%" to "%Newword%".
+
+call %bootsdir%\ReplaceInFile.bat %Oldword% %Newword% %InputInx% %OutputInf% 
 
 if not exist "%OutputInf%" (
 	echo ERROR: %0 Cannot generate intermediate inx-file: %tempFilepath%
@@ -52,25 +59,6 @@ exit /b
 :EchoExec
   echo [%~n0%~x0] EXEC: %*
 exit /b
-
-
-:ReplaceInFile
-REM Thanks to:
-REM https://stackoverflow.com/questions/23075953/batch-script-to-find-and-replace-a-string-in-text-file-without-creating-an-extra/23076141
-REM https://ss64.com/nt/for_f.html
-REM Param1~4 same meaning as the containing bat.
-  echo off
-  set "search=%1"
-  set "replace=%2"
-  set "oldfile=%3"
-  set "newfile=%4"
-  (for /f delims^=^ eol^= %%i in (%oldfile%) do (
-    set "line=%%i"
-    setlocal enabledelayedexpansion
-    set "line=!line:%search%=%replace%!"
-    echo !line!
-    endlocal
-  ))>"%newfile%"
 
 :Echos
   echo [%~n0%~x0] %*
