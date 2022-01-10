@@ -19,6 +19,7 @@ Environment:
 
 Revision History:
   Eliyas Yakub  Nov 2, 1998
+  2022.01 Updated to Unicode version, Jimm Chen.
 --*/
 
 #include <basetyps.h>
@@ -26,6 +27,7 @@ Revision History:
 #include <wtypes.h>
 #include <setupapi.h>
 #include <initguid.h>
+#include <tchar.h>
 #include <stdio.h>
 #include <string.h>
 #include <winioctl.h>
@@ -34,17 +36,17 @@ Revision History:
 // #include <dontuse.h>
 
 #define USAGE  \
-	"Usage: Toast [-h|-s]\n"\
-	"      -h|-s : hide|show from Device Manager UI\n"
+	_T("Usage: Toast [-h|-s]\n")\
+	_T("      -h|-s : hide|show from Device Manager UI\n")
 
 enum findmethod_st { find_setupclass=0, find_ifaceclass=1 };
 
 BOOL PrintToasterDeviceInfo(findmethod_st);
 
 INT __cdecl
-main(
+_tmain(
     __in ULONG argc,
-    __in_ecount(argc) PCHAR argv[]
+    __in_ecount(argc) TCHAR *argv[]
     )
 {
     HDEVINFO                            hardwareDeviceInfo;
@@ -59,19 +61,19 @@ main(
 	BOOL                                bWantShowInDevmgmt = FALSE;
 
     if(argc == 2) {
-        if(argv[1][0] == '-') {
+        if(argv[1][0] == _T('-')) {
 			char c = argv[1][1];
-            if(c=='h' || c=='H') {
+            if(c==_T('h') || c==_T('H')) {
                 bDontShowInDevmgmt = TRUE;
-			} else if (c=='s' || c=='S') {
+			} else if (c==_T('s') || c==_T('S')) {
 				bWantShowInDevmgmt = TRUE;
             } else {
-                printf(USAGE);
+                _tprintf(_T("%s"), USAGE);
                 exit(0);
             }
         }
         else {
-            printf(USAGE);
+            _tprintf(_T("%s"), USAGE);
             exit(0);
         }
     }
@@ -80,14 +82,14 @@ main(
     //
     // Print a list of devices of Toaster Class
     //
-	printf("Try finding toaster devices by device-setup-class...\n");
+	_tprintf(_T("Try finding toaster devices by device-setup-class...\n"));
     if(!PrintToasterDeviceInfo(find_setupclass))
     {
-		printf("Try finding toaster devices by device-interface-class...\n");
+		_tprintf(_T("Try finding toaster devices by device-interface-class...\n"));
 
 		if(!PrintToasterDeviceInfo(find_ifaceclass))
 		{
-			printf("No toaster devices present.\n");
+			_tprintf(_T("No toaster devices present.\n"));
 			return 0;
 		}
     }
@@ -105,14 +107,14 @@ main(
                        DIGCF_DEVICEINTERFACE)); // Function class devices.
     if(INVALID_HANDLE_VALUE == hardwareDeviceInfo)
     {
-        printf("SetupDiGetClassDevs failed: %x\n", GetLastError());
+        _tprintf(_T("SetupDiGetClassDevs failed: %x\n"), GetLastError());
         return 0;
     }
 
     deviceInterfaceData.cbSize = sizeof (SP_DEVICE_INTERFACE_DATA);
 
-    printf("\nList of Toaster Device Interfaces\n");
-    printf("---------------------------------\n");
+    _tprintf(_T("\nList of Toaster Device Interfaces\n"));
+    _tprintf(_T("---------------------------------\n"));
 
     i = 0;
 
@@ -151,7 +153,7 @@ main(
                     NULL)) 
 			{ // not interested in the specific dev-node
                 if(ERROR_INSUFFICIENT_BUFFER != GetLastError()) {
-                    printf("SetupDiGetDeviceInterfaceDetail failed %d\n", GetLastError());
+                    _tprintf(_T("SetupDiGetDeviceInterfaceDetail failed %d\n"), GetLastError());
                     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
                     return FALSE;
                 }
@@ -165,7 +167,7 @@ main(
             if(deviceInterfaceDetailData) {
                 deviceInterfaceDetailData->cbSize = sizeof (SP_DEVICE_INTERFACE_DETAIL_DATA);
             } else {
-                printf("Couldn't allocate %d bytes for device interface details.\n", predictedLength);
+                _tprintf(_T("Couldn't allocate %d bytes for device interface details.\n"), predictedLength);
                 SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
                 return FALSE;
             }
@@ -178,14 +180,14 @@ main(
                        &requiredLength,
                        NULL)) 
 			{
-                printf("Error in SetupDiGetDeviceInterfaceDetail\n");
+                _tprintf(_T("Error in SetupDiGetDeviceInterfaceDetail\n"));
                 SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
                 free (deviceInterfaceDetailData);
                 return FALSE;
             }
 
 			// Chj: print out the so-called DevOpenPath for this enumerated devnode.
-            printf("(%d) %s\n", ++i,
+            _tprintf(_T("(%d) %s\n"), ++i,
                     deviceInterfaceDetailData->DevicePath);
         }
         else if (ERROR_NO_MORE_ITEMS != GetLastError()) 
@@ -204,14 +206,14 @@ main(
 
     if(!deviceInterfaceDetailData)
     {
-        printf("No device interfaces present\n");
+        _tprintf(_T("No device interfaces present\n"));
         return 0;
     }
 
     //
     // Open the last toaster device interface
     //
-    printf("\nOpening the last-enumerated interface:\n %s\n",
+    _tprintf(_T("\nOpening the last-enumerated interface:\n %s\n"),
                     deviceInterfaceDetailData->DevicePath);
 
     file = CreateFile ( deviceInterfaceDetailData->DevicePath,
@@ -223,7 +225,7 @@ main(
                         NULL);
 
     if (INVALID_HANDLE_VALUE == file) {
-        printf("Error in CreateFile: %x", GetLastError());
+        _tprintf(_T("Error in CreateFile: %x"), GetLastError());
         free (deviceInterfaceDetailData);
         return 4;
     }
@@ -238,18 +240,18 @@ main(
                 NULL, 0,
                 NULL, 0,
                 &bytes, NULL)) {
-            printf("Invalidate device request failed:0x%x\n", GetLastError());
+            _tprintf(_T("Invalidate device request failed:0x%x\n"), GetLastError());
             free (deviceInterfaceDetailData);
             CloseHandle(file);
             return 4;
         }
-        printf("\nRequest to hide the device completed successfully\n");
+        _tprintf(_T("\nRequest to hide the device completed successfully\n"));
     }
 
     //
     // Read/Write to the toaster device.
     //
-    printf("\nPress 'q' to exit, any other key to read...\n");
+    _tprintf(_T("\nPress 'q' to exit, any other key to read...\n"));
     fflush(stdin);
     ch = _getche();
 
@@ -258,10 +260,10 @@ main(
 
         if(!ReadFile(file, buffer, sizeof(buffer), &bytes, NULL))
         {
-            printf("Error in ReadFile: %x", GetLastError());
+            _tprintf(_T("Error in ReadFile: %x"), GetLastError());
             break;
         }
-        printf("Read Successful\n");
+        _tprintf(_T("Read Successful\n"));
         ch = _getche();
     }
 
@@ -278,9 +280,9 @@ PrintToasterDeviceInfo(findmethod_st fm)
     DWORD           dwIndex=0;
     SP_DEVINFO_DATA deid;
     BOOL            fSuccess=FALSE;
-    CHAR           szCompInstanceId[MAX_PATH];
-    CHAR           szCompDescription[MAX_PATH];
-    CHAR           szFriendlyName[MAX_PATH];
+	TCHAR           szCompInstanceId[MAX_PATH] = {};
+	TCHAR           szCompDescription[MAX_PATH] = {};
+	TCHAR           szFriendlyName[MAX_PATH] = {};
     DWORD           dwRegType;
     BOOL            fFound=FALSE;
 
@@ -309,16 +311,16 @@ PrintToasterDeviceInfo(findmethod_st fm)
             // get the device instance ID
             fSuccess = SetupDiGetDeviceInstanceId(hdi, &deid,
                                                   szCompInstanceId,
-                                                  MAX_PATH, NULL);
+                                                  ARRAYSIZE(szCompInstanceId), 
+												  NULL);
             if (fSuccess)
             {
                 // get the description for this instance
-                fSuccess =
-                    SetupDiGetDeviceRegistryProperty(hdi, &deid,
+                fSuccess = SetupDiGetDeviceRegistryProperty(hdi, &deid,
                                                      SPDRP_DEVICEDESC,
                                                      &dwRegType,
                                                      (BYTE*) szCompDescription,
-                                                     MAX_PATH,
+                                                     sizeof(szCompDescription),
                                                      NULL);
                 if (fSuccess)
                 {
@@ -327,12 +329,12 @@ PrintToasterDeviceInfo(findmethod_st fm)
                                                      SPDRP_FRIENDLYNAME,
                                                      &dwRegType,
                                                      (BYTE*) szFriendlyName,
-                                                     MAX_PATH,
+                                                     sizeof(szFriendlyName),
                                                      NULL);
                     fFound = TRUE;
-                    printf("Instance ID : %s\n", szCompInstanceId);
-                    printf("Description : %s\n", szCompDescription);
-                    printf("FriendlyName: %s\n\n", szFriendlyName);
+                    _tprintf(_T("Instance ID : %s\n"), szCompInstanceId);
+                    _tprintf(_T("Description : %s\n"), szCompDescription);
+                    _tprintf(_T("FriendlyName: %s\n\n"), szFriendlyName);
                 }
             }
         }
