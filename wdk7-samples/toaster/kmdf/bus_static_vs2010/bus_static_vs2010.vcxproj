@@ -61,31 +61,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\bus\static\busenum.rc" />
     <ClCompile Include="..\bus\static\busenum.c" />
     <ClCompile Include="..\bus\static\buspdo.c" />
     <ClCompile Include="..\bus\static\wmi.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\bus\static\busenum.h" />
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="..\inf-template\kmdf_toastbus.inx">
       <FileType>Document</FileType>
       <Command>echo.</Command>
       <Message>Detected newer: %(FullPath)</Message>
       <Outputs>$(TargetPath)</Outputs>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="..\bus\static\busenum.mof">
       <FileType>Document</FileType>
       <Command>echo.</Command>
       <Message>Detected newer: %(FullPath)</Message>
       <Outputs>$(TargetPath)</Outputs>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\bus\static\busenum.rc" />
   </ItemGroup>
   <!--
     Introduce VSPG Framework code here.
