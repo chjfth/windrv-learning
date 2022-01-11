@@ -18,20 +18,18 @@ This document discusses the different approaches that end users take when adding
 The installation of software to support an instance of a given device (known as "device installation" or "driver installation") is done in a device-centric fashion in Windows operating systems. A device INF that matches up with one of the device's hardware or compatible IDs is used to identify the required driver file(s), registry modifications, etc., that are needed to make the device fully operational. This INF, along with the files copied thereby and a catalog that contains the digital signatures of the INF and these other files, constitute what is known as a "driver package".
 
 <p>
-Because device installation is done for a specific instance of a device, the "natural" method of adding devices to a computer running a Plug and Play operating system is by plugging in the device first, letting Plug and Play find the device and automatically initiate an installation for that device. The device installation may then proceed using a driver package supplied with the OS, or a "3rd-party" driver package (supplied via CD-ROM, the Internet, or some other distribution mechanism). When the device installation is initiated by the addition of hardware, this is termed a "hardware-first" device 
-installation.
+Because device installation is done for a specific instance of a device, the "natural" method of adding devices to a computer running a Plug and Play operating system is by plugging in the device first, letting Plug and Play find the device and automatically initiate an installation for that device. The device installation may then proceed using a driver package supplied with the OS, or a "3rd-party" driver package (supplied via CD-ROM, the Internet, or some other distribution mechanism). When the device installation is initiated by the addition of hardware, this is termed a "<u>hardware-first</u>" device installation.
 
 <p>
-Users may, however, take an alternate approach to adding hardware to their computer. In this scenario, they first run a setup program (perhaps launched as an autorun application when the vendor-supplied CD-ROM is inserted). This setup program may perform installation activities, and then prompt the user to insert their hardware. Upon the hardware's insertion, the vendor-supplied driver package (which was "pre-installed" by the setup program) is then found by Plug and Play, and the installation proceeds as in the hardware-first scenario. When the device installation is initiated by running a setup program, this is termed a "software-first" device installation. This approach to adding new hardware is just as valid as the hardware-first scenario, and some vendors may even instruct their users (via documentation that ships with the hardware) that this is the preferred method. 
+Users may, however, take an alternate approach to adding hardware to their computer. In this scenario, they first run a setup program (perhaps launched as an autorun application when the vendor-supplied CD-ROM is inserted). This setup program may perform installation activities, and then prompt the user to insert their hardware. Upon the hardware's insertion, the vendor-supplied driver package (which was "pre-installed" by the setup program) is then found by Plug and Play, and the installation proceeds as in the hardware-first scenario. When the device installation is initiated by running a setup program, this is termed a "<u>software-first</u>" device installation. This approach to adding new hardware is just as valid as the hardware-first scenario, and some vendors may even instruct their users (via documentation that ships with the hardware) that this is the preferred method. 
 
 <p>
-Vendors must support the hardware-first scenario (by providing a driver package that may be supplied to the "Found New Hardware" wizard with no 
+<span style="color:#C00;">Vendors must support the hardware-first scenario</span> (by providing a driver package that may be supplied to the "Found New Hardware" wizard with no 
 "pre-configuration" performed by a setup program or other mechanism). Vendors may optionally support the software-first scenario as well, but the 
 actual installation of the device instance is done by Plug and Play upon the device's arrival, as described above.
 
 <p>
-Vendors may also wish to perform additional activities as part of the device installation. For example, the vendor may want to allow the user to optionally install one or more applications that ship with the device (e.g., a scanner that ships with an image processing application). Such software is termed "value-added software". Value-added software is distinct from the files that comprise the driver package because, unlike the core driver files, the device does not require value-added software to function properly. In the previous example of a scanner, for instance, perhaps the user already has an image processing application that they prefer. The user should be given the option of whether or not they want to install any value-added software. Additional activities (such as allowing the user to select value-added software offerings) may be accomplished by using a vendor-supplied 
-device-specific co-installer.
+Vendors may also wish to perform additional activities as part of the device installation. For example, the vendor may want to allow the user to optionally install one or more applications that ship with the device (e.g., a scanner that ships with an image processing application). Such software is termed "<u>value-added software</u>". Value-added software is distinct from the files that comprise the driver package because, unlike the core driver files, the device does not require value-added software to function properly. In the previous example of a scanner, for instance, perhaps the user already has an image processing application that they prefer. The user should be given the option of whether or not they want to install any value-added software. <span style="color:#06C;">Additional activities (such as allowing the user to select value-added software offerings) may be accomplished by using a vendor-supplied device-specific co-installer.</span>
 
 
 <H3>INTRODUCTION TO THE TOASTER INSTALLATION SAMPLE</H3></FONT><FONT FACE="Verdana" SIZE=2><P>
@@ -46,17 +44,21 @@ This directory contains the device INF (<B>toastpkg.inf</B>) that is used in dev
 Also contained in this directory is the <B>autorun.inf</B> file that would be placed in the root of the vendor's setup media (e.g., CD-ROM). This INF will launch the <B>toastva.exe</B> application (described below) when the media is inserted in an autorun-capable drive, or when the user double-clicks on the drive icon in Explorer. Additionally, this INF illustrates the [DeviceInstall] section that is a new feature introduced in Windows XP for
 autorun INF files:
 
-<BLOCKQUOTE>
+<BLOCKQUOTE><pre>
 <p>
 [DeviceInstall]
 <p>
 DriverPath=\
-</BLOCKQUOTE>
+</pre></BLOCKQUOTE>
 
 <p>
-The DriverPath entry in a [DeviceInstall] section indicates to the Found New Hardware and Update Driver wizards that Plug and Play should search for 
+The <code>DriverPath</code> entry in a [DeviceInstall] section indicates to the Found New Hardware and Update Driver wizards that Plug and Play should search for 
 device INFs in the specified directory only. This provides a performance improvement for media layouts that contain many subdirectories, since the default
-behavior is for Plug and Play to recursively search the entire CD. Additionally, specifying no DriverPath entry in this section indicates that the CD contains no drivers, thus Plug and Play can quickly determine that it can ignore this media. Absence of the [DeviceInstall] section will cause the media to be treated as it was in previous versions of Windows (e.g., as in Windows Me and Windows 2000, the entire media will be searched recursively for applicable INFs).
+behavior is for Plug and Play to recursively search the entire CD. 
+
+<p>Additionally, specifying no <code>DriverPath</code> entry in this section indicates that the CD contains no drivers, thus Plug and Play can quickly determine that it can ignore this media. 
+
+<p>Absence of the [DeviceInstall] section will cause the media to be treated as it was in previous versions of Windows (e.g., as in Windows Me and Windows 2000, the entire media will be searched recursively for applicable INFs).
 </BLOCKQUOTE>
 
 <I>toastapp</I> <BLOCKQUOTE>
@@ -101,7 +103,8 @@ value-added software offerings isn't a part of the driver package, and thus can 
 to accommodate such a scheme could have default behavior that would not display the value-added software selection page in the absence of this data file.
 </BLOCKQUOTE>
 
-<I>toastco</I> <BLOCKQUOTE>
+<I>toastco</I> 
+<BLOCKQUOTE>
 This directory contains the co-installer, <B>tostrco2.dll</B>, which is used during device installation of toaster devices enumerated by the toaster bus enumerator. This co-installer supplies a finish-install wizard page that allows the user to select the value-added software, if any, that they wish to install. It does not supply a finish-install wizard page if the user has previously responded to the wizard page (whether or not they opted to install value-added software) so that the user isn't prompted multiple times in the case where they plug in multiple toasters (or the same toaster is plugged into multiple ports, which will appear to Plug and Play as different instances of that device).
 
 <p>
@@ -110,8 +113,12 @@ This DLL also supplies the same value-added software selection page for use by t
 <p>
 Finally, this co-installer performs the same function as its version 1 counterpart (in the <I>coinstaller</I> directory under the main toaster directory). It provides a friendly name for the device that incorporates its serial number. However, this version retrieves the friendly name template from the INF, and since the template is stored in the [Strings] section, it may be localized for other languages.
 
+<div style="border: 1px solid grey; padding: 1em;">
+<p>chj: ??
 <p>
 The reason this co-installer’s filename includes version number is to illustrate the technique that must be used when updating the driver for a device that may already have a previous version of the co-installer installed. If the name is not changed, then the old co-installer will be loaded early-on during the processing of DIF codes, and the updated version won’t be able to “get in the loop” to perform its new actions when installing the device. Thus, co-installers should include a version number in their filename, so that the new version can be copied and can participate in the device installation.
+</div>
+
  </BLOCKQUOTE>
 
 <I>toastva</I> <BLOCKQUOTE>
