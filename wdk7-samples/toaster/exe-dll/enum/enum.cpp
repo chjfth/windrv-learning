@@ -6,7 +6,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
     PURPOSE.
 
 Module Name:
-    Enum.c (Chj rename it to enum.cpp)
+    Enum.c (Chj rename it to enum.cpp, and add Unicode build)
 
 Abstract:
         This application simulates the plugin, unplug or ejection
@@ -25,6 +25,7 @@ Revision History:
 #include <setupapi.h>
 #include <initguid.h>
 #include <stdio.h>
+#include <tchar.h>
 #include <string.h>
 #include <winioctl.h>
 #include "public.h"
@@ -41,21 +42,21 @@ OpenBusInterface (
     );
 
 
-#define USAGE  "Usage: \n\
+#define USAGE  _T("Usage: \n\
 Enum [-p SerialNo] Plugs in a device. SerialNo must be greater than zero.\n\
      [-u SerialNo or 0] Unplugs device(s) - specify 0 to unplug all \n\
                         the devices enumerated so far.\n\
      [-e SerialNo or 0] Ejects device(s) - specify 0 to eject all \n\
                         the devices enumerated so far.\n\
-     [-w SerialNo]      Wake up a toaster device.\n"
+     [-w SerialNo]      Wake up a toaster device.\n")
 
 BOOLEAN     bPlugIn, bUnplug, bEject, bWake;
 ULONG       SerialNo;
 
 INT __cdecl
-main(
+_tmain(
     __in ULONG argc,
-    __in_ecount(argc) PCHAR argv[]
+    __in_ecount(argc) TCHAR *argv[]
     )
 {
     HDEVINFO                    hardwareDeviceInfo;
@@ -71,25 +72,25 @@ main(
         goto usage;
     }
 
-    if(argv[1][0] == '-') {
-        if(tolower(argv[1][1]) == 'p') {
+    if(argv[1][0] == _T('-')) {
+        if(tolower(argv[1][1]) == _T('p')) {
             if(argv[2])
-                SerialNo = (USHORT)atol(argv[2]);
-        bPlugIn = TRUE;
+                SerialNo = (USHORT)_ttol(argv[2]);
+			bPlugIn = TRUE;
         }
-        else if(tolower(argv[1][1]) == 'u') {
+        else if(tolower(argv[1][1]) == _T('u')) {
             if(argv[2])
-                SerialNo = (ULONG)atol(argv[2]);
+                SerialNo = (ULONG)_ttol(argv[2]);
             bUnplug = TRUE;
         }
-        else if(tolower(argv[1][1]) == 'e') {
+        else if(tolower(argv[1][1]) == _T('e')) {
             if(argv[2])
-                SerialNo = (ULONG)atol(argv[2]);
+                SerialNo = (ULONG)_ttol(argv[2]);
             bEject = TRUE;
         }
-		else if(tolower(argv[1][1]) == 'w') {
+		else if(tolower(argv[1][1]) == _T('w')) {
 			if(argv[2])
-				SerialNo = (ULONG)atol(argv[2]);
+				SerialNo = (ULONG)_ttol(argv[2]);
 			bWake = TRUE;
 		}
         else {
@@ -110,12 +111,15 @@ main(
                        (LPGUID)&GUID_DEVINTERFACE_BUSENUM_TOASTER,
                        NULL, // Define no enumerator (global)
                        NULL, // Define no
-                       (DIGCF_PRESENT | // Only Devices present
-                       DIGCF_DEVICEINTERFACE)); // Function class devices.
+						(
+						DIGCF_PRESENT | // Only Devices present
+						DIGCF_DEVICEINTERFACE // First param is interface-guid
+						)
+					   ); 
 
     if(INVALID_HANDLE_VALUE == hardwareDeviceInfo)
     {
-        printf("SetupDiGetClassDevs failed: %x\n", GetLastError());
+        _tprintf(_T("SetupDiGetClassDevs failed: %x\n"), GetLastError());
         return 0;
     }
 
@@ -125,15 +129,15 @@ main(
                                  0, // No care about specific PDOs
                                  (LPGUID)&GUID_DEVINTERFACE_BUSENUM_TOASTER,
                                  0, //
-                                 &deviceInterfaceData)) {
-
+                                 &deviceInterfaceData))
+    {
         BOOLEAN bSuccess = OpenBusInterface(hardwareDeviceInfo, &deviceInterfaceData);
 		err = !bSuccess;
     } 
 	else if (ERROR_NO_MORE_ITEMS == GetLastError()) 
 	{
 		err = true;
-        printf( "Error:Interface GUID_DEVINTERFACE_BUSENUM_TOASTER is not registered\n");
+        _tprintf( _T("Error:Interface GUID_DEVINTERFACE_BUSENUM_TOASTER is not registered\n"));
     }
 
     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
@@ -141,7 +145,7 @@ main(
 	return err ? 4 : 0;
 
 usage:
-    printf(USAGE);
+    _tprintf(USAGE);
     exit(1);
 }
 
@@ -170,24 +174,24 @@ OpenBusInterface (
             HardwareDeviceInfo,
             DeviceInterfaceData,
             NULL, // probing so no output buffer yet
-            0, // probing so output buffer length of zero
+            0,    // probing so output buffer length set to zero
             &requiredLength,
-            NULL); // not interested in the specific dev-node
+            NULL); // not interested in the specific devnode
 
     if(ERROR_INSUFFICIENT_BUFFER != GetLastError()) {
-        printf("Error in SetupDiGetDeviceInterfaceDetail%d\n", GetLastError());
+        _tprintf(_T("Error in SetupDiGetDeviceInterfaceDetail. WinErr=%d\n"), GetLastError());
         return FALSE;
     }
 
     predictedLength = requiredLength;
 
-    deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc (predictedLength);
+    deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(predictedLength);
 
     if(deviceInterfaceDetailData) {
         deviceInterfaceDetailData->cbSize =
                       sizeof (SP_DEVICE_INTERFACE_DETAIL_DATA);
     } else {
-        printf("Couldn't allocate %d bytes for device interface details.\n", predictedLength);
+        _tprintf(_T("Couldn't allocate %d bytes for device interface details.\n"), predictedLength);
         return FALSE;
     }
 
@@ -200,12 +204,12 @@ OpenBusInterface (
                &requiredLength,
                NULL)) 
 	{
-        printf("Error in SetupDiGetDeviceInterfaceDetail\n");
+        _tprintf(_T("Error in SetupDiGetDeviceInterfaceDetail\n"));
         free (deviceInterfaceDetailData);
         return FALSE;
     }
 
-    printf("Opening %s\n", deviceInterfaceDetailData->DevicePath);
+    _tprintf(_T("Opening %s\n"), deviceInterfaceDetailData->DevicePath);
 
     file = CreateFile ( deviceInterfaceDetailData->DevicePath,
                         GENERIC_READ, // Only read access
@@ -216,12 +220,12 @@ OpenBusInterface (
                         NULL); // No template file
 
     if (INVALID_HANDLE_VALUE == file) {
-        printf("CreateFile failed: 0x%x", GetLastError());
+        _tprintf(_T("CreateFile failed: 0x%x"), GetLastError());
         free (deviceInterfaceDetailData);
         return FALSE;
     }
 
-    printf("Bus interface opened!!!\n");
+    _tprintf(_T("Good. Bus interface opened.\n"));
 
     //
     // From this point on, we need to jump to the end of the routine for
@@ -236,7 +240,7 @@ OpenBusInterface (
 
     if(bPlugIn) 
 	{
-        printf("SerialNo. of the device to be enumerated: %d\n", SerialNo);
+        _tprintf(_T("SerialNo. of the device to be enumerated: %d\n"), SerialNo);
 
         bytes = sizeof (BUSENUM_PLUGIN_HARDWARE) + BUS_HARDWARE_IDS_LENGTH;
 		hardware = (PBUSENUM_PLUGIN_HARDWARE)malloc(bytes);
@@ -245,7 +249,7 @@ OpenBusInterface (
             hardware->Size = sizeof (BUSENUM_PLUGIN_HARDWARE);
             hardware->SerialNo = SerialNo;
         } else {
-            printf("Couldn't allocate %d bytes for busenum plugin hardware structure.\n", bytes);
+            _tprintf(_T("Couldn't allocate %d bytes for busenum plugin hardware structure.\n"), bytes);
             goto End;
         }
 
@@ -266,7 +270,7 @@ OpenBusInterface (
               free (hardware);
               
 			  DWORD winerr = GetLastError();
-			  printf("PlugIn failed. DeviceIoControl() returns winerr=%d\n", winerr);
+			  _tprintf(_T("PlugIn failed. DeviceIoControl() returns winerr=%d\n"), winerr);
               goto End;
         }
 
@@ -280,7 +284,7 @@ OpenBusInterface (
 
     if(bUnplug) 
 	{
-        printf("Unplugging device(s)....\n");
+        _tprintf(_T("Unplugging device(s)....\n"));
 
         unplug.Size = bytes = sizeof (unplug);
         unplug.SerialNo = SerialNo;
@@ -290,7 +294,7 @@ OpenBusInterface (
                               NULL, 0,
                               &bytes, NULL)) 
 		{
-            printf("Unplug failed: 0x%x\n", GetLastError());
+            _tprintf(_T("Unplug failed: 0x%x\n"), GetLastError());
 			bSuccess = FALSE;
             goto End;
         }
@@ -303,7 +307,7 @@ OpenBusInterface (
 
     if(bEject)
     {
-        printf("Ejecting Device(s)\n");
+        _tprintf(_T("Ejecting Device(s)\n"));
 
         eject.Size = bytes = sizeof (eject);
         eject.SerialNo = SerialNo;
@@ -313,14 +317,14 @@ OpenBusInterface (
                               NULL, 0,
                               &bytes, NULL)) 
 		{
-            printf("Eject failed: 0x%x\n", GetLastError());
+            _tprintf(_T("Eject failed: 0x%x\n"), GetLastError());
             goto End;
         }
     }
 
 	if(bWake) // Chj added
 	{
-		printf("Waking device with SerialNo=%d ...\n", SerialNo);
+		_tprintf(_T("Waking device with SerialNo=%d ...\n"), SerialNo);
 
 		BUSENUM_PLUGIN_HARDWARE wakewho;
 		wakewho.Size = bytes = sizeof (wakewho);
@@ -331,18 +335,18 @@ OpenBusInterface (
 			NULL, 0,
 			&bytes, NULL)) 
 		{
-			printf("Wake child failed: 0x%x\n", GetLastError());
+			_tprintf(_T("Wake child failed: 0x%x\n"), GetLastError());
 			bSuccess = FALSE;
 			goto End;
 		}
 		else
 		{
-			printf("IOCTL_BUSENUM_WAKE_UP_DEVICE success. 'ToasterEvtDeviceD0Entry <- WdfPowerDeviceD1/D2' should appear from kernel DbgPrint message.\n");
+			_tprintf(_T("IOCTL_BUSENUM_WAKE_UP_DEVICE success. 'ToasterEvtDeviceD0Entry <- WdfPowerDeviceD1/D2' should appear from kernel DbgPrint message.\n"));
 		}
 
 	}
 
-    printf("Success!!!\n");
+    _tprintf(_T("Success!!!\n"));
     bSuccess = TRUE;
 
 End:
