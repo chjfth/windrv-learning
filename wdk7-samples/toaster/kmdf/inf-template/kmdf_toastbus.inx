@@ -80,19 +80,20 @@ LoadOrderGroup = Extended Base
 
 
 ;
-;--- ToasterBusDevice WDF Coinstaller installation ------
+;---------------- WDF Coinstaller installation  ------------------
+;---- (rename section-name prefix and KmdfService accordinly) ----
 ;
 [DestinationDirs]
-ToasterBusDevice_CoInstaller_CopyFiles = 11
+WdfCostall_CopyFiles = 11
 
 [ToasterBusDevice.NT.CoInstallers]
-AddReg=ToasterBusDevice_CoInstaller_AddReg
-CopyFiles=ToasterBusDevice_CoInstaller_CopyFiles
+AddReg=WdfCostall_AddReg
+CopyFiles=WdfCostall_CopyFiles
 
-[ToasterBusDevice_CoInstaller_AddReg]
+[WdfCostall_AddReg]
 HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
 
-[ToasterBusDevice_CoInstaller_CopyFiles]
+[WdfCostall_CopyFiles]
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
 
 [SourceDisksFiles]

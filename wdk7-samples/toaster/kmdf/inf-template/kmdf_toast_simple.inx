@@ -90,13 +90,38 @@ ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
 ServiceBinary  = %12%\toaster.sys
 LoadOrderGroup = Extended Base
 
-; PENDING: WdfCoInstaller
-
 [SourceDisksNames]
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
 toaster.sys  = 1,,
+
+;
+;---------------- WDF Coinstaller installation  ------------------
+;---- (rename section-name prefix and KmdfService accordinly) ----
+;
+[DestinationDirs]
+WdfCostall_CopyFiles = 11
+
+[Toaster_Device.NT.CoInstallers]
+AddReg=WdfCostall_AddReg
+CopyFiles=WdfCostall_CopyFiles
+
+[WdfCostall_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[WdfCostall_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[Toaster_Device.NT.Wdf]
+KmdfService = A_ToasterSvc, Bus_wdfsect
+
+[Bus_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
