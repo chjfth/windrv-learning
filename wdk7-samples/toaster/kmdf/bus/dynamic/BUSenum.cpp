@@ -494,7 +494,10 @@ Routine Description:
         // The description is already present in the list, the serial number is
         // not unique, return error.
         //
-        status = STATUS_INVALID_PARAMETER;
+
+		//status = STATUS_INVALID_PARAMETER;
+		status = STATUS_OBJECT_NAME_COLLISION;
+		// -- Chj: STATUS_OBJECT_NAME_COLLISION is more appropriate, which maps to ERROR_ALREADY_EXISTS.
     }
 
     return status;

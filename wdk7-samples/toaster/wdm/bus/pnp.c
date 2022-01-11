@@ -1099,8 +1099,11 @@ Routine Description:
     // accept the device.
     //
 
-    if (!unique)
-        return STATUS_INVALID_PARAMETER;
+    if (!unique) {
+        //return STATUS_INVALID_PARAMETER;
+		return STATUS_OBJECT_NAME_COLLISION;
+		// -- Chj: STATUS_OBJECT_NAME_COLLISION is more appropriate, which maps to ERROR_ALREADY_EXISTS.
+	}
 
     //
     // Create the PDO

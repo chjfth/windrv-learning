@@ -71,12 +71,13 @@ Return Value:
 
     status = WdfPdoInitAssignDeviceID(pDeviceInit, &deviceId);
 		// deviceId sample:
-		// {B85B7C50-6A01-11d2-B841-00C04FAD5171}\MsToaster
+		// {11111111-6A01-11d2-B841-00C04FAD5171}\MsToaster
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
     }
 
-    // Note same string is used to initialize hardware id too
+    // Note: Here, use the same string for DeviceId and HardwareId.
+	// Chj: It's a convenient practice, but the two are conceptually different.
     status = WdfPdoInitAddHardwareID(pDeviceInit, &deviceId);
     if (!NT_SUCCESS(status)) {
         goto Cleanup;
@@ -99,7 +100,7 @@ Return Value:
 
 	// Chj note: When toaster device is added with `enum -p 7`, 
 	// Win7 devmgmt.msc shows Device Instance Path something like 
-	//	{B85B7C50-6A01-11D2-B841-00C04FAD5171}\MSTOASTER\1&79F5D87&0&07
+	//	{11111111-6A01-11D2-B841-00C04FAD5171}\MSTOASTER\1&79F5D87&0&07
 	// -- note that the trailing '07' matches `buffer` value.
 
     // Provide a description about the device. This text is usually read from

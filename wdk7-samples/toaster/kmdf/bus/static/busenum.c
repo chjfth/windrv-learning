@@ -380,7 +380,11 @@ Routine Description:
         //
         if (SerialNo == pdoData->SerialNo) {
             unique = FALSE;
-            status = STATUS_INVALID_PARAMETER;
+
+            // status = STATUS_INVALID_PARAMETER;
+			status = STATUS_OBJECT_NAME_COLLISION;
+			// -- Chj: STATUS_OBJECT_NAME_COLLISION is more appropriate, which maps to ERROR_ALREADY_EXISTS.
+
             break;
         }
     }
