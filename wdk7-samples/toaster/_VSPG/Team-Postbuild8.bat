@@ -64,16 +64,18 @@ if "%TargetName%" == %vspg_InfTemplateName% (
 
 call :Echos calling ToasterStampInf.bat ...
 set subcmd=call "%SolutionDir%\_VSPG\ToasterStampInf.bat"^
-  "%ProjectDir%\..\inf-template\%vspg_InfTemplateName%.inx"^
+  "%SolutionDir%\inf-template\%vspg_InfTemplateName%.inx"^
   "%TargetDir%\%inf_filename%"^
   %vspg_InfOldWord%^
   %vspg_InfNewWord%^
   "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
 REM call :Echos %subcmd%
 %subcmd%
+
 if errorlevel 1 exit /b 4
 
 :DONE_STAMPINF
+
 
 REM ======== Copy WDF CoInstaller DLL to output folder ========
 

@@ -66,7 +66,7 @@
     <ClCompile Include="new_delete.cpp" />
     <ClCompile Include="toaster-simple.cpp" />
     <ClInclude Include="..\func\shared\toaster.h" />
-    <CustomBuild Include="..\inf-template\kmdf_toast_simple.inx">
+    <CustomBuild Include="..\..\inf-template\kmdf_toast_simple.inx">
       <FileType>Document</FileType>
       <Command>echo.</Command>
       <Message>Detected newer: %(FullPath)</Message>

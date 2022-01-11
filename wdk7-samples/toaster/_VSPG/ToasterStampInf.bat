@@ -30,6 +30,8 @@ if "%StampinfExParams%"=="" (
 call :Echos For inf-file, will replace "%Oldword%" to "%Newword%" .
 
 call %bootsdir%\ReplaceInFile.bat %Oldword% %Newword% %InputInx% %OutputInf% 
+if errorlevel 1 exit /b 4
+
 
 if not exist "%OutputInf%" (
 	echo ERROR: %0 Cannot generate intermediate inx-file: %tempFilepath%
