@@ -1,4 +1,4 @@
-LIBRARY  TOSTRCLS
+LIBRARY  ToasterClassInstlr
 
 EXPORTS   
    ToasterClassInstaller
