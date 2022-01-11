@@ -8,12 +8,6 @@ echo Loading Env-vars from "%~f0"
 call :SetEnvVar vspg_mofcompInput=..\bus\static\busenum.mof
 call :SetEnvVar vspg_mofcompOutput=busenum.bmf
 
-
-: Set input params to ToasterStampInf.bat which is called in post-build action.
-call :SetEnvVar vspg_InfTemplateName=kmdf_toastbus
-call :SetEnvVar vspg_InfOldWord=@kmdf_toastbus@
-call :SetEnvVar vspg_InfNewWord=kmdf_toastbus_static
-
 exit /b
 
 

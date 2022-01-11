@@ -33,51 +33,23 @@ REM ==== Prelude Above ====
 
 REM ================ StampInf ================
 
-if "%PlatformName%"=="x64" (
-	set stampinf_ARCH=AMD64
-	set wdfdll_subdirname=x64
+set fp_stampinfs=%ProjectDir%\StampInfs.bat
+
+if exist "%fp_stampinfs%" (
+	call "%fp_stampinfs%"
+	if errorlevel 1 exit /b 4
 ) else (
-	set stampinf_ARCH=x86
-	set wdfdll_subdirname=x86
+	call :Echos Not doing stampinf, bcz not found "%fp_stampinfs%"
 )
 
-if "" == "%vspg_InfTemplateName%" (
-  call :Echos Env-var vspg_InfTemplateName is empty, no stampinf action taken.
-  goto :DONE_STAMPINF
-)
-
-if "" == "%vspg_InfOldWord%" (
-  call :Echos [ERROR] Env-var vspg_InfOldWord is empty.
-  exit /b 4
-)
-if "" == "%vspg_InfNewWord%" (
-  call :Echos [ERROR] Env-var vspg_InfNewWord is empty.
-  exit /b 4
-)
-
-REM Now determine inf filename. 
-if "%TargetName%" == %vspg_InfTemplateName% (
-  set inf_filename=%TargetName%.inf
-) else (
-  set inf_filename=%TargetName%--%vspg_InfTemplateName%.inf
-)
-
-call :Echos calling ToasterStampInf.bat ...
-set subcmd=call "%SolutionDir%\_VSPG\ToasterStampInf.bat"^
-  "%SolutionDir%\inf-template\%vspg_InfTemplateName%.inx"^
-  "%TargetDir%\%inf_filename%"^
-  %vspg_InfOldWord%^
-  %vspg_InfNewWord%^
-  "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
-REM call :Echos %subcmd%
-%subcmd%
-
-if errorlevel 1 exit /b 4
-
-:DONE_STAMPINF
 
 
 REM ======== Copy WDF CoInstaller DLL to output folder ========
+
+if "%wdfdll_subdirname%" == "" (
+	call :Echos [ERROR] Env-var wdfdll_subdirname not defined by outer bat yet.
+	exit /b 4
+)
 
 set targetWdfDll=%TargetDir%\WdfCoInstaller01009.dll
 
