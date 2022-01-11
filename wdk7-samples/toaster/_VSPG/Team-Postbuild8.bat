@@ -35,8 +35,10 @@ REM ================ StampInf ================
 
 if "%PlatformName%"=="x64" (
 	set stampinf_ARCH=AMD64
+	set wdfdll_subdirname=x64
 ) else (
 	set stampinf_ARCH=x86
+	set wdfdll_subdirname=x86
 )
 
 if "" == "%vspg_InfTemplateName%" (
@@ -61,9 +63,9 @@ if "%TargetName%" == %vspg_InfTemplateName% (
 )
 
 call :Echos calling ToasterStampInf.bat ...
-set subcmd=call %SolutionDir%\_VSPG\ToasterStampInf.bat^
-  %ProjectDir%\..\inf-template\%vspg_InfTemplateName%.inx^
-  %TargetDir%\%inf_filename%^
+set subcmd=call "%SolutionDir%\_VSPG\ToasterStampInf.bat"^
+  "%ProjectDir%\..\inf-template\%vspg_InfTemplateName%.inx"^
+  "%TargetDir%\%inf_filename%"^
   %vspg_InfOldWord%^
   %vspg_InfNewWord%^
   "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
@@ -72,6 +74,21 @@ REM call :Echos %subcmd%
 if errorlevel 1 exit /b 4
 
 :DONE_STAMPINF
+
+REM ======== Copy WDF CoInstaller DLL to output folder ========
+
+set targetWdfDll=%TargetDir%\WdfCoInstaller01009.dll
+
+call :EchoVar dir_stock_WdfCoInstaller01009
+if not defined dir_stock_WdfCoInstaller01009 goto :DONE_COPY_WDFDLL
+
+set copycmd=copy "%dir_stock_WdfCoInstaller01009%\%wdfdll_subdirname%\WdfCoInstaller01009.dll" "%TargetDir%"
+if not exist "%targetWdfDll%" (
+	call :EchoExec %copycmd%
+	%copycmd%
+)
+
+:DONE_COPY_WDFDLL
 
 
 goto :END

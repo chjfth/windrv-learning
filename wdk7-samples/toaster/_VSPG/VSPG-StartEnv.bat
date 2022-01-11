@@ -4,14 +4,13 @@ REM you can set it here.
 
 echo Loading Env-vars from "%~f0"
 
-: Set input params to ToasterStampInf.bat which is called in post-build action.
-call :SetEnvVar vspg_InfTemplateName=kmdf_toast_simple
-call :SetEnvVar vspg_InfOldWord=toaster.
-call :SetEnvVar vspg_InfNewWord=%TargetName%.
+call :SetEnvVar dir_stock_WdfCoInstaller01009=%SolutionDir%\..\..\_share\WdfCoInstaller\1.9
 
 exit /b
 
-
+REM =============================
+REM ====== Functions Below ======
+REM =============================
 
 :SetEnvVar
   set setcmd=set %*
