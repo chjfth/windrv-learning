@@ -2,6 +2,7 @@ setlocal EnableDelayedExpansion
 set batfilenam=%~n0%~x0
 set batdir=%~dp0
 set batdir=%batdir:~0,-1%
+set _vspgINDENTS=%_vspgINDENTS%.
 call :Echos START from %batdir%
 
 : This is a function.
@@ -53,13 +54,9 @@ REM =============================
 
 REM %~n0%~x0 is batfilenam
 :Echos
-  echo [%~n0%~x0] %*
+  echo %_vspgINDENTS%[%~n0%~x0] %*
 exit /b
 
 :EchoExec
-  echo [%~n0%~x0] EXEC: %*
-exit /b
-
-:Echos
-  echo [%~n0%~x0] %*
+  echo %_vspgINDENTS%[%~n0%~x0] EXEC: %*
 exit /b

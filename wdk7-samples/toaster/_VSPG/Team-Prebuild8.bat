@@ -6,6 +6,8 @@ REM <this>.bat $(SolutionDir) $(ProjectDir) $(BuildConf) $(PlatformName) $(Targe
 set batfilenam=%~n0%~x0
 set batdir=%~dp0
 set batdir=%batdir:~0,-1%
+set _vspgINDENTS=%_vspgINDENTS%.
+call :Echos START from %batdir%
 
 REM _SolutionDir_ has double-quotes around, SolutionDir has no quotes.
 set _SolutionDir_=%1&set SolutionDir=%~1
@@ -26,8 +28,6 @@ REM call :EchoVar IntrmDir
 REM call :EchoVar TargetDir
 REM call :EchoVar PlatformName
 REM call :EchoVar TargetName
-
-call :Echos START from %batdir%
 
 REM ==== Prelude Above ====
 
@@ -68,17 +68,17 @@ REM ====== Functions Below ======
 REM =============================
 
 :Echos
-  echo [%batfilenam%] %*
+  echo %_vspgINDENTS%[%batfilenam%] %*
 exit /b
 
 :EchoExec
-  echo [%batfilenam%] EXEC: %*
+  echo %_vspgINDENTS%[%batfilenam%] EXEC: %*
 exit /b
 
 :EchoVar
   REM Env-var double expansion trick from: https://stackoverflow.com/a/1200871/151453
   set _Varname=%1
-  for /F %%i in ('echo %_Varname%') do echo [%batfilenam%] %_Varname% = !%%i!
+  for /F %%i in ('echo %_Varname%') do echo %_vspgINDENTS%[%batfilenam%] %_Varname% = !%%i!
 exit /b
 
 :SetErrorlevel
