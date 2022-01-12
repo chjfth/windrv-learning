@@ -6,6 +6,8 @@ REM <this>.bat $(SolutionDir) $(ProjectDir) $(BuildConf) $(PlatformName) $(Targe
 set batfilenam=%~n0%~x0
 set batdir=%~dp0
 set batdir=%batdir:~0,-1%
+set _vspgINDENTS=%_vspgINDENTS%.
+call :Echos START from %batdir%
 
 REM _SolutionDir_ has double-quotes around, SolutionDir has no quotes.
 set _SolutionDir_=%1&set SolutionDir=%~1
@@ -33,14 +35,24 @@ REM ==== Prelude Above ====
 
 REM// Check that WDKPATH env-var in defined, otherwise, assert error.
 
-if "%WDKPATH%"=="" (
-  echo.
-  call :Echos [ERROR] Env-var WDKPATH is empty. It must be set to the directory containing WDK 7.1
-  echo.
-  exit /b 4
+if "%PlatformToolsetVersion%" == "" (
+	call :Echos [INTERNAL-ERROR] Env-var PlatformToolsetVersion not defined by VSPG framework yet.
+	exit /b 4
 )
 
-call :Echos WDKPATH=%WDKPATH%
+if %PlatformToolsetVersion% LEQ 100 (
+  REM If using VS2010 or lower version, we need WDK 7.1 .
+  if "%WDKPATH%"=="" (
+    echo.
+    call :Echos [ERROR] Env-var WDKPATH is empty. For VS2010, it must be set to the directory containing WDK 7.1
+    echo.
+    exit /b 4
+  ) else (
+    call :Echos Defined in env-var WDKPATH=%WDKPATH%
+  )
+)
+
+
 
 goto :END
 
@@ -49,17 +61,17 @@ REM ====== Functions Below ======
 REM =============================
 
 :Echos
-  echo [%batfilenam%] %*
+  echo %_vspgINDENTS%[%batfilenam%] %*
 exit /b
 
 :EchoExec
-  echo [%batfilenam%] EXEC: %*
+  echo %_vspgINDENTS%[%batfilenam%] EXEC: %*
 exit /b
 
 :EchoVar
   REM Env-var double expansion trick from: https://stackoverflow.com/a/1200871/151453
   set _Varname=%1
-  for /F %%i in ('echo %_Varname%') do echo [%batfilenam%] %_Varname% = !%%i!
+  for /F %%i in ('echo %_Varname%') do echo %_vspgINDENTS%[%batfilenam%] %_Varname% = !%%i!
 exit /b
 
 :SetErrorlevel
@@ -68,3 +80,4 @@ exit /b
 exit /b %1
 
 :END
+exit /b %ERRORLEVEL%

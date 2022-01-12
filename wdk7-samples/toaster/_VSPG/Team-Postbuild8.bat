@@ -91,3 +91,4 @@ exit /b
 exit /b %1
 
 :END
+exit /b %ERRORLEVEL%
