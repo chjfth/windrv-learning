@@ -1,6 +1,7 @@
 ;/*++
 ;
 ;Copyright (c) 1990-1999 Microsoft Corporation All rights Reserved
+;
 ;2022.01 Jimm Chen: 
 ;	Update it to be reusable across kmdf_toastbus_static and kmdf_toastbus_dynamic projects.
 ;
