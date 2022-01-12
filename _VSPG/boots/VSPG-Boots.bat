@@ -64,14 +64,13 @@ REM =============================
 
 :Echos
   echo [%batfilenam%] %*
-exit /b
+exit /b 0
 
 :EchoExec
   echo [%batfilenam%] EXEC: %*
-exit /b
+exit /b 0
 
 :END
-
 REM [2022-01-11] Chj: We must write %ERRORLEVEL% after /b, otherwise,
 REM MSBuild(it calls us with 'cmd /c tmpXXX.bat') will always receive exit-code 0.
 exit /b %ERRORLEVEL%
