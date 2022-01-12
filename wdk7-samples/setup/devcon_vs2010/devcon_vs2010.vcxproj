@@ -46,6 +46,7 @@
     <ProjectGuid>{74414F3B-8115-4572-ACA0-1E1D4ED64423}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>devcon_vs2010</RootNamespace>
+    <TargetName>devcon</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -113,7 +114,6 @@
   <!-- import VSPG start -->
   <PropertyGroup>
     <VSPG_BootsDir_NoTBS>..\..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
-    <TargetName>devcon</TargetName>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(VSPG_BootsDir_NoTBS)\_VSPG.props" />
