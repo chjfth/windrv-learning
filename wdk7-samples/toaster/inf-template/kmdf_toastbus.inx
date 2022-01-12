@@ -21,7 +21,7 @@ Signature="$WINDOWS NT$"
 Class=System
 ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
 Provider=%MSFT%
-DriverVer=06/17/1999, 1.0.0.1
+DriverVer=01/13/2022, 1.0.5.0
 CatalogFile=KmdfSamples.cat
 
 [DestinationDirs]
