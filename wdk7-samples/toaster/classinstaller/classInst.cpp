@@ -116,14 +116,13 @@ DllMain(HINSTANCE DllInstance, DWORD Reason, PVOID Reserved)
 
 void check_DIF_PROPERTYCHANGE(HDEVINFO dis, PSP_DEVINFO_DATA did) // chj test
 {
-	SP_PROPCHANGE_PARAMS cinfo = {0}; // (setup-)class-info
-	SP_DEVINSTALL_PARAMS dinfo = {0}; // device info
+	SP_PROPCHANGE_PARAMS cinfo = {{sizeof(SP_CLASSINSTALL_HEADER)}}; // (setup-)class-info
+	SP_DEVINSTALL_PARAMS dinfo = {sizeof(SP_DEVINSTALL_PARAMS)}; // device info
 	BOOL b = 0;
 //	const int dbgsize = 100; // Not valid for C (ok for c++)
 #define dbgsize 100
 	TCHAR buf[dbgsize];
 
-	cinfo.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
 	b = SetupDiGetClassInstallParams(dis, did,
 		(PSP_CLASSINSTALL_HEADER)&cinfo, //[out]
 		sizeof(SP_PROPCHANGE_PARAMS), NULL);
@@ -135,7 +134,6 @@ void check_DIF_PROPERTYCHANGE(HDEVINFO dis, PSP_DEVINFO_DATA did) // chj test
 		cinfo.StateChange, cinfo.Scope, cinfo.HwProfile);
 	OutputDebugString(buf);
 
-	dinfo.cbSize = sizeof(SP_DEVINSTALL_PARAMS);
 	b = SetupDiGetDeviceInstallParams(dis, did, &dinfo);
 	assert(b);
 

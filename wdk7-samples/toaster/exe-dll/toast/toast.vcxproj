@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectGuid>{49A8EF40-4A16-DFAE-10E2-7B7F0D64FADA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>toast</RootNamespace>
   </PropertyGroup>
@@ -48,16 +49,13 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClCompile Include="toast.cpp" />
   </ItemGroup>
-
   <!-- import shared project configs -->
   <ImportGroup Label="PropertySheets">
     <Import Project="..\..\appshare.props" />
   </ImportGroup>
-  
   <!-- import VSPG start -->
   <PropertyGroup>
     <VSPG_BootsDir_NoTBS>..\..\..\..\_VSPG\boots</VSPG_BootsDir_NoTBS>
