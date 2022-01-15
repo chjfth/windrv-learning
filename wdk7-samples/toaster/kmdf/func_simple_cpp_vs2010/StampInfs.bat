@@ -48,13 +48,13 @@ for %%i in (%inx_list%) do (
     %newword%^
     "-a %stampinf_ARCH% -k 1.9 -v *"
   
-  call :EchoExec %execmd%
+  call :EchoExec !execmd!
   !execmd!
   
   if errorlevel 1 exit /b 4
 )
 
-
+exit /b 0
 
 REM =============================
 REM ====== Functions Below ======
