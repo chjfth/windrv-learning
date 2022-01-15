@@ -18,7 +18,7 @@
 
 // Chj: Effect of this coinstaller:
 // After using `enum -p 1` to add a toaster device, new child device's initial
-// friendly name will be ToasterDevice01 in Device Manager.
+// friendly name will be "AAA's ToasterDevice #01" in Device Manager.
 // After using `enum -p 4` to add a toaster device, new child device's initial 
 // friendly name will be ToasterDevice04 in Device Manager.
 // Without this CoInstaller, all child device initial friendly name will be 
@@ -195,7 +195,7 @@ ToasterCoInstaller (
                 //
                 if (SUCCEEDED(StringCbPrintf(FriendlyName,
                                sizeof(FriendlyName),
-                               TEXT("ToasterDevice%02u"),
+							   TEXT("AAA's ToasterDevice #%02u"),
                                UINumber))) {
 
                     StringCbLength(FriendlyName,

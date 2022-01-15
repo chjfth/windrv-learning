@@ -40,7 +40,7 @@ REM https://ss64.com/nt/for_f.html
     exit /b 4
   )
   
-  (for /f delims^=^ eol^= %%i in (%oldfile%) do (
+  (for /f usebackq^ delims^=^ eol^= %%i in ("%oldfile%") do (
     set "line=%%i"
     setlocal enabledelayedexpansion
     set "line=!line:%search%=%replace%!"

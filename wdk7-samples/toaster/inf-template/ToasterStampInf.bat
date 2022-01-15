@@ -12,7 +12,7 @@ call :Echos START from %batdir%
 : Param2: Output inf filepath
 : Param3: Old word to find (must not contain space char)
 : Param4: Replace with this new word (must not contain space char)
-: Param5: Stampinf extra params, like "-a AMD64 -k 1.9 -v 1.0.0.1"
+: Param5: Stampinf extra params, like "-a AMD64 -k 1.9 -v *"
 : 
 : Issue: Whether filepath/filename is space tolerant, not verified.
 
@@ -29,7 +29,8 @@ if "%StampinfExParams%"=="" (
 
 call :Echos For inf-file, will replace "%Oldword%" to "%Newword%" .
 
-call %bootsdir%\ReplaceInFile.bat %Oldword% %Newword% %InputInx% %OutputInf% 
+REM call :EchoExec "%bootsdir%\ReplaceInFile.bat" "%Oldword%" "%Newword%" "%InputInx%" "%OutputInf%"
+call "%bootsdir%\ReplaceInFile.bat" "%Oldword%" "%Newword%" "%InputInx%" "%OutputInf%"
 if errorlevel 1 exit /b 4
 
 
@@ -40,7 +41,7 @@ if not exist "%OutputInf%" (
 
 REM Now %OutputInf% is still an inx, we have to call stampinf on it.
 
-set execmd=stampinf -f %OutputInf% %StampinfExParams%
+set execmd=stampinf -f "%OutputInf%" %StampinfExParams%
 call :EchoExec %execmd%
 
 %execmd%

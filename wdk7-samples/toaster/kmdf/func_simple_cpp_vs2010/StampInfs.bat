@@ -13,7 +13,7 @@ REM ==========================
 REM
 REM >>>>>>>> set parameters here
 REM
-set inx_list=kmdf_toast_simple kmdf_toast_clsinstlr
+set inx_list=kmdf_toast_simple kmdf_toast_clsinstlr kmdf_toast_coinstaller
 set oldword=@toaster@
 set newword=%TargetName%
 REM
@@ -46,7 +46,7 @@ for %%i in (%inx_list%) do (
     "%TargetDir%\!inf_filename!"^
     %oldword%^
     %newword%^
-    "-a %stampinf_ARCH% -k 1.9 -v 1.0.0.1"
+    "-a %stampinf_ARCH% -k 1.9 -v *"
   
   call :EchoExec %execmd%
   !execmd!

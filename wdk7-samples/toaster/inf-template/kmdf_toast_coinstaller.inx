@@ -4,38 +4,30 @@
 ;
 ;Module Name:
 ;
-;    kmdf_toast_clsinstlr.inf (original name: toaster.inf)
+;    kmdf_toast_coinstaller.inf (original name: toastco.inf)
 ;
 ;Abstract:
-;	INF file for installing toaster device drivers. 
-;	It is an enhanced version over kmdf_toast_simple.inf .
-;	It bundles a class installer named ToasterClassInstlr.dll.
-
-;	To test this INF, make sure the toaster class is not previously installed 
-;	on the system. If it is installed, you must remove the existing Toaster class key 
-;	(HKLM\System\CurrentControlSet\Control\Class\{22222222-6A01-11d2-B841-00C04FAD5171}) 
-;	from the registry. Otherwise the setup ignores the entire 
-;	[ClassInstall32] section if it finds the toaster class GUID in the registry.
+;	This is one step further over kmdf_toast_clsinstlr.inf .
+;	Cavets in kmdf_toast_clsinstlr.inf applies here as well.
 ;
-;	Yes, you have to manually remove that key. The 'devcon dp_delete' and
-;	'devcon remove' commands does not do that for you. 
-;	Hint: Remove that "class key" requires SYSTEM privilege, Administrator is not enough.
-;	Using SysInternals 'psexec -isd regedit.exe' will give you SYSTEM privilege.
+;	This is the INF file for installing toaster device drivers with CoInstaller.
 ;
-; [2021.12.28] Jimm Chen:
-;	I have done some tuning to the original WDK7 sample inf to ease teaching and learning 
-;	of this driver project.
+;	Also demonstrates how to secure WMI GUIDs exposed by drivers (Eliyas - 3/3/2004) 
+;	NOTE: The WMIInterface support is available on Server 2003 and beyond. 
+;	For Win2K and XP, if you want to secure WMI interface, you have to include
+;	a redistributable coinstaller (WMIINST.DLL) from the DDK that knows how to 
+;	parse the section in the INF and write the security descriptor
+;	in HKLM\System\CurrentControlSet\Control\Wmi\Security. For more information
+;	on the coinstaller, read DDKROOT\tools\coinstallers\wmiinst.htm.
 ;
-;	If you see this file in an .inf extension name, then it is not what you should edit
-;	manually, instead, it is generated from a template .inx file. The benefit of generating
-;	from .inx is: We can maintain a single .inx and generate consistent x86 and AMD64
-;	.inf files.
+; [2022.01.15] Jimm Chen:
+;	The same hint as in kmdf_toast_clsinstlr.inf :
 ;
 ;	If the resulting file name is <sysname>--<inftemplate>.inf, then we know it is 
 ;	generated from <inftemplate>.inx and referring to <sysname>.sys. For example:
 ;
 ;		kmdf_toast_simple_cpp--kmdf_toast_simple.inf
-;		kmdf_toast_simple_cpp--kmdf_toast_clsinstlr.inf
+;		kmdf_toast_simple_cpp--kmdf_toast_coinstaller.inf
 ;
 ;--*/
 
@@ -51,6 +43,7 @@ CatalogFile=@toaster@.cat
 [DestinationDirs]
 DefaultDestDir = 12
 ToasterClassInstallerCopyFiles = 11
+CoInstaller_CopyFiles = 11 ; System Dir( system32 on NT )
 
 
 ; ================= Class section =====================
@@ -91,6 +84,17 @@ CopyFiles=Toaster_Device.NT.Copy
 [Toaster_Device.NT.Copy]
 @toaster@.sys
 
+;
+; Following two sections show how to secure WMI GUIDs exposed by the driver.
+;
+[Toaster_Device.NT.WMI]
+WMIInterface = {BBA21300-6DD3-11d2-B844-00C04FAD5171},,WMIGuidSecurity_AllReadAdminFul
+
+[WMIGuidSecurity_AllReadAdminFul]
+security="O:BAG:BAD:(A;;0x12001f;;;BA)(A;;0x12001f;;;LS)(A;;0x12001f;;;NS)(A;;0x12001f;;;SY)(A;;0x100005;;;BU)"
+
+
+
 [Toaster_Device.NT.HW]
 AddReg=Toaster_Device.NT.HW.AddReg
 
@@ -111,47 +115,59 @@ ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
 ServiceBinary  = %12%\@toaster@.sys
 LoadOrderGroup = Extended Base
 
+
+;-------------- Coinstaller installation
+;-------------- Note that we have two DLLs to add
+
+[Toaster_Device.NT.CoInstallers]
+AddReg=CoInstaller_AddReg
+CopyFiles=CoInstaller_CopyFiles
+
+[CoInstaller_CopyFiles]
+ToasterCoInstaller1.dll
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[CoInstaller_AddReg]
+; [Flags memo] 0x00010000: REG_MULTI_SZ value; 0x8: append to existing REG_MULTI_SZ instead of overwrite
+HKR,,CoInstallers32,0x00010000,\
+	"ToasterCoInstaller1.dll,ToasterCoInstaller",\
+	"WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+
+;
+; A custom section we'll refer to in CoInstaller code.
+;
+[MySection]
+MySpecialFlag
+
+
+;
 [SourceDisksNames]
 1 = %DiskId1%,,,""
 
 [SourceDisksFiles]
 @toaster@.sys  = 1,,
 ToasterClassInstlr.dll = 1,,
-
-
-;
-;---------------- WDF Coinstaller installation  ------------------
-;---- (rename section-name prefix and KmdfService accordinly) ----
-;
-[DestinationDirs]
-WdfCostall_CopyFiles = 11
-
-[Toaster_Device.NT.CoInstallers]
-AddReg=WdfCostall_AddReg
-CopyFiles=WdfCostall_CopyFiles
-
-[WdfCostall_AddReg]
-HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
-
-[WdfCostall_CopyFiles]
-WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
-
-[SourceDisksFiles]
+ToasterCoInstaller1.dll = 1,,
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
+;
+; WdfCoInstaller requires this:
+;
 [Toaster_Device.NT.Wdf]
-KmdfService = A_ToasterSvc, Bus_wdfsect
+KmdfService = A_ToasterSvc, Wdf_install_section
 
-[Bus_wdfsect]
+[Wdf_install_section]
 KmdfLibraryVersion = $KMDFVERSION$
 
+;
 ;
 ; ======== Variable Definitions ========
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-MSFT = "AAA Toaster Corp (ClassInstaller inf)"
+MSFT = "AAA Toaster Corp (CoInstaller inf)"
 StdMfg = "(Standard system devices)"
 MyClassName = "AToasterClass"
 DiskId1 = "AAA Toaster Device Installation Disk #1"
-ToasterDevice.DeviceDesc = "AAA Toaster (with ClassInstaller)"
+ToasterDevice.DeviceDesc = "AAA Toaster (with ClassInstaller and CoInstaller)"
 @toaster@.SVCDESC = "AAA Toaster Device Driver Service"
