@@ -36,6 +36,11 @@
 ;
 ;		kmdf_toast_simple_cpp--kmdf_toast_simple.inf
 ;		kmdf_toast_simple_cpp--kmdf_toast_clsinstlr.inf
+;		kmdf_toast_simple_cpp--kmdf_toast_coinstaller.inf
+;
+;Installation Notes:
+;	Using Devcon: 
+;		devcon install  @toaster@--kmdf_toast_clsinstlr.inf  {11111111-6a01-11d2-b841-00c04fad5171}\MsToaster
 ;
 ;--*/
 
@@ -46,7 +51,7 @@ ClassGuid={22222222-6A01-11d2-B841-00C04FAD5171}
 ; -- was  {B85B7C50-6A01-11d2-B841-00C04FAD5171}
 Provider=%MSFT%
 DriverVer=01/13/2022, 1.0.2.0
-CatalogFile=@toaster@.cat
+CatalogFile=@toaster@--kmdf_toast_clsinstlr.cat
 
 [DestinationDirs]
 DefaultDestDir = 12
