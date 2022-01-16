@@ -50,6 +50,8 @@ DefaultDestDir = 12
 ToasterClassInstallerCopyFiles = 11
 CoInstaller_CopyFiles = 11 ; System Dir( system32 on NT )
 
+; PnpLockDown=1 for Vista+
+PnpLockDown=1
 
 ; ================= Class section =====================
 

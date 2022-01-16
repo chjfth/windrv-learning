@@ -47,6 +47,9 @@ Provider=%MSFT%
 DriverVer=01/13/2022, 1.0.1.0
 CatalogFile=@toaster@--kmdf_toast_simple.cat
 
+; PnpLockDown=1 for Vista+
+PnpLockDown=1
+
 [DestinationDirs]
 DefaultDestDir = 12
 
