@@ -2310,8 +2310,9 @@ Return Value:
 
     FormatToStream(stdout,MSG_DPENUM_LIST_HEADER);
 
+	int count=0;
     do {
-        FormatToStream(stdout,MSG_DPENUM_LIST_ENTRY,wfd.cFileName);
+        FormatToStream(stdout, MSG_DPENUM_LIST_ENTRY, ++count, wfd.cFileName);
         DumpDriverPackageData(wfd.cFileName);
     } while (FindNextFile(hFind, &wfd));
 

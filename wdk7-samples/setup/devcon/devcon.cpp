@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20220109.1")
+#define DEVCON_VERSION_STRING TEXT("20220117.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for

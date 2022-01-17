@@ -767,7 +767,7 @@ The following third-party driver packages are installed on this computer:
 .
 MessageId=61122 SymbolicName=MSG_DPENUM_LIST_ENTRY
 Language=English
-%1
+(#%1!u!) %2
 .
 MessageId=61123 SymbolicName=MSG_DPENUM_DUMP_PROVIDER
 Language=English
