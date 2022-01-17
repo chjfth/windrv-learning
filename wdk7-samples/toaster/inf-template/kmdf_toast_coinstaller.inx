@@ -7,10 +7,10 @@
 ;    kmdf_toast_coinstaller.inf (original name: toastco.inf)
 ;
 ;Abstract:
+;	This is the INF file for installing toaster device drivers with CoInstaller.
+;
 ;	This is one step further over kmdf_toast_clsinstlr.inf .
 ;	Cavets in kmdf_toast_clsinstlr.inf applies here as well.
-;
-;	This is the INF file for installing toaster device drivers with CoInstaller.
 ;
 ;	Also demonstrates how to secure WMI GUIDs exposed by drivers (Eliyas - 3/3/2004) 
 ;	NOTE: The WMIInterface support is available on Server 2003 and beyond. 
