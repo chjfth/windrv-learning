@@ -47,7 +47,7 @@ for %%d in (%COPY_TO_DIRS%) do (
 		mkdir "!d_final!"
 	)
 	
-	call :CopyFilePatterns "%ExeDllDir%" "!d_final!" *.sys *.inf *.exe *.dll
+	call :CopyFilePatterns "%ExeDllDir%" "!d_final!" *.sys *.inf *.cat *.exe *.dll
 	if errorlevel 1 ( 
 		call :Echos [VSPG-Error] Error occurred when copying file to "!d_final!" .
 		exit /b 4 

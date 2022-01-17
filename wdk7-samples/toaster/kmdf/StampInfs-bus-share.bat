@@ -54,6 +54,22 @@ for %%i in (%inx_list%) do (
   if errorlevel 1 exit /b 4
 )
 
+REM ======== Calling inf2cat ======== 
+
+if "%inf2cat_osnick%" == "" (
+	call :Echo [ERROR] Env-var inf2cat_osnick not defined by from outer bat yet.
+	exit /b 4
+)
+
+call :Echos Generating .cat files for inf-package, by calling inf2cat.exe ...
+set execmd=inf2cat /driver:%TargetDir% /os:%inf2cat_osnick%
+call :EchoExec %execmd%
+%execmd%
+
+REM Special note: inf2cat returns NEGATIVE values on error, unusual behavior.
+if not "%ERRORLEVEL%" == "0" exit /b 4
+
+
 exit /b 0
 
 

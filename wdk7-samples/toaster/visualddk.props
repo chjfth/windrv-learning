@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetExt>.sys</TargetExt>
-    <ExecutablePath>$(WDKPATH)\bin\x86;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(WDKPATH)\bin\x86;$(WDKPATH)\bin\selfsign;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt;</IncludePath>
     <ReferencePath Condition="'$(Platform)'=='Win32'">$(WDKPATH)\lib\wdf\kmdf\i386\1.9;$(WDKPATH)\lib\wxp\i386;</ReferencePath>
     <ReferencePath Condition="'$(Platform)'=='x64'">$(WDKPATH)\lib\wdf\kmdf\amd64\1.9;$(WDKPATH)\lib\win7\amd64;</ReferencePath>
