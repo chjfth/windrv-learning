@@ -62,7 +62,7 @@ if "%inf2cat_osnick%" == "" (
 )
 
 call :Echos Generating .cat files for inf-package, by calling inf2cat.exe ...
-set execmd=inf2cat /driver:%TargetDir% /os:%inf2cat_osnick%
+set execmd=inf2cat /driver:"%TargetDir%" /os:%inf2cat_osnick%
 call :EchoExec %execmd%
 %execmd%
 

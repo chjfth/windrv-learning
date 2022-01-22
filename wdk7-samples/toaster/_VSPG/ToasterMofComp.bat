@@ -10,6 +10,7 @@ call :Echos START from %batdir%
 :
 : Param1: Input MOF filepath
 : Param2: Output BMF filepath
+: Remaning params: all passed to mofcomp.exe
 
 set InputPath=%~1
 set OutputPath=%~2
@@ -24,7 +25,7 @@ if "%OutputPath%"=="" (
 	exit /b 4
 )
 
-set execmd=mofcomp %MofcompMoreParams% -B:%OutputPath% %InputPath% 
+set execmd=mofcomp %MofcompMoreParams% -B:"%OutputPath%" "%InputPath% "
 call :EchoExec %execmd%
 %execmd%
 if errorlevel 1 (

@@ -51,10 +51,11 @@ if "" == "%vspg_mofcompInput%" (
 )
 
 call :Echos calling ToasterMofComp.bat ...
-set subcmd=call %SolutionDir%\_VSPG\ToasterMofComp.bat^
-  %vspg_mofcompInput%^
-  %vspg_mofcompOutput%^
-  "%vspg_mofcompMoreParams%"
+set subcmd=call "%SolutionDir%\_VSPG\ToasterMofComp.bat"^
+  "%vspg_mofcompInput%"^
+  "%vspg_mofcompOutput%"^
+  %vspg_mofcompMoreParams%
+call :EchoExec %subcmd%
 %subcmd%
 if errorlevel 1 exit /b 4
 
