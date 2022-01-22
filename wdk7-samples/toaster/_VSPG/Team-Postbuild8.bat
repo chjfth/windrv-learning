@@ -60,6 +60,7 @@ set copycmd=copy "%dir_stock_WdfCoInstaller01009%\%wdfdll_subdirname%\WdfCoInsta
 if not exist "%targetWdfDll%" (
 	call :EchoExec %copycmd%
 	%copycmd%
+	if errorlevel 1 exit /b 4
 )
 
 :DONE_COPY_WDFDLL
