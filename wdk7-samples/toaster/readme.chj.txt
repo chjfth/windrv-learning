@@ -1,8 +1,8 @@
-[2022-01-132]
+[2022-01-23]
 
 Visual C++ 2010 projects:
 
-.\Toaster_vs2010.sln contains :
+.\ToasterDrv_vs2010.sln contains :
 	WDM drivers
 	KMDF drivers
 	KMDF filter drivers
@@ -11,6 +11,6 @@ Visual C++ 2010 projects:
 .\ToasterApp_vs2010.sln contains:
 	enum.exe 
 	toast.exe
-	tostrco1.dll , the CoInstaller
-	tostrcls.dll , the ClassInstaller
+	ToasterClassInstlr.dll ,  the ClassInstaller
+	ToasterCoInstaller1.dll , the CoInstaller
 
