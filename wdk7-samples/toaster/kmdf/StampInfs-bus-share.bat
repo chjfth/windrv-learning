@@ -62,9 +62,8 @@ if "%inf2cat_osnick%" == "" (
 )
 
 call :Echos Generating .cat files for inf-package, by calling inf2cat.exe ...
-set execmd=inf2cat /driver:"%TargetDir%" /os:%inf2cat_osnick%
-call :EchoExec %execmd%
-%execmd%
+set execmd=inf2cat.exe /driver:"%TargetDir%" /os:%inf2cat_osnick%
+call "%bootsdir%\EchoExecAbspath.bat" %execmd%
 
 REM Special note: inf2cat returns NEGATIVE values on error, unusual behavior.
 if not "%ERRORLEVEL%" == "0" exit /b 4
