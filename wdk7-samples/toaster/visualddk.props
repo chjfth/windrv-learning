@@ -46,8 +46,3 @@
     </BuildMacro>
   </ItemGroup>
 </Project>
-<!-- 
-	<ClCompile>      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-
-      <PreprocessorDefinitions>WIN32;_CONSOLE;_X86_;_DDK_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
--->
