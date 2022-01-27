@@ -9,8 +9,8 @@
     <TargetExt>.sys</TargetExt>
     <ExecutablePath>$(WDKPATH)\bin\x86;$(WDKPATH)\bin\selfsign;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(WDKPATH)\inc\wdf\kmdf\1.9;$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt;</IncludePath>
-    <ReferencePath Condition="'$(Platform)'=='Win32'">$(WDKPATH)\lib\wdf\kmdf\i386\1.9;$(WDKPATH)\lib\wxp\i386;</ReferencePath>
-    <ReferencePath Condition="'$(Platform)'=='x64'">$(WDKPATH)\lib\wdf\kmdf\amd64\1.9;$(WDKPATH)\lib\win7\amd64;</ReferencePath>
+    <LibraryPath Condition="'$(Platform)'=='Win32'">$(WDKPATH)\lib\wdf\kmdf\i386\1.9;$(WDKPATH)\lib\wxp\i386;</LibraryPath>
+    <LibraryPath Condition="'$(Platform)'=='x64'">$(WDKPATH)\lib\wdf\kmdf\amd64\1.9;$(WDKPATH)\lib\win7\amd64;</LibraryPath>
     <!-- All projects in the Solution use this clear and uniform *pattern* as OutDir. -->
     <OutDir>$(SolutionDir)_slnOutput\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -31,13 +31,14 @@
     <Link>
       <SubSystem>Native</SubSystem>
       <Driver>Driver</Driver>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <DataExecutionPrevention></DataExecutionPrevention>
       <RandomizedBaseAddress></RandomizedBaseAddress>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>WdfDriverEntry.lib;WdfLdr.lib;wmilib.lib;ntoskrnl.lib;hal.lib;ntstrsafe.lib;ksecdd.lib;BufferOverflowK.lib;wdmsec.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">int64.lib;exsup.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(ReferencePath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(LibraryPath)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
