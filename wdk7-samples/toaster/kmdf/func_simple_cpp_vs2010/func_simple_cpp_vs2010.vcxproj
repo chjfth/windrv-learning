@@ -39,9 +39,6 @@
   </PropertyGroup>
   <!-- ======== Compile and Link options (Many driver-common ones are in visualddk.props) ======== -->
   <ItemDefinitionGroup>
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\func\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
     <Link>
       <EntryPointSymbol>FxDriverEntry</EntryPointSymbol>
     </Link>
