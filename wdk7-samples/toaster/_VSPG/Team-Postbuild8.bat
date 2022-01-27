@@ -31,18 +31,6 @@ REM call :EchoVar TargetName
 
 REM ==== Prelude Above ====
 
-REM ================ StampInf ================
-
-set fp_stampinfs=%ProjectDir%\StampInfs.bat
-
-if exist "%fp_stampinfs%" (
-	call "%fp_stampinfs%"
-	if errorlevel 1 exit /b 4
-) else (
-	call :Echos Not doing stampinf, bcz not found "%fp_stampinfs%"
-)
-
-
 
 REM ======== Copy WDF CoInstaller DLL to output folder ========
 
@@ -64,6 +52,20 @@ if not exist "%targetWdfDll%" (
 )
 
 :DONE_COPY_WDFDLL
+
+
+REM ================ StampInf ================
+
+set fp_stampinfs=%ProjectDir%\StampInfs.bat
+
+if exist "%fp_stampinfs%" (
+	call "%fp_stampinfs%"
+	if errorlevel 1 exit /b 4
+) else (
+	call :Echos Not doing stampinf, bcz not found "%fp_stampinfs%"
+)
+
+
 
 
 goto :END
