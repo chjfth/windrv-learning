@@ -286,6 +286,7 @@ Return Value:
         Entry.InstanceId = TRUE;
         Entry.String = CharNext(Entry.String);
     }
+	
     if(Entry.String[0] == QUOTE_PREFIX_CHAR) { // single-quote '
         //
         // prefix to treat rest of string literally
@@ -827,8 +828,8 @@ Return Value:
 
     if(doFilter || all) {
         //
-        // add all id's to list (??)
-        // If there's a setup-class(numClass!=0), filter on specified class
+        // Add all id-s(devnodes) to list.
+        // If there's a setup-class(numClass!=0), confine the list to this specified class.
         //
         devs = SetupDiGetClassDevsEx(numClass ? &cls : NULL,
                                      NULL,
@@ -996,7 +997,7 @@ Return Value:
     DWORD flags = 0;
 
 	// Chj: Enable wprintf of Unicode characters, in premise that user has set in intl.cpl
-	// CRT=locale = System-locale = Windows UI language.
+	// CRT-locale = System-locale = Windows UI language.
 	setlocale(LC_ALL, ""); 
 
     //
