@@ -620,6 +620,7 @@ Return Value:
         if(!SetupDiBuildDriverInfoList(Devs, DevInfo, SPDIT_CLASSDRIVER)) {
             return FALSE;
         }
+    	
         if (!SetupDiEnumDriverInfo(Devs, DevInfo, SPDIT_CLASSDRIVER,
                                    0, driverInfoData)) {
             return FALSE;
@@ -677,12 +678,14 @@ Return Value:
 			&driverInfoData, 
 			&driverInfoDetail, sizeof(SP_DRVINFO_DETAIL_DATA),
 			&reqsize) &&
-       GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+			GetLastError() != ERROR_INSUFFICIENT_BUFFER) 
+    {
         //
         // no information about driver or section
         //
         goto final;
     }
+	
     if(!driverInfoDetail.InfFileName[0] || !driverInfoDetail.SectionName[0]) {
         goto final;
     }
