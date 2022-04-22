@@ -533,11 +533,11 @@ Driver version is: %1!u!.%2!u!.%3!u!.%4!u!
 .
 MessageId=60928 SymbolicName=MSG_DUMP_DRIVERNODE_RANK
 Language=English
-Driver node rank is: %1!u!
+Driver node rank is: 0x%1!08X!
 .
 MessageId=60929 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS
 Language=English
-Driver node flags are: %1!08X!
+Driver node flags are: 0x%1!08X!
 .
 MessageId=60930 SymbolicName=MSG_DUMP_DRIVERNODE_FLAGS_OLD_INET_DRIVER
 Language=English
