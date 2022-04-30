@@ -811,14 +811,45 @@ Return Value:
 
 #endif
 
-    if(!SetupDiSetClassInstallParams(Devs,DevInfo,&pcp.ClassInstallHeader,sizeof(pcp)) ||
-       !SetupDiCallClassInstaller(DIF_PROPERTYCHANGE,Devs,DevInfo)
-	   ) {
+	BOOL succ = FALSE;;
+	DWORD winerr1 = 0, winerr2 = 0;
+
+	succ = SetupDiSetClassInstallParams(Devs,DevInfo,&pcp.ClassInstallHeader,sizeof(pcp));
+	if(succ)
+	{
+		succ = SetupDiCallClassInstaller(DIF_PROPERTYCHANGE,Devs,DevInfo);
+		if(!succ)
+			winerr2 = GetLastError();
+	}
+	else
+	{
+		winerr1 = GetLastError();
+	}
+
+	
+    if(!succ) 
+	{
         //
         // failed to invoke DIF_PROPERTYCHANGE
         //
+		TCHAR errtext[400] = {};
+    	if(winerr1)
+		{
+    		_tprintf(_T("\n"));
+    		_tprintf(_T("SetupDiSetClassInstallParams(DIF_PROPERTYCHANGE) fails with WinErr=%d: %s\n"), 
+				winerr1, get_win32errtext(winerr1, errtext, ARRAYSIZE(errtext)));
+		}
+    	if(winerr2)
+    	{
+    		_tprintf(_T("\n"));
+    		_tprintf(_T("SetupDiCallClassInstaller(DIF_PROPERTYCHANGE) fails with WinErr=%d: %s\n"), 
+				winerr2, get_win32errtext(winerr2, errtext, ARRAYSIZE(errtext)));
+    	}
+        
         DumpDeviceWithInfo(Devs,DevInfo,pControlContext->strFail);
-    } else {
+    }
+	else 
+	{
         //
         // see if device needs reboot
         //

@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20220416.1")
+#define DEVCON_VERSION_STRING TEXT("20220430.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for
@@ -1099,4 +1099,17 @@ Return Value:
     }
     Usage(baseName);
     return EXIT_USAGE;
+}
+
+const TCHAR * 
+get_win32errtext(DWORD winerr, TCHAR buf[], int bufchars)
+{
+    DWORD retchars = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, winerr, 
+        0, // LANGID
+        buf, bufchars,
+        NULL); // A trailing \r\n has been filled.
+    if(retchars>0)
+        return buf;
+	else
+		return _T("");
 }
