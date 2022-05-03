@@ -156,7 +156,12 @@
   <!-- Source code list -->
 
   <ItemGroup>
-    <Inf Include="KMDFDriver1.inf" />
+    <Inf Include="KMDFDriver1.inf">
+      <ExcludedFromBuild Condition=" $(Configuration.EndsWith('UniversalEx'))">true</ExcludedFromBuild>
+    </Inf>
+    <Inf Include="KMDFDriver1-UEX.inf">
+      <ExcludedFromBuild Condition="!$(Configuration.EndsWith('UniversalEx'))">true</ExcludedFromBuild>
+    </Inf>
   </ItemGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
