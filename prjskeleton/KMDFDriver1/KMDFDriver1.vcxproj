@@ -2,34 +2,21 @@
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
   
-    <!-- Win10 Universal -->
-  
-    <ProjectConfiguration Include="Debug-Win10Universal|Win32">
-      <Configuration>Debug-Win10Universal</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
+    <!-- Release -->
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug-Win10Universal|x64">
-      <Configuration>Debug-Win10Universal</Configuration>
-      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug-Win10Universal|ARM64">
-      <Configuration>Debug-Win10Universal</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|ARM64">
       <Configuration>Release</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
-
-    <!-- Win10 Desktop -->
+  
+    <!-- Win10 Desktop Debug -->
   
     <ProjectConfiguration Include="Debug-Win10Desktop|Win32">
       <Configuration>Debug-Win10Desktop</Configuration>
@@ -44,7 +31,37 @@
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
 
-    <!-- Win7 Desktop -->
+    <!-- Win10 Universal Debug -->
+  
+    <ProjectConfiguration Include="Debug-Win10Universal|Win32">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Universal|x64">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Universal|ARM64">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+
+    <!-- Win10 UniversalEx(Narrow-sense Windows Driver) Debug -->
+  
+    <ProjectConfiguration Include="Debug-Win10UniversalEx|Win32">
+      <Configuration>Debug-Win10UniversalEx</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10UniversalEx|x64">
+      <Configuration>Debug-Win10UniversalEx</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10UniversalEx|ARM64">
+      <Configuration>Debug-Win10UniversalEx</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+
+    <!-- Win7 Desktop Debug -->
   
     <ProjectConfiguration Include="Debug-Win7Desktop|Win32">
       <Configuration>Debug-Win7Desktop</Configuration>
@@ -80,9 +97,10 @@
     <ConfigurationType>Driver</ConfigurationType>
     <DriverType>KMDF</DriverType>
     
-    <!-- Universal or Desktop -->
-    <DriverTargetPlatform Condition=" $(Configuration.Contains('Universal'))">Universal</DriverTargetPlatform>
-    <DriverTargetPlatform Condition=" $(Configuration.Contains('Desktop'))">Desktop</DriverTargetPlatform>
+    <!-- Desktop or Universal -->
+    <DriverTargetPlatform Condition=" $(Configuration.EndsWith('Desktop'))">Desktop</DriverTargetPlatform>
+    <DriverTargetPlatform Condition=" $(Configuration.EndsWith('Universal'))">Universal</DriverTargetPlatform>
+    <DriverTargetPlatform Condition=" $(Configuration.EndsWith('UniversalEx'))">Windows Driver</DriverTargetPlatform>
   
   </PropertyGroup>
   
@@ -116,8 +134,9 @@
      <IntDir>$(ProjectDir)obj-vc$(PlatformToolsetVersion)\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin-vc$(PlatformToolsetVersion)\$(Platform)\$(Configuration)\</OutDir>
     <!-- Resulting .sys dir will be sth like:
-      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-Universal
       D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-Desktop
+      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-Universal
+      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-UniversalEx
       D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows7-Desktop
      -->
   </PropertyGroup>
