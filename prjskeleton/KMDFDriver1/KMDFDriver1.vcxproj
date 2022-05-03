@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+  
+    <!-- Win10 Universal -->
+  
+    <ProjectConfiguration Include="Debug-Win10Universal|Win32">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Universal|x64">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Universal|ARM64">
+      <Configuration>Debug-Win10Universal</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+
+    <!-- Win10 Desktop -->
+  
+    <ProjectConfiguration Include="Debug-Win10Desktop|Win32">
+      <Configuration>Debug-Win10Desktop</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Desktop|x64">
+      <Configuration>Debug-Win10Desktop</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win10Desktop|ARM64">
+      <Configuration>Debug-Win10Desktop</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+
+    <!-- Win7 Desktop -->
+  
+    <ProjectConfiguration Include="Debug-Win7Desktop|Win32">
+      <Configuration>Debug-Win7Desktop</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Win7Desktop|x64">
+      <Configuration>Debug-Win7Desktop</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+  </ItemGroup>
+  
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{20220503-0000-0000-0000-160714000001}</ProjectGuid>
+    <TemplateGuid>{1bc93793-694f-48fe-9372-81e2b05556fd}</TemplateGuid>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <Configuration>Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">Win32</Platform>
+    <RootNamespace>KMDFDriver1</RootNamespace>
+  </PropertyGroup>
+  
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  
+  <PropertyGroup Label="Configuration">
+    
+    <!-- Win10 or Win7 -->
+    <TargetVersion Condition=" $(Configuration.Contains('Win10'))">Windows10</TargetVersion>
+    <TargetVersion Condition="!$(Configuration.Contains('Win10'))">Windows7</TargetVersion>
+    
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <ConfigurationType>Driver</ConfigurationType>
+    <DriverType>KMDF</DriverType>
+    
+    <!-- Universal or Desktop -->
+    <DriverTargetPlatform Condition=" $(Configuration.Contains('Universal'))">Universal</DriverTargetPlatform>
+    <DriverTargetPlatform Condition=" $(Configuration.Contains('Desktop'))">Desktop</DriverTargetPlatform>
+  
+  </PropertyGroup>
+  
+  <!-- Debug -->
+  <PropertyGroup Condition=" $(Configuration.StartsWith('Debug'))" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <!-- Release -->
+  <PropertyGroup Condition="!$(Configuration.StartsWith('Debug'))" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  
+  <PropertyGroup>
+    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
+  </PropertyGroup>
+  
+  <!-- Better .obj/.exe/.pdb output folder structure, after Microsoft.Cpp.props -->
+  <PropertyGroup>
+    <LinkIncremental>false</LinkIncremental>
+     <IntDir>$(ProjectDir)obj-vc$(PlatformToolsetVersion)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)bin-vc$(PlatformToolsetVersion)\$(Platform)\$(Configuration)\</OutDir>
+    <!-- Resulting .sys dir will be sth like:
+      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-Universal
+      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows10-Desktop
+      D:\u8vs\KMDFDriver1\bin-vc142\x64\Debug-Windows7-Desktop
+     -->
+  </PropertyGroup>
+
+  <!-- Compile/Link/signtool etc options -->
+
+  <ItemDefinitionGroup>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA256</FileDigestAlgorithm>
+    </DriverSign>
+
+    <BuildLog>
+      <Path>$(IntDir)__$(MSBuildProjectName).build.log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+
+  <!-- Source code list -->
+
+  <ItemGroup>
+    <Inf Include="KMDFDriver1.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToPackage Include="$(TargetPath)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Driver.c" />
+  </ItemGroup>
+  
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
