@@ -1587,7 +1587,7 @@ Return Value:
         goto final;
     }
 
-    FormatToStream(stdout,Machine ? MSG_RESCAN : MSG_RESCAN_LOCAL);
+    FormatToStream(stdout, Machine?MSG_RESCAN:MSG_RESCAN_LOCAL, Machine);
 
     if(CM_Reenumerate_DevNode_Ex(devRoot, 0, machineHandle) != CR_SUCCESS) {
         goto final;
