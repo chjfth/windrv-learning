@@ -1,3 +1,0 @@
-mklink /j D:\gitw\windrv-learning\_VSPG\boots-dev D:\gitw\dailytools\cmd-batch\vsproj-VSPG\_VSPG\boots
-
-set vspg_COPY_DEV_TO_USER=1
