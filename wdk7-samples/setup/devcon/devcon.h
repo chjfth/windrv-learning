@@ -29,6 +29,7 @@ Abstract:
 
 #include "msg.h"
 #include "rc_ids.h"
+#include "errmsg.h"
 
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a)                (sizeof(a)/sizeof(a[0]))
@@ -129,4 +130,3 @@ typedef BOOL (WINAPI *SetupVerifyInfFileProto)(__in LPCTSTR InfName,
 #define EXIT_FAIL    (2)
 #define EXIT_USAGE   (3)
 
-const TCHAR * get_win32errtext(DWORD winerr, TCHAR buf[], int bufchars);

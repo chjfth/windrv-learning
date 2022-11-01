@@ -30,10 +30,12 @@
     <ClCompile Include="..\devcon\cmds.cpp" />
     <ClCompile Include="..\devcon\devcon.cpp" />
     <ClCompile Include="..\devcon\dump.cpp" />
+    <ClCompile Include="..\devcon\errmsg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\devcon\devcon.h" />
     <ClInclude Include="..\devcon\msg.h" />
+    <ClInclude Include="..\devcon\errmsg.h" />
     <ClInclude Include="..\devcon\rc_ids.h" />
   </ItemGroup>
   <ItemGroup>

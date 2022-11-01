@@ -140,6 +140,7 @@ Return Value:
     if(!SetupDiBuildClassInfoListEx(0,guids,reqGuids,&numGuids,Machine,NULL)) {
         do {
             if(GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+				Print_SetupApiError(_T("SetupDiBuildClassInfoListEx"));
                 goto final;
             }
             delete [] guids;
@@ -226,6 +227,7 @@ Return Value:
         //
         while(!SetupDiClassGuidsFromNameEx(argv[argIndex],guids,reqGuids,&numGuids,Machine,NULL)) {
             if(GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+				Print_SetupApiError(_T("SetupDiClassGuidsFromNameEx"));
                 goto final;
             }
             delete [] guids;
@@ -250,12 +252,17 @@ Return Value:
             devs = SetupDiGetClassDevsEx(&guids[index],NULL,NULL,DIGCF_PRESENT,NULL,Machine,NULL);
             if(devs != INVALID_HANDLE_VALUE) {
                 //
-                // (merely) count number of devices, we need  to print the count first
+                // (merely) count number of devices, we need to print the count first
                 //
                 while(SetupDiEnumDeviceInfo(devs,devCount,&devInfo)) {
                     devCount++;
                 }
             }
+			else {
+				// Chj reports error here.
+				Print_SetupApiError(_T("SetupDiGetClassDevsEx"));
+				goto final;
+			}
 
             if(!SetupDiClassNameFromGuidEx(&guids[index],className,MAX_CLASS_NAME_LEN,NULL,Machine,NULL)) {
                 if (FAILED(StringCchCopy(className,MAX_CLASS_NAME_LEN,TEXT("?")))) {
@@ -365,7 +372,6 @@ Arguments:
 
 int cmdFind(__in LPCTSTR BaseName, __in LPCTSTR Machine, __in DWORD Flags, __in int argc, __in_ecount(argc) TCHAR* argv[])
 /*++
-
 Routine Description:
 
     FIND <id> ...
@@ -374,15 +380,12 @@ Routine Description:
     note that we only enumerate present devices
 
 Arguments:
-
     BaseName  - name of executable
     Machine   - if non-NULL, remote machine
     argc/argv - remaining parameters - passed into EnumerateDevices
 
 Return Value:
-
     EXIT_xxxx
-
 --*/
 {
     GenericContext context;
@@ -837,13 +840,13 @@ Return Value:
 		{
     		_tprintf(_T("\n"));
     		_tprintf(_T("SetupDiSetClassInstallParams(DIF_PROPERTYCHANGE) fails with WinErr=%d: %s\n"), 
-				winerr1, get_win32errtext(winerr1, errtext, ARRAYSIZE(errtext)));
+				winerr1, SetupApi_ErrText(winerr1));
 		}
     	if(winerr2)
     	{
     		_tprintf(_T("\n"));
     		_tprintf(_T("SetupDiCallClassInstaller(DIF_PROPERTYCHANGE) fails with WinErr=%d: %s\n"), 
-				winerr2, get_win32errtext(winerr2, errtext, ARRAYSIZE(errtext)));
+				winerr2, SetupApi_ErrText(winerr2));
     	}
         
         DumpDeviceWithInfo(Devs,DevInfo,pControlContext->strFail);
@@ -1573,7 +1576,9 @@ Return Value:
     UNREFERENCED_PARAMETER(argv);
 
     if(Machine) {
-        if(CM_Connect_Machine(Machine,&machineHandle) != CR_SUCCESS) {
+		CONFIGRET cmret = CM_Connect_Machine(Machine,&machineHandle);
+        if(cmret != CR_SUCCESS) {
+			Print_CfmgrError(_T("CM_Connect_Machine"), cmret);
             return failcode;
         }
     }
@@ -1655,6 +1660,7 @@ Return Value:
     //
     if(!SetupDiClassGuidsFromNameEx(argv[0],&guid,1,&numGuids,Machine,NULL)) {
         if(GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+			Print_SetupApiError(_T("SetupDiClassGuidsFromNameEx"));
             goto final;
         }
     }
@@ -2386,6 +2392,3 @@ DispatchEntry DispatchTable[] = {
     { TEXT("?"),            cmdHelp,        0,                     0 },
     { NULL,NULL }
 };
-
-
-

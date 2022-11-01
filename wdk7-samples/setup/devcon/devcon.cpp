@@ -15,7 +15,7 @@ Abstract:
 
 #include "devcon.h"
 
-#define DEVCON_VERSION_STRING TEXT("20220430.1")
+#define DEVCON_VERSION_STRING TEXT("20221101.1")
 
 struct IdEntry {
     LPCTSTR String;     // string looking for
@@ -784,7 +784,9 @@ Return Value:
     if(argc>skip && argv[skip][0]==CLASS_PREFIX_CHAR && argv[skip][1]) {
         if(!SetupDiClassGuidsFromNameEx(argv[skip]+1,&cls,1,&numClass,Machine,NULL) &&
             GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-            goto final;
+            
+			Print_SetupApiError(_T("SetupDiClassGuidsFromNameEx"));
+			goto final;
         }
         if(!numClass) {
             failcode = EXIT_OK;
@@ -838,7 +840,11 @@ Return Value:
                                      NULL,
                                      Machine,
                                      NULL);
-    } else {
+		if(devs == INVALID_HANDLE_VALUE) {
+			Print_SetupApiError(_T("SetupDiGetClassDevsEx"));
+			goto final;
+		}
+	} else {
         //
         // (Start from a) blank list, we'll add InstanceId-s by hand
         //
@@ -846,10 +852,11 @@ Return Value:
                                              NULL,
                                              Machine,
                                              NULL);
-    }
+		if(devs == INVALID_HANDLE_VALUE) {
+			Print_SetupApiError(_T("SetupDiCreateDeviceInfoListEx"));
+			goto final;
+		}
 
-    if(devs == INVALID_HANDLE_VALUE) {
-        goto final;
     }
 
     for(argIndex=skip; argIndex<argc; argIndex++) {
@@ -1101,15 +1108,3 @@ Return Value:
     return EXIT_USAGE;
 }
 
-const TCHAR * 
-get_win32errtext(DWORD winerr, TCHAR buf[], int bufchars)
-{
-    DWORD retchars = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, winerr, 
-        0, // LANGID
-        buf, bufchars,
-        NULL); // A trailing \r\n has been filled.
-    if(retchars>0)
-        return buf;
-	else
-		return _T("");
-}
