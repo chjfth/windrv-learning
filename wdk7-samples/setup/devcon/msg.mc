@@ -137,11 +137,11 @@ Language=English
 .
 MessageId=60402 SymbolicName=MSG_FIND_TAIL_NONE
 Language=English
-No matching devices found on %1.
+On %1, No matching devices found -or- No operation success.
 .
 MessageId=60403 SymbolicName=MSG_FIND_TAIL_NONE_LOCAL
 Language=English
-No matching devices found.
+No matching devices found -or- No operation success.
 .
 MessageId=60404 SymbolicName=MSG_FIND_TAIL
 Language=English

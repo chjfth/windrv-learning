@@ -404,6 +404,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -450,6 +451,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -491,6 +493,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -538,6 +541,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -587,6 +591,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout, Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,
 				Machine);
         } else {
@@ -637,6 +642,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -683,6 +689,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -724,6 +731,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,Machine?MSG_FIND_TAIL_NONE:MSG_FIND_TAIL_NONE_LOCAL,Machine);
         } else {
             FormatToStream(stdout,Machine?MSG_FIND_TAIL:MSG_FIND_TAIL_LOCAL,context.count,Machine);
@@ -946,6 +954,7 @@ AGAIN:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,MSG_FIND_TAIL_NONE_LOCAL);
         } else if(!context.reboot) {
             FormatToStream(stdout,MSG_ENABLE_TAIL, context.count,
@@ -1036,6 +1045,7 @@ AGAIN:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,MSG_FIND_TAIL_NONE_LOCAL);
         } else if(!context.reboot) {
             FormatToStream(stdout,MSG_DISABLE_TAIL, context.count, 
@@ -1106,6 +1116,7 @@ Return Value:
     if(failcode == EXIT_OK) {
 
         if(!context.count) {
+        	failcode = EXIT_ZERO_SUCCESS;
             FormatToStream(stdout,MSG_FIND_TAIL_NONE_LOCAL);
         } else if(!context.reboot) {
             FormatToStream(stdout,MSG_RESTART_TAIL,context.count);

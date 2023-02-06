@@ -129,4 +129,5 @@ typedef BOOL (WINAPI *SetupVerifyInfFileProto)(__in LPCTSTR InfName,
 #define EXIT_REBOOT  (1)
 #define EXIT_FAIL    (2)
 #define EXIT_USAGE   (3)
+#define EXIT_ZERO_SUCCESS (4)
 
