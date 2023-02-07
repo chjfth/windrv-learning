@@ -37,11 +37,11 @@
     </ProjectConfiguration>
     <!-- ARM64 -->
     <ProjectConfiguration Include="vs2019 Debug|ARM64">
-      <Configuration>Debug</Configuration>
+      <Configuration>vs2019 Debug</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="vs2019 Release|ARM64">
-      <Configuration>Release</Configuration>
+      <Configuration>vs2019 Release</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
